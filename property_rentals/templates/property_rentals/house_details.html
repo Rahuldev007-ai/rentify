@@ -1,0 +1,238 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sunshine Luxury Villa - House Details & Inquiry | Rentify</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root {
+            --primary-color: #1e3c72;
+            --light-bg: #f4f6f9;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            color: #333;
+            padding-bottom: 3rem;
+        }
+
+        .house-details-card {
+            max-width: 1150px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            padding: 2.5rem;
+            border: 1px solid #e2e8f0;
+        }
+
+        .house-image {
+            width: 100%;
+            height: 420px;
+            object-fit: cover;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .price-tag {
+            font-size: 1.8rem;
+            color: #28a745;
+            font-weight: 800;
+        }
+
+        .inquiry-form-card {
+            background: #f8fafc;
+            padding: 2rem;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 0.9rem;
+        }
+
+        .form-control, .form-select {
+            border: 1.5px solid #cbd5e0;
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+        }
+
+        .btn-submit-inquiry {
+            background: linear-gradient(135deg, #ff6f61 0%, #ff4b3e 100%);
+            color: white;
+            border: none;
+            padding: 0.85rem 1.5rem;
+            font-weight: 700;
+            font-size: 1.05rem;
+            border-radius: 12px;
+            width: 100%;
+            box-shadow: 0 4px 15px rgba(255, 111, 97, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .btn-submit-inquiry:hover {
+            transform: translateY(-2px);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container my-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <a href="/properties/houses/" class="btn btn-outline-dark btn-sm rounded-pill px-3">
+                <i class="fas fa-arrow-left me-1"></i> Back to House Listings
+            </a>
+            <h4 class="mb-0 text-primary fw-bold"><i class="fas fa-home me-2"></i>House Details & Inquiry</h4>
+            <a href="/bookings/my-house-inquiries/" class="btn btn-primary btn-sm rounded-pill px-3">
+                <i class="fas fa-calendar-check me-1"></i> My House Inquiries
+            </a>
+        </div>
+
+        <div id="successBanner" class="alert alert-success d-none mb-4" role="alert">
+            <i class="fas fa-check-circle me-2"></i> <strong>Inquiry Submitted!</strong> Your house rental request has been received.
+        </div>
+
+        <div class="house-details-card">
+            <div class="row g-4">
+                <!-- House Showcase Column -->
+                <div class="col-lg-7">
+                    <img src="{% static 'images/image/houseimg/i1.jpg' %}" class="house-image mb-4" alt="Sunshine Luxury Villa">
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2 class="fw-bold text-dark mb-0">Sunshine Luxury Villa (3 BHK)</h2>
+                        <div class="price-tag">₹35,000 <small class="fs-6 text-muted fw-normal">/ month</small></div>
+                    </div>
+
+                    <p class="text-secondary mb-4">
+                        <i class="fas fa-map-marker-alt text-danger me-2"></i>Green Valley Enclave, Sector 4, Prime Residential Zone
+                    </p>
+
+                    <h5 class="fw-bold mb-3"><i class="fas fa-info-circle text-primary me-2"></i>Property Specifications & Highlights</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-6 col-md-4">
+                            <div class="p-3 bg-light rounded border">
+                                <i class="fas fa-bed text-primary fs-4 mb-2"></i>
+                                <strong class="d-block text-dark">3 Bedrooms</strong>
+                                <small class="text-muted">Master suite attached</small>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <div class="p-3 bg-light rounded border">
+                                <i class="fas fa-bath text-primary fs-4 mb-2"></i>
+                                <strong class="d-block text-dark">3 Bathrooms</strong>
+                                <small class="text-muted">Modern fittings</small>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <div class="p-3 bg-light rounded border">
+                                <i class="fas fa-vector-square text-primary fs-4 mb-2"></i>
+                                <strong class="d-block text-dark">2,400 sq.ft</strong>
+                                <small class="text-muted">Spacious balcony</small>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <div class="p-3 bg-light rounded border">
+                                <i class="fas fa-car text-primary fs-4 mb-2"></i>
+                                <strong class="d-block text-dark">Covered Parking</strong>
+                                <small class="text-muted">2 Car slots</small>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <div class="p-3 bg-light rounded border">
+                                <i class="fas fa-paw text-primary fs-4 mb-2"></i>
+                                <strong class="d-block text-dark">Pet Friendly</strong>
+                                <small class="text-muted">Gated society</small>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <div class="p-3 bg-light rounded border">
+                                <i class="fas fa-bolt text-primary fs-4 mb-2"></i>
+                                <strong class="d-block text-dark">Power Backup</strong>
+                                <small class="text-muted">24/7 Inverter</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- House Inquiry Form Column -->
+                <div class="col-lg-5">
+                    <div class="inquiry-form-card">
+                        <h4 class="fw-bold text-dark mb-1"><i class="fas fa-envelope-open-text text-danger me-2"></i>Send House Rental Query</h4>
+                        <p class="text-muted small mb-4">Submit an inquiry to schedule a viewing or request rent terms.</p>
+
+                        <form id="houseInquiryForm" onsubmit="handleInquirySubmit(event, 'Sunshine Luxury Villa (3 BHK)', '/bookings/my-house-inquiries/')">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Full Name</label>
+                                <input type="text" class="form-control" id="name" name="name" placeholder="Sunita Deshmukh" value="Sunita Deshmukh" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="phone" class="form-label">Phone Number</label>
+                                <input type="tel" class="form-control" id="phone" name="phone" placeholder="+91 98220 33445" value="+91 98220 33445" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email Address</label>
+                                <input type="email" class="form-control" id="email" name="email" placeholder="sunita@example.com" value="sunita.deshmukh@example.com" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="move_in_date" class="form-label">Expected Move-in Date</label>
+                                <input type="date" class="form-control" id="move_in_date" name="move_in_date" value="2026-10-01" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="requirements" class="form-label">Requirements & Family Info</label>
+                                <textarea class="form-control" id="requirements" name="requirements" rows="3" placeholder="Family of 4, pet ownership, lease duration preference...">Looking for 3 BHK independent house for a family of 4. Requires covered car parking and pet-friendly society.</textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-submit-inquiry mt-2">
+                                <i class="fas fa-paper-plane me-2"></i> Submit House Inquiry
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Real-time SweetAlert2 Response Box Script -->
+    <script>
+        function handleInquirySubmit(event, propertyName, redirectUrl) {
+            event.preventDefault();
+
+            Swal.fire({
+                title: 'House Inquiry Submitted! 🎉',
+                html: 'Your query for <strong>' + propertyName + '</strong> has been sent to our property team.<br><br><strong>Would you like to view your active house inquiries in your dashboard now?</strong>',
+                icon: 'success',
+                showCancelButton: true,
+                confirmButtonColor: '#ff6f61',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="fas fa-check-circle me-1"></i> Yes, View My Inquiries',
+                cancelButtonText: '<i class="fas fa-times-circle me-1"></i> No, Stay Here',
+                customClass: {
+                    popup: 'rounded-4 shadow-lg'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = redirectUrl;
+                } else {
+                    document.getElementById('successBanner').classList.remove('d-none');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            });
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    {% include 'core/footer.html' %}
+</body>
+</html>

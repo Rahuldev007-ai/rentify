@@ -1,0 +1,397 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Hall Inquiries - Rentify</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #1e3c72;
+            --light-bg: #f4f6f9;
+        }
+        body {
+            background-color: var(--light-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding-bottom: 4rem;
+        }
+        .top-navbar {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 1rem 0;
+            margin-bottom: 2rem;
+        }
+        .inquiry-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            margin-bottom: 24px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            transition: transform 0.3s ease;
+        }
+        .inquiry-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        .inquiry-header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 18px 24px;
+        }
+        .inquiry-body {
+            padding: 24px;
+        }
+        .status-badge {
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .status-pending { background-color: #fff3cd; color: #856404; }
+        .status-approved { background-color: #d4edda; color: #155724; }
+        .status-rejected { background-color: #f8d7da; color: #721c24; }
+        .status-cancelled { background-color: #e2e8f0; color: #4a5568; }
+        .detail-item { margin-bottom: 12px; color: #4a5568; font-size: 0.95rem; }
+        .detail-item i { width: 25px; color: #1e3c72; }
+        .hall-img-thumb {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="top-navbar">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-2">
+                <a href="/core/" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                    <i class="fas fa-arrow-left me-1"></i> Home
+                </a>
+                <a href="/properties/halls/" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                    <i class="fas fa-building me-1"></i> Browse Halls
+                </a>
+            </div>
+            <h4 class="mb-0 text-primary fw-bold"><i class="fas fa-calendar-check me-2"></i>My Event Hall Inquiries</h4>
+            <span class="badge bg-primary px-3 py-2 fs-6">{{ inquiries.count }} Active Inquiries</span>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="row">
+            {% for inquiry in inquiries %}
+            <div class="col-12">
+                <div class="inquiry-card">
+                    <div class="inquiry-header">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <h5 class="mb-0 fw-bold">{{ inquiry.item_title }}</h5>
+                                    <span class="badge bg-light text-primary fw-bold text-uppercase px-3 py-1 rounded-pill">
+                                        <i class="fas {% if inquiry.category_type == 'house' %}fa-home{% elif inquiry.category_type == 'office' %}fa-briefcase{% else %}fa-building{% endif %} me-1"></i>
+                                        {{ inquiry.category_type|upper }}
+                                    </span>
+                                </div>
+                                <div class="text-white-50 small mt-1">
+                                    <i class="fas fa-calendar-day me-1"></i> Requested Preferred Date: <strong>{{ inquiry.booking_date|default:"Flexible Date" }}</strong>
+                                </div>
+                            </div>
+                            <div>
+                                {% if inquiry.status == 'Approved' or inquiry.status == 'Confirmed' %}
+                                    <span class="status-badge status-approved"><i class="fas fa-check-circle me-1"></i> Status: Approved</span>
+                                {% elif inquiry.status == 'Meeting Scheduled' %}
+                                    <span class="status-badge bg-info text-dark"><i class="fas fa-video me-1"></i> Meeting Scheduled</span>
+                                {% elif inquiry.status == 'Quoted' or inquiry.status == 'Price Described' %}
+                                    <span class="status-badge bg-primary text-white"><i class="fas fa-tag me-1"></i> Price Quoted</span>
+                                {% elif inquiry.status == 'Rejected' %}
+                                    <span class="status-badge status-rejected"><i class="fas fa-times-circle me-1"></i> Status: Rejected</span>
+                                {% elif inquiry.status == 'Cancelled' %}
+                                    <span class="status-badge status-cancelled"><i class="fas fa-ban me-1"></i> Status: Cancelled</span>
+                                {% else %}
+                                    <span class="status-badge status-pending"><i class="fas fa-hourglass-half me-1"></i> Status: Pending Review</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="inquiry-body">
+                        <div class="row align-items-start g-4">
+                            <div class="col-md-3">
+                                <img src="{{ inquiry.image_url }}" alt="{{ inquiry.item_title }}" class="hall-img-thumb mb-2" onerror="this.src='/static/images/image/c1.jpg'">
+                                <div class="badge bg-light text-dark w-100 border py-2 fw-bold text-wrap">
+                                    <i class="fas fa-hashtag me-1 text-primary"></i> ID: #VG-INQ-{{ inquiry.id }}
+                                </div>
+                            </div>
+                            <div class="col-md-9">
+                                <div class="row g-3">
+                                    <!-- Applicant Info -->
+                                    <div class="col-md-6 border-end">
+                                        <h6 class="fw-bold text-primary mb-2"><i class="fas fa-user-circle me-1"></i> Applicant Details</h6>
+                                        <div class="detail-item mb-1">
+                                            <strong>Full Name:</strong> {{ inquiry.applicant_name }}
+                                        </div>
+                                        <div class="detail-item mb-1">
+                                            <strong>Phone Number:</strong> <a href="tel:{{ inquiry.phone_number }}" class="text-decoration-none fw-semibold">{{ inquiry.phone_number }}</a>
+                                        </div>
+                                        <div class="detail-item mb-1">
+                                            <strong>Email Address:</strong> {{ inquiry.email|default:"Not Provided" }}
+                                        </div>
+                                        <div class="detail-item mb-1">
+                                            <strong>Submitted On:</strong> {{ inquiry.created_at|date:"M d, Y (h:i A)" }}
+                                        </div>
+                                    </div>
+
+                                    <!-- Property Inquiry Parameters -->
+                                    <div class="col-md-6">
+                                        <h6 class="fw-bold text-primary mb-2"><i class="fas fa-sliders-h me-1"></i> Inquiry Requirements</h6>
+                                        <div class="detail-item mb-1">
+                                            <strong>Preferred Date:</strong> {{ inquiry.booking_date|default:"Flexible Date" }}
+                                        </div>
+                                        <div class="detail-item mb-1">
+                                            <strong>Duration:</strong> {{ inquiry.duration|default:"1 Day / Flexible" }}
+                                        </div>
+                                        <div class="detail-item mb-1">
+                                            <strong>Capacity Needed:</strong> {{ inquiry.capacity_needed|default:inquiry.guests_or_km|default:"500 Guests" }}
+                                        </div>
+                                        <div class="detail-item mb-1">
+                                            <strong>Budget Range:</strong> 
+                                            {% if inquiry.budget_min > 0 or inquiry.budget_max > 0 %}
+                                                <span class="text-success fw-bold">₹{{ inquiry.budget_min|floatformat:0 }} - ₹{{ inquiry.budget_max|floatformat:0 }}</span>
+                                            {% else %}
+                                                <span class="text-muted">Flexible Budget</span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="detail-item mb-1">
+                                            <strong>Location Pref:</strong> {{ inquiry.location_preference|default:"Bhavnagar Central" }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {% if inquiry.special_requirements %}
+                                <div class="detail-item mt-3 bg-light p-3 rounded-3 border">
+                                    <i class="fas fa-clipboard-list text-primary me-1"></i>
+                                    <strong>Special Requirements & Message:</strong>
+                                    <p class="ms-4 mb-0 text-secondary small">{{ inquiry.special_requirements }}</p>
+                                </div>
+                                {% endif %}
+
+                                <!-- ADMIN RESPONSE & MEETING SCHEDULING CARD -->
+                                {% if inquiry.representative_name or inquiry.meeting_location or inquiry.quoted_price > 0 or inquiry.admin_notes %}
+                                <div class="mt-3 p-3 rounded-3 bg-success bg-opacity-10 border border-success border-opacity-25">
+                                    <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+                                        <h6 class="fw-bold text-success mb-0">
+                                            <i class="fas fa-user-tie me-2"></i>Admin Meeting & Response Details
+                                        </h6>
+                                        {% if inquiry.quoted_price > 0 %}
+                                        <span class="badge bg-success fs-6 fw-bold px-3 py-2 rounded-pill">
+                                            Quoted Price: ₹{{ inquiry.quoted_price|floatformat:0 }}
+                                        </span>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="row g-2 align-items-center">
+                                        {% if inquiry.representative_name %}
+                                        <div class="col-md-6 text-dark small">
+                                            <i class="fas fa-phone-alt text-primary me-1"></i>
+                                            <strong>Call Representative:</strong> {{ inquiry.representative_name }}
+                                            {% if inquiry.representative_phone %}
+                                            (<a href="tel:{{ inquiry.representative_phone }}" class="fw-bold text-decoration-none">{{ inquiry.representative_phone }}</a>)
+                                            {% endif %}
+                                        </div>
+                                        {% endif %}
+
+                                        {% if inquiry.meeting_location %}
+                                        <div class="col-md-6 text-end">
+                                            {% if 'meet.google.com' in inquiry.meeting_location or 'http' in inquiry.meeting_location %}
+                                            <a href="{{ inquiry.meeting_location }}" target="_blank" class="btn btn-success btn-sm fw-bold rounded-pill px-3 shadow-sm">
+                                                <i class="fas fa-video me-1"></i> Join Google Meet Video Call
+                                            </a>
+                                            {% else %}
+                                            <span class="badge bg-light text-dark border p-2 fw-semibold">
+                                                <i class="fas fa-map-marker-alt text-danger me-1"></i> {{ inquiry.meeting_location }}
+                                            </span>
+                                            {% endif %}
+                                        </div>
+                                        {% endif %}
+
+                                        {% if inquiry.admin_notes %}
+                                        <div class="col-12 mt-2 pt-2 border-top border-success border-opacity-25 text-secondary small">
+                                            <strong>Admin Response Notes:</strong> {{ inquiry.admin_notes }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top flex-wrap gap-2">
+                                    <div class="d-flex gap-2 align-items-center">
+                                        <button class="btn btn-primary btn-sm rounded-pill px-3 fw-bold" onclick="openUserInquiryModal({{ inquiry.id }}, '{{ inquiry.item_title|escapejs }}', '{{ inquiry.applicant_name|escapejs }}', '{{ inquiry.phone_number|escapejs }}', '{{ inquiry.email|escapejs }}', '{{ inquiry.booking_date|escapejs }}', '{{ inquiry.duration|escapejs }}', '{{ inquiry.capacity_needed|escapejs }}', '{{ inquiry.budget_min|floatformat:0 }}', '{{ inquiry.budget_max|floatformat:0 }}', '{{ inquiry.location_preference|escapejs }}', '{{ inquiry.special_requirements|escapejs }}', '{{ inquiry.representative_name|escapejs }}', '{{ inquiry.representative_phone|escapejs }}', '{{ inquiry.meeting_location|escapejs }}', '{{ inquiry.quoted_price|floatformat:0 }}', '{{ inquiry.admin_notes|escapejs }}', '{{ inquiry.status|escapejs }}')">
+                                            <i class="fas fa-eye me-1"></i> Full Details Popup
+                                        </button>
+                                        <small class="text-muted"><i class="fas fa-info-circle me-1"></i> Management team sync active.</small>
+                                    </div>
+                                    {% if inquiry.status != 'Cancelled' %}
+                                    <button class="btn btn-outline-danger btn-sm rounded-pill px-3" onclick="cancelHallInquiry({{ inquiry.id }})">
+                                        Cancel Request
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <div class="p-5 bg-white rounded-4 shadow-sm border">
+                    <i class="fas fa-building text-muted fs-1 mb-3"></i>
+                    <h4 class="fw-bold text-dark mb-2">No Hall Inquiries Found</h4>
+                    <p class="text-muted mb-4">You haven't submitted any banquet or event hall booking queries yet.</p>
+                    <a href="/properties/halls/" class="btn btn-primary px-4 py-2 fw-bold rounded-pill">
+                        <i class="fas fa-building me-2"></i> Browse Event Halls Catalog
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- USER FULL DETAILS MODAL POPUP -->
+    <div class="modal fade" id="userInquiryDetailsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-primary text-white rounded-top-4 px-4 py-3">
+                    <h5 class="modal-title fw-bold" id="userModalTitle"><i class="fas fa-building me-2"></i>Full Hall Inquiry Data</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6 border-end">
+                            <h6 class="fw-bold text-primary mb-2"><i class="fas fa-user-circle me-1"></i> Applicant Details</h6>
+                            <div class="mb-1"><strong>Applicant Name:</strong> <span id="uModalName">Rahul Patel</span></div>
+                            <div class="mb-1"><strong>Phone Number:</strong> <a id="uModalPhoneLink" href="tel:" class="fw-bold text-decoration-none"><span id="uModalPhone">+91 98765 43210</span></a></div>
+                            <div class="mb-1"><strong>Email Address:</strong> <span id="uModalEmail">rahul@gmail.com</span></div>
+                            <div class="mb-1 mt-2"><strong>Status:</strong> <span id="uModalStatusBadge" class="status-badge status-pending">Pending Review</span></div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-primary mb-2"><i class="fas fa-sliders-h me-1"></i> Inquiry Specifications</h6>
+                            <div class="mb-1"><strong>Event Date / Duration:</strong> <span id="uModalDate">Oct 15, 2026</span></div>
+                            <div class="mb-1"><strong>Rental Period:</strong> <span id="uModalDuration">1 Day</span></div>
+                            <div class="mb-1"><strong>Expected Guests:</strong> <span id="uModalCapacity">500 Guests</span></div>
+                            <div class="mb-1"><strong>Budget Range:</strong> <span id="uModalBudget" class="fw-bold text-success">₹25,000 - ₹50,000</span></div>
+                            <div class="mb-1"><strong>Location Pref:</strong> <span id="uModalLocation">Palace Road, Central Sector</span></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-light p-3 rounded-3 border mb-3">
+                        <h6 class="fw-bold text-dark mb-1"><i class="fas fa-clipboard-list text-primary me-1"></i> Special Requirements & Message:</h6>
+                        <p class="text-secondary small mb-0" id="uModalRequirements">Need stage setup for marriage ceremony, AC banquet access from 8 AM.</p>
+                    </div>
+
+                    <div id="uModalAdminBox" class="p-3 rounded-3 bg-success bg-opacity-10 border border-success border-opacity-25">
+                        <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap">
+                            <h6 class="fw-bold text-success mb-0"><i class="fas fa-user-tie me-1"></i> Admin Meeting & Response Info</h6>
+                            <span class="badge bg-success fs-6 fw-bold" id="uModalQuotedPriceTag">Quoted Price: ₹35,000</span>
+                        </div>
+                        <div class="row g-2 text-dark small">
+                            <div class="col-md-6"><strong>Call Representative:</strong> <span id="uModalRepName">Rahul Sharma</span> (<a id="uModalRepPhoneLink" href="tel:" class="fw-bold"><span id="uModalRepPhone">+91 98765 43210</span></a>)</div>
+                            <div class="col-md-6 text-end" id="uModalMeetBtnContainer">
+                                <a id="uModalMeetBtn" href="#" target="_blank" class="btn btn-success btn-sm fw-bold rounded-pill px-3"><i class="fas fa-video me-1"></i> Join Google Meet</a>
+                            </div>
+                            <div class="col-12 mt-2 pt-2 border-top border-success border-opacity-25 text-secondary">
+                                <strong>Admin Notes:</strong> <span id="uModalNotes">No response notes added yet.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light px-4 py-3 rounded-bottom-4">
+                    <button type="button" class="btn btn-secondary rounded-3 px-4 fw-bold" data-bs-dismiss="modal">Close Popup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function openUserInquiryModal(id, title, name, phone, email, dateStr, durationStr, capacityStr, bMin, bMax, locStr, reqStr, repName, repPhone, meetLoc, quotedPrice, adminNotes, status) {
+            document.getElementById('userModalTitle').innerHTML = `<i class="fas fa-building me-2"></i>Full Hall Inquiry: ${title}`;
+            document.getElementById('uModalName').textContent = name;
+            document.getElementById('uModalPhone').textContent = phone;
+            document.getElementById('uModalPhoneLink').href = `tel:${phone}`;
+            document.getElementById('uModalEmail').textContent = email || 'N/A';
+            
+            document.getElementById('uModalDate').textContent = dateStr || 'Flexible Date';
+            document.getElementById('uModalDuration').textContent = durationStr || '1 Day';
+            document.getElementById('uModalCapacity').textContent = capacityStr || '500 Guests';
+            
+            const minNum = parseFloat(bMin) || 0;
+            const maxNum = parseFloat(bMax) || 0;
+            document.getElementById('uModalBudget').textContent = (minNum > 0 || maxNum > 0) ? `₹${minNum.toLocaleString()} - ₹${maxNum.toLocaleString()}` : 'Flexible Budget';
+            document.getElementById('uModalLocation').textContent = locStr || 'Palace Road, Central Sector';
+            document.getElementById('uModalRequirements').textContent = reqStr || 'No special requirements specified.';
+
+            const badge = document.getElementById('uModalStatusBadge');
+            badge.textContent = `Status: ${status}`;
+            badge.className = `status-badge ${status === 'Approved' ? 'status-approved' : (status === 'Cancelled' ? 'status-cancelled' : 'status-pending')}`;
+
+            document.getElementById('uModalRepName').textContent = repName || 'Admin Sales Lead';
+            document.getElementById('uModalRepPhone').textContent = repPhone || phone;
+            document.getElementById('uModalRepPhoneLink').href = `tel:${repPhone || phone}`;
+
+            const qPriceNum = parseFloat(quotedPrice) || 0;
+            document.getElementById('uModalQuotedPriceTag').textContent = qPriceNum > 0 ? `Quoted Price: ₹${qPriceNum.toLocaleString()}` : 'Price Quote Pending';
+            document.getElementById('uModalNotes').textContent = adminNotes || 'Our team is reviewing your inquiry details.';
+
+            const meetContainer = document.getElementById('uModalMeetBtnContainer');
+            const meetBtn = document.getElementById('uModalMeetBtn');
+            if (meetLoc) {
+                meetContainer.style.display = 'block';
+                if (meetLoc.includes('meet.google.com') || meetLoc.includes('http')) {
+                    meetBtn.href = meetLoc;
+                    meetBtn.className = 'btn btn-success btn-sm fw-bold rounded-pill px-3';
+                    meetBtn.innerHTML = '<i class="fas fa-video me-1"></i> Join Google Meet Video Call';
+                } else {
+                    meetBtn.href = '#';
+                    meetBtn.className = 'badge bg-light text-dark border p-2 fw-semibold';
+                    meetBtn.innerHTML = `<i class="fas fa-map-marker-alt text-danger me-1"></i> ${meetLoc}`;
+                }
+            } else {
+                meetContainer.style.display = 'none';
+            }
+
+            new bootstrap.Modal(document.getElementById('userInquiryDetailsModal')).show();
+        }
+
+        function cancelHallInquiry(inquiryId) {
+            if (!confirm('Are you sure you want to cancel hall inquiry #' + inquiryId + '?')) return;
+
+            fetch('/bookings/api/cancel/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ inquiry_id: inquiryId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('Hall inquiry cancelled.');
+                    window.location.reload();
+                } else {
+                    alert('Error cancelling inquiry: ' + data.message);
+                }
+            })
+            .catch(err => alert('Network error cancelling inquiry.'));
+        }
+    </script>
+    {% include 'core/footer.html' %}
+</body>
+</html>

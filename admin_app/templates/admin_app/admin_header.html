@@ -1,0 +1,171 @@
+{% load static %}
+<aside class="admin-sidebar">
+    <div class="admin-sidebar-brand">
+        <h4 class="admin-sidebar-brand-title">
+            <i class="fas fa-user-shield text-warning"></i>
+            <span>Rentify Admin</span>
+        </h4>
+        <button class="admin-sidebar-toggle" id="adminSidebarToggle" aria-label="Toggle navigation menu">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
+
+    <nav class="admin-sidebar-nav" id="adminSidebarNav">
+        <a href="/admin-portal/dashboard/" class="nav-item-link {% if request.resolver_match.url_name == 'dashboard' or '/dashboard/' in request.path %}active{% endif %}">
+            <i class="fas fa-chart-line"></i> <span>Dashboard</span>
+        </a>
+
+        <!-- MANAGE CARS WITH ANIMATED SUB-MENU DROPDOWN -->
+        <div class="sidebar-dropdown-wrapper">
+            <a href="/admin-portal/manage-cars/" class="nav-item-link dropdown-toggle-link {% if request.resolver_match.url_name == 'manage_cars' or '/manage-cars/' in request.path %}active{% endif %}" id="carDropdownToggle">
+                <i class="fas fa-car"></i>
+                <span>Manage Cars</span>
+                <i class="fas fa-chevron-down submenu-arrow-icon" id="carSubmenuArrow"></i>
+            </a>
+            <div class="sidebar-submenu-container {% if request.resolver_match.url_name == 'manage_cars' or '/manage-cars/' in request.path %}expanded{% endif %}" id="carSubmenu">
+                <a href="/admin-portal/manage-cars/?view=all" class="submenu-link" id="subLinkCarAll" onclick="handleSubmenuClick(event, 'car', 'all')">
+                    <i class="fas fa-list-ul me-2 text-primary"></i> All Cars Fleet
+                </a>
+                <a href="/admin-portal/manage-cars/?view=booked" class="submenu-link" id="subLinkCarBooked" onclick="handleSubmenuClick(event, 'car', 'booked')">
+                    <i class="fas fa-calendar-check me-2 text-danger"></i> Booked Cars View
+                </a>
+            </div>
+        </div>
+
+        <!-- MANAGE BIKES WITH ANIMATED SUB-MENU DROPDOWN -->
+        <div class="sidebar-dropdown-wrapper">
+            <a href="/admin-portal/manage-bikes/" class="nav-item-link dropdown-toggle-link {% if request.resolver_match.url_name == 'manage_bikes' or '/manage-bikes/' in request.path %}active{% endif %}" id="bikeDropdownToggle">
+                <i class="fas fa-motorcycle"></i>
+                <span>Manage Bikes</span>
+                <i class="fas fa-chevron-down submenu-arrow-icon" id="bikeSubmenuArrow"></i>
+            </a>
+            <div class="sidebar-submenu-container {% if request.resolver_match.url_name == 'manage_bikes' or '/manage-bikes/' in request.path %}expanded{% endif %}" id="bikeSubmenu">
+                <a href="/admin-portal/manage-bikes/?view=all" class="submenu-link" id="subLinkBikeAll" onclick="handleSubmenuClick(event, 'bike', 'all')">
+                    <i class="fas fa-list-ul me-2 text-success"></i> All Bikes Fleet
+                </a>
+                <a href="/admin-portal/manage-bikes/?view=booked" class="submenu-link" id="subLinkBikeBooked" onclick="handleSubmenuClick(event, 'bike', 'booked')">
+                    <i class="fas fa-calendar-check me-2 text-danger"></i> Booked Bikes View
+                </a>
+            </div>
+        </div>
+
+        <!-- Vehicle Bookings -->
+        <a href="/admin-portal/manage-bookings/" class="nav-item-link {% if request.resolver_match.url_name == 'manage_bookings' or '/manage-bookings/' in request.path %}active{% endif %}">
+            <i class="fas fa-calendar-check text-warning"></i> <span>Vehicle Bookings</span>
+        </a>
+
+        <!-- Booked Vehicle Status Updates -->
+        <a href="/admin-portal/manage-status-updates/" class="nav-item-link {% if request.resolver_match.url_name == 'manage_status_updates' or '/manage-status-updates/' in request.path %}active{% endif %}">
+            <i class="fas fa-edit text-info"></i> <span>Booked Status Updates</span>
+        </a>
+
+        <!-- Document Verifications -->
+        <a href="/admin-portal/manage-verifications/" class="nav-item-link {% if request.resolver_match.url_name == 'manage_verifications' or '/manage-verifications/' in request.path %}active{% endif %}">
+            <i class="fas fa-id-card text-success"></i> <span>Document Verifications</span>
+        </a>
+
+        <!-- Payment Management & Ledger -->
+        <a href="/admin-portal/manage-payments/" class="nav-item-link {% if request.resolver_match.url_name == 'manage_payments' or '/manage-payments/' in request.path %}active{% endif %}">
+            <i class="fas fa-credit-card text-warning"></i> <span>Payment Ledger</span>
+        </a>
+
+        <a href="/admin-portal/manage-halls/" class="nav-item-link {% if request.resolver_match.url_name == 'manage_halls' or '/manage-halls/' in request.path %}active{% endif %}">
+            <i class="fas fa-hotel"></i> <span>Manage Halls</span>
+        </a>
+
+        <a href="/admin-portal/manage-offices/" class="nav-item-link {% if request.resolver_match.url_name == 'manage_offices' or '/manage-offices/' in request.path %}active{% endif %}">
+            <i class="fas fa-building"></i> <span>Manage Offices</span>
+        </a>
+
+        <a href="/admin-portal/manage-houses/" class="nav-item-link {% if request.resolver_match.url_name == 'manage_houses' or '/manage-houses/' in request.path %}active{% endif %}">
+            <i class="fas fa-home"></i> <span>Manage Houses</span>
+        </a>
+
+        <a href="/admin-portal/view-inquiries/" class="nav-item-link {% if request.resolver_match.url_name == 'view_inquiries' or '/view-inquiries/' in request.path %}active{% endif %}">
+            <i class="fas fa-envelope"></i> <span>Hall Inquiries</span>
+        </a>
+
+        <a href="/admin-portal/view-office-inquiries/" class="nav-item-link {% if request.resolver_match.url_name == 'view_office_inquiries' or '/view-office-inquiries/' in request.path %}active{% endif %}">
+            <i class="fas fa-briefcase"></i> <span>Office Inquiries</span>
+        </a>
+
+        <a href="/admin-portal/view-house-inquiries/" class="nav-item-link {% if request.resolver_match.url_name == 'view_house_inquiries' or '/view-house-inquiries/' in request.path %}active{% endif %}">
+            <i class="fas fa-home"></i> <span>House Inquiries</span>
+        </a>
+
+        <a href="/admin-portal/view-feedback/" class="nav-item-link {% if request.resolver_match.url_name == 'view_feedback' or '/view-feedback/' in request.path %}active{% endif %}">
+            <i class="fas fa-comments"></i> <span>View Feedback</span>
+        </a>
+
+        <!-- Redesigned Premium Logout Button -->
+        <div class="sidebar-logout-wrapper">
+            <a href="/accounts/login/" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i> <span>Sign Out Admin</span>
+            </a>
+        </div>
+    </nav>
+</aside>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const toggleBtn = document.getElementById('adminSidebarToggle');
+        const sidebarNav = document.getElementById('adminSidebarNav');
+        if (toggleBtn && sidebarNav) {
+            toggleBtn.addEventListener('click', function () {
+                sidebarNav.classList.toggle('show');
+            });
+        }
+
+        // Dropdown toggle headers
+        document.querySelectorAll('.dropdown-toggle-link').forEach(toggleLink => {
+            toggleLink.addEventListener('click', function (e) {
+                const wrapper = this.closest('.sidebar-dropdown-wrapper');
+                const submenu = wrapper ? wrapper.querySelector('.sidebar-submenu-container') : null;
+                const arrow = this.querySelector('.submenu-arrow-icon');
+                
+                // If clicking arrow or already on page, toggle sub-menu without page jump
+                if (submenu) {
+                    if (e.target.classList.contains('submenu-arrow-icon') || window.location.pathname.startsWith(this.getAttribute('href'))) {
+                        e.preventDefault();
+                        submenu.classList.toggle('expanded');
+                        if (arrow) arrow.classList.toggle('rotated');
+                    }
+                }
+            });
+        });
+    });
+
+    function handleSubmenuClick(event, category, viewType) {
+        const isCarPage = window.location.pathname.includes('/manage-cars/');
+        const isBikePage = window.location.pathname.includes('/manage-bikes/');
+
+        if ((category === 'car' && isCarPage) || (category === 'bike' && isBikePage)) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            setActiveSublink(category, viewType);
+
+            if (category === 'car' && typeof filterCarsBySubmenu === 'function') {
+                filterCarsBySubmenu(viewType);
+            } else if (category === 'bike' && typeof filterBikesBySubmenu === 'function') {
+                filterBikesBySubmenu(viewType);
+            }
+        }
+    }
+
+    function setActiveSublink(category, viewType) {
+        const containerId = category === 'car' ? 'carSubmenu' : 'bikeSubmenu';
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        container.querySelectorAll('.submenu-link').forEach(link => {
+            link.classList.remove('active-sublink');
+        });
+
+        const targetId = `subLink${category.charAt(0).toUpperCase() + category.slice(1)}${viewType.charAt(0).toUpperCase() + viewType.slice(1)}`;
+        const targetLink = document.getElementById(targetId);
+        if (targetLink) {
+            targetLink.classList.add('active-sublink');
+        }
+    }
+</script>

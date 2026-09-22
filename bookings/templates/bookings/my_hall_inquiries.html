@@ -1,0 +1,162 @@
+{% load static %}
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Hall Inquiries - Rentify</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .inquiry-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+        .inquiry-card:hover {
+            transform: translateY(-5px);
+        }
+        .inquiry-header {
+            background: #1a237e;
+            color: white;
+            padding: 15px 20px;
+        }
+        .inquiry-body {
+            padding: 20px;
+        }
+        .status-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .status-contacted {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status-booked {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+        .status-cancelled {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .detail-item {
+            margin-bottom: 10px;
+        }
+        .detail-item i {
+            width: 25px;
+            color: #1a237e;
+        }
+        .no-inquiries {
+            text-align: center;
+            padding: 40px 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+        }
+        .no-inquiries i {
+            font-size: 3rem;
+            color: #1a237e;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>My Hall Inquiries</h2>
+            <a href="/properties/halls/" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left"></i> Back to Halls
+            </a>
+        </div>
+
+        
+            
+                <div class="inquiry-card">
+                    <div class="inquiry-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-0">Hall: </h5>
+                                <p class="mb-0 mt-1">Event Date: </p>
+                            </div>
+                            <span class="status-badge status-">
+                                
+                            </span>
+                        </div>
+                    </div>
+                    <div class="inquiry-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="detail-item">
+                                    <i class="fas fa-user"></i>
+                                    <strong>Name:</strong> 
+                                    
+                                </div>
+                                <div class="detail-item">
+                                    <i class="fas fa-phone"></i>
+                                    <strong>Phone:</strong> 
+                                    
+                                </div>
+                                <div class="detail-item">
+                                    <i class="fas fa-envelope"></i>
+                                    <strong>Email:</strong> 
+                                    
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="detail-item">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    <strong>Event Type:</strong> 
+                                    
+                                </div>
+                                <div class="detail-item">
+                                    <i class="fas fa-users"></i>
+                                    <strong>Guests:</strong> 
+                                    
+                                </div>
+                                <div class="detail-item">
+                                    <i class="fas fa-clock"></i>
+                                    <strong>Submitted:</strong> 
+                                    
+                                </div>
+                            </div>
+                        </div>
+                        
+                            <div class="detail-item mt-3">
+                                <i class="fas fa-clipboard-list"></i>
+                                <strong>Requirements:</strong><br>
+                                <p class="ms-4 mb-0"></p>
+                            </div>
+                        
+                    </div>
+                </div>
+            
+        
+            <div class="no-inquiries">
+                <i class="fas fa-calendar-times mb-3"></i>
+                <h3>No Inquiries Yet</h3>
+                <p class="text-muted">You haven't made any hall inquiries yet.</p>
+                <a href="/properties/halls/" class="btn btn-primary">Browse Halls</a>
+            </div>
+        
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    {% include 'core/footer.html' %}
+</body>
+</html>

@@ -1,0 +1,1405 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Event & Banquet Halls - Admin Portal</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Admin Sidebar Styles -->
+    <link rel="stylesheet" href="{% static 'css/admin_sidebar.css' %}">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-hover: #3751d7;
+            --dark: #0f172a;
+            --card-bg: #ffffff;
+            --border-color: #e2e8f0;
+            --accent-bg: #f8fafc;
+        }
+
+        /* STRICT ICON REMOVAL - HIDE ALL ICON TAGS */
+        i, .fa, .fas, .far, .fal, .fab, svg.feather {
+            display: none !important;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #f1f5f9;
+            color: #334155;
+            margin: 0;
+            padding: 0;
+        }
+
+        .admin-layout-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .admin-main-content {
+            flex-grow: 1;
+            padding: 28px;
+            background-color: #f8fafc;
+            min-height: 100vh;
+            overflow-y: auto;
+        }
+
+        .executive-page-header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            border-radius: 16px;
+            padding: 24px 30px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.25);
+        }
+
+        .crud-card {
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            transition: all 0.25s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .crud-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.1);
+            border-color: var(--primary);
+        }
+
+        .crud-img-wrapper {
+            position: relative;
+            height: 180px;
+            background-color: #cbd5e1;
+            overflow: hidden;
+        }
+        .crud-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        .crud-card:hover .crud-img {
+            transform: scale(1.04);
+        }
+
+        .badge-status {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+        .badge-available { background-color: #10b981; color: #ffffff; }
+        .badge-booked { background-color: #ef4444; color: #ffffff; }
+        .badge-category { background-color: rgba(15, 23, 42, 0.85); color: #ffffff; font-weight: 700; font-size: 0.72rem; }
+
+        .image-preview-box {
+            width: 100%;
+            height: 180px;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background-color: #f8fafc;
+        }
+        .image-preview-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .spec-icon-badge {
+            background-color: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        /* Small Real-Time Live Sync Toast Notification */
+        .live-sync-toast {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 10000;
+            background: #0f172a;
+            color: #38bdf8;
+            padding: 10px 18px;
+            border-radius: 30px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            box-shadow: 0 8px 20px rgba(15,23,42,0.3);
+            border: 1px solid rgba(56,189,248,0.3);
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+        .live-sync-toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Real-Time Form Validation Helper Text */
+        .field-error-text {
+            font-size: 0.78rem;
+            color: #dc2626;
+            font-weight: 600;
+            margin-top: 4px;
+            display: none;
+        }
+        .input-invalid {
+            border-color: #dc2626 !important;
+            background-color: #fef2f2 !important;
+        }
+        .input-valid {
+            border-color: #10b981 !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Small Real-Time Sync Update Notification Badge -->
+    <div id="liveSyncToast" class="live-sync-toast">
+        Database Auto-Synced Live
+    </div>
+
+    <div class="admin-layout-wrapper">
+        <!-- Sidebar Navigation -->
+        {% include 'admin_app/admin_header.html' %}
+
+        <!-- Main Workspace -->
+        <main class="admin-main-content">
+            <!-- Executive Header Banner (100% Icon-Free Clean Design) -->
+            <div class="executive-page-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="badge bg-primary bg-opacity-20 text-white px-3 py-1 rounded-pill fw-bold border border-light border-opacity-25 small">
+                            Event & Banquet Hall Management
+                        </span>
+                    </div>
+                    <h2 class="fw-bold mb-1 text-white">Manage Event Halls & Real-Time Specifications</h2>
+                    <p class="text-white-50 small mb-0">Create hall listings with manual entry, real-time input validation, and live database sync popups.</p>
+                </div>
+                <button class="btn btn-warning text-dark fw-extrabold rounded-3 px-4 py-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#addHallModal">
+                    Add New Event Hall
+                </button>
+            </div>
+
+            <!-- Executive 3-Tab Control Switcher -->
+            <ul class="nav nav-pills gap-2 mb-4 p-2 bg-white rounded-4 border shadow-sm" id="hallMgmtTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active rounded-3 px-4 py-2 fw-bold" id="tab-halls-btn" data-bs-toggle="tab" data-bs-target="#tab-halls" type="button" role="tab">
+                        1. All Event Halls Fleet ({{ halls.count }})
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link rounded-3 px-4 py-2 fw-bold" id="tab-categories-btn" data-bs-toggle="tab" data-bs-target="#tab-categories" type="button" role="tab">
+                        2. Hall Categories ({{ hall_categories_list|length }})
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link rounded-3 px-4 py-2 fw-bold" id="tab-features-btn" data-bs-toggle="tab" data-bs-target="#tab-features" type="button" role="tab">
+                        3. Hall Features & Amenities ({{ hall_features_list|length }})
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="hallMgmtTabContent">
+                <!-- TAB 1: ALL EVENT HALLS FLEET -->
+                <div class="tab-pane fade show active" id="tab-halls" role="tabpanel">
+                    <!-- Filter & Search Bar -->
+                    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4 bg-white">
+                        <div class="row g-3 align-items-center">
+                            <div class="col-12 col-md-5">
+                                <input type="text" class="form-control bg-light rounded-3" id="hallSearchInput" placeholder="Search hall name, location, or category..." onkeyup="renderHallsGrid()">
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4">
+                                <select class="form-select rounded-3" id="hallStatusFilter" onchange="filterHallsByStatus()">
+                                    <option value="ALL">All Statuses (Available, Booked, Maintenance)</option>
+                                    <option value="Available">Available Halls Only</option>
+                                    <option value="Booked">Booked Halls Only</option>
+                                    <option value="Maintenance">Under Maintenance</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-3 d-flex align-items-center justify-content-sm-end gap-2">
+                                <span class="text-muted small fw-bold text-nowrap">Cards / Page:</span>
+                                <select class="form-select form-select-sm rounded-3 w-auto fw-bold" id="pageSizeSelect" onchange="changePageSize()">
+                                    <option value="4" selected>4 per page</option>
+                                    <option value="8">8 per page</option>
+                                    <option value="12">12 per page</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Halls Cards Grid -->
+                    <div class="row g-4 mb-4" id="hallsGridContainer">
+                        <!-- Dynamically rendered via JS -->
+                    </div>
+
+                    <!-- Pagination Bar -->
+                    <div class="d-flex flex-wrap justify-content-between align-items-center bg-white p-3 rounded-4 shadow-sm border">
+                        <div class="text-muted small fw-bold" id="paginationInfoText">
+                            Showing 1 to 4 entries
+                        </div>
+                        <nav aria-label="Halls Pagination">
+                            <ul class="pagination pagination-sm mb-0" id="paginationControls">
+                                <!-- Rendered via JS -->
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+
+                <!-- TAB 2: HALL CATEGORIES CRUD -->
+                <div class="tab-pane fade" id="tab-categories" role="tabpanel">
+                    <div class="row g-4 mb-4">
+                        <div class="col-lg-4">
+                            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                                <h5 class="fw-bold mb-3">Add New Hall Category</h5>
+                                <form id="addCategoryForm" onsubmit="handleCategorySubmit(event, 'hall')">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold small text-uppercase">Category Name</label>
+                                        <input type="text" class="form-control rounded-3" id="newCategoryName" placeholder="e.g. Marriage Banquet, Luxury Convention" required oninput="validateCategoryInput()">
+                                        <div class="field-error-text" id="newCatNameError">Category name must be at least 3 characters.</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold small text-uppercase">Description</label>
+                                        <textarea class="form-control rounded-3" id="newCategoryDesc" rows="3" placeholder="Category details & specs..."></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary w-100 rounded-3 fw-bold py-2 shadow-sm" id="btnSaveCategory">
+                                        Save Hall Category
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-8">
+                            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                                <h5 class="fw-bold mb-3">Active Hall Categories & Listing Counts</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Category Name</th>
+                                                <th>Description</th>
+                                                <th>Halls Assigned</th>
+                                                <th class="text-end">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="hallCategoriesTableBody">
+                                            {% for cat in hall_categories_list %}
+                                                <tr id="hall-cat-row-{{ cat.id }}">
+                                                    <td class="fw-bold text-dark">{{ cat.name }}</td>
+                                                    <td class="text-muted small">{{ cat.description|default:"Standard hall category" }}</td>
+                                                    <td><span class="badge bg-primary bg-opacity-10 text-primary fw-bold px-3 py-1 rounded-pill">{{ cat.count }} Halls</span></td>
+                                                    <td class="text-end">
+                                                        <button class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="deleteCategory({{ cat.id }}, '{{ cat.name|escapejs }}')">
+                                                            Delete
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            {% empty %}
+                                                <tr>
+                                                    <td colspan="4" class="text-muted small text-center py-4">No custom hall categories found in database. Default categories active: {{ categories|join:", " }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: HALL FEATURES CRUD -->
+                <div class="tab-pane fade" id="tab-features" role="tabpanel">
+                    <div class="row g-4 mb-4">
+                        <div class="col-lg-4">
+                            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                                <h5 class="fw-bold mb-3">Add Custom Hall Feature</h5>
+                                <form id="addFeatureForm" onsubmit="handleFeatureSubmit(event, 'hall')">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold small text-uppercase">Feature / Amenity Name</label>
+                                        <input type="text" class="form-control rounded-3" id="newFeatureName" placeholder="e.g. Central AC, Valet Parking, Sound System" required oninput="validateFeatureInput()">
+                                        <div class="field-error-text" id="newFeatNameError">Feature name must be at least 3 characters.</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold small text-uppercase">Description</label>
+                                        <textarea class="form-control rounded-3" id="newFeatureDesc" rows="3" placeholder="Feature details..."></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-success w-100 rounded-3 fw-bold py-2 shadow-sm" id="btnSaveFeature">
+                                        Save Hall Feature
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-8">
+                            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                                <h5 class="fw-bold mb-3">Active Hall Features & Amenities Library</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Feature Name</th>
+                                                <th>Description</th>
+                                                <th class="text-end">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="hallFeaturesTableBody">
+                                            {% for feat in hall_features_list %}
+                                                <tr id="hall-feat-row-{{ feat.id }}">
+                                                    <td class="fw-bold text-dark">{{ feat.name }}</td>
+                                                    <td class="text-muted small">{{ feat.description|default:"Standard hall feature" }}</td>
+                                                    <td class="text-end">
+                                                        <button class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="deleteFeature({{ feat.id }}, '{{ feat.name|escapejs }}')">
+                                                            Delete
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            {% empty %}
+                                                <tr>
+                                                    <td colspan="3" class="text-muted small text-center py-4">No custom hall features added yet.</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ================= ADD NEW HALL MODAL ================= -->
+    <div class="modal fade" id="addHallModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-dark text-white rounded-top-4 px-4 py-3">
+                    <h5 class="modal-title fw-bold">Add New Event & Banquet Hall</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="addHallForm" onsubmit="handleAddHallSubmit(event)">
+                    <div class="modal-body p-4">
+                        <div class="row g-3">
+                            <div class="col-md-7">
+                                <div class="row g-3 mb-3">
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">Hall Name / Title *</label>
+                                        <input type="text" class="form-control rounded-3" id="addHallName" placeholder="e.g. Royal Imperial Banquet" required oninput="validateAddForm()">
+                                        <div class="field-error-text" id="addNameError">Hall title must be at least 3 characters.</div>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">Category *</label>
+                                        <select class="form-select rounded-3" id="addHallCategory">
+                                            {% for cat in categories %}
+                                                <option value="{{ cat }}">{{ cat }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">Daily Rent Rate (₹) *</label>
+                                        <input type="number" class="form-control rounded-3" id="addHallPrice" placeholder="45000" required oninput="validateAddForm()">
+                                        <div class="field-error-text" id="addPriceError">Rent rate must be greater than ₹0.</div>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">Guest Capacity *</label>
+                                        <input type="number" class="form-control rounded-3" id="addHallCapacity" placeholder="500" required oninput="validateAddForm()">
+                                        <div class="field-error-text" id="addCapacityError">Guest capacity must be greater than 0.</div>
+                                    </div>
+                                </div>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">AC System *</label>
+                                        <select class="form-select rounded-3" id="addHallAc">
+                                            <option value="Central AC">Central AC</option>
+                                            <option value="Non-AC">Non-AC</option>
+                                            <option value="Open Air Lawn">Open Air Lawn</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">Parking Capacity *</label>
+                                        <input type="text" class="form-control rounded-3" id="addHallParking" placeholder="e.g. 150 Vehicles" required>
+                                    </div>
+                                </div>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">Catering Policy *</label>
+                                        <select class="form-select rounded-3" id="addHallCatering">
+                                            <option value="In-House Pure Veg">In-House Pure Veg</option>
+                                            <option value="In-House Multi-Cuisine">In-House Multi-Cuisine</option>
+                                            <option value="Outside Catering Allowed">Outside Catering Allowed</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">Stage & DJ Setup *</label>
+                                        <input type="text" class="form-control rounded-3" id="addHallStageDj" placeholder="e.g. LED Stage + DJ Console Included" required>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small text-uppercase">Location Address *</label>
+                                    <input type="text" class="form-control rounded-3" id="addHallLocation" placeholder="e.g. Palace Road, Central Sector" required oninput="validateAddForm()">
+                                    <div class="field-error-text" id="addLocationError">Location address is required (min 3 chars).</div>
+                                </div>
+
+                                <!-- Feature Pills Selection -->
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small text-uppercase">Toggle Active Features</label>
+                                    <div class="p-3 bg-light rounded-3 border" id="addHallFeaturePillsContainer">
+                                        <small class="text-muted fw-bold d-block mb-2">Click pills to toggle amenities on/off:</small>
+                                        <div class="d-flex flex-wrap gap-2">
+                                            {% for feat in hall_features_list %}
+                                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill py-1 px-3 fw-semibold feature-pill-btn" data-feature-name="{{ feat.name|escapejs }}" onclick="toggleFeaturePill('addHallAmenities', '{{ feat.name|escapejs }}', this)">
+                                                    {{ feat.name }}
+                                                </button>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small text-uppercase">Amenities Text Summary</label>
+                                    <textarea class="form-control rounded-3" id="addHallAmenities" rows="2" placeholder="2 Luxury AC Bridal Rooms, 24/7 Power Backup, Valet Parking"></textarea>
+                                </div>
+                            </div>
+
+                            <!-- Image Upload & Preview -->
+                            <div class="col-md-5">
+                                <label class="form-label fw-bold small text-uppercase">Hall Photo Upload</label>
+                                <div class="image-preview-box mb-3">
+                                    <span id="previewPlaceholder" class="text-muted small fw-bold">Select file or pick sample</span>
+                                    <img id="liveImagePreview" class="d-none" src="" alt="Hall Preview">
+                                </div>
+                                <input type="file" class="form-control rounded-3 mb-2" accept="image/*" onchange="previewUploadImage(this)">
+                                <label class="form-label fw-bold small text-uppercase text-muted mt-2">Or Choose Preset Sample</label>
+                                <select class="form-select rounded-3" onchange="usePresetImage(this)">
+                                    <option value="">Choose preset image...</option>
+                                    <option value="/static/images/image/c1.jpg">Banquet Hall Photo 1</option>
+                                    <option value="/static/images/image/c2.jpg">Party Lawn Photo 2</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light px-4 py-3 rounded-bottom-4">
+                        <button type="button" class="btn btn-outline-secondary rounded-3 px-4 fw-bold" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary rounded-3 px-4 fw-bold" id="btnSubmitAddHall">Create Hall Listing</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= EDIT HALL MODAL ================= -->
+    <div class="modal fade" id="editHallModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-primary text-white rounded-top-4 px-4 py-3">
+                    <h5 class="modal-title fw-bold">Edit Hall Specifications</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <input type="hidden" id="editHallId">
+                    <div class="row g-3">
+                        <div class="col-md-7">
+                            <div class="row g-3 mb-3">
+                                <div class="col-6">
+                                    <label class="form-label fw-bold small text-uppercase">Hall Name *</label>
+                                    <input type="text" class="form-control rounded-3" id="editHallName" required oninput="validateEditForm()">
+                                    <div class="field-error-text" id="editNameError">Hall title must be at least 3 characters.</div>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label fw-bold small text-uppercase">Category *</label>
+                                    <select class="form-select rounded-3" id="editHallCategory">
+                                        {% for cat in categories %}
+                                            <option value="{{ cat }}">{{ cat }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row g-3 mb-3">
+                                <div class="col-6">
+                                    <label class="form-label fw-bold small text-uppercase">Daily Rate (₹) *</label>
+                                    <input type="number" class="form-control rounded-3" id="editHallPrice" required oninput="validateEditForm()">
+                                    <div class="field-error-text" id="editPriceError">Daily rent rate must be greater than ₹0.</div>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label fw-bold small text-uppercase">Guest Capacity *</label>
+                                    <input type="number" class="form-control rounded-3" id="editHallCapacity" required oninput="validateEditForm()">
+                                    <div class="field-error-text" id="editCapacityError">Guest capacity must be greater than 0.</div>
+                                </div>
+                            </div>
+                            <div class="row g-3 mb-3">
+                                <div class="col-6">
+                                    <label class="form-label fw-bold small text-uppercase">AC Control *</label>
+                                    <select class="form-select rounded-3" id="editHallAc">
+                                        <option value="Central AC">Central AC</option>
+                                        <option value="Non-AC">Non-AC</option>
+                                        <option value="Open Air Lawn">Open Air Lawn</option>
+                                    </select>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label fw-bold small text-uppercase">Parking *</label>
+                                    <input type="text" class="form-control rounded-3" id="editHallParking" required>
+                                </div>
+                            </div>
+                            <div class="row g-3 mb-3">
+                                <div class="col-6">
+                                    <label class="form-label fw-bold small text-uppercase">Catering Policy *</label>
+                                    <select class="form-select rounded-3" id="editHallCatering">
+                                        <option value="In-House Pure Veg">In-House Pure Veg</option>
+                                        <option value="In-House Multi-Cuisine">In-House Multi-Cuisine</option>
+                                        <option value="Outside Catering Allowed">Outside Catering Allowed</option>
+                                    </select>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label fw-bold small text-uppercase">Stage & DJ Setup *</label>
+                                    <input type="text" class="form-control rounded-3" id="editHallStageDj" required>
+                                </div>
+                            </div>
+                            <div class="row g-3 mb-3">
+                                <div class="col-6">
+                                    <label class="form-label fw-bold small text-uppercase">Location Address *</label>
+                                    <input type="text" class="form-control rounded-3" id="editHallLocation" required oninput="validateEditForm()">
+                                    <div class="field-error-text" id="editLocationError">Location address is required (min 3 chars).</div>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label fw-bold small text-uppercase">Status *</label>
+                                    <select class="form-select rounded-3" id="editHallStatus">
+                                        <option value="Available">Available</option>
+                                        <option value="Booked">Booked</option>
+                                        <option value="Maintenance">Maintenance</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Interactive Feature Pills for Edit -->
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small text-uppercase">Toggle Active Features</label>
+                                <div class="p-3 bg-light rounded-3 border" id="editHallFeaturePillsContainer">
+                                    <small class="text-muted fw-bold d-block mb-2">Click feature pills to toggle on/off:</small>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        {% for feat in hall_features_list %}
+                                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill py-1 px-3 fw-semibold feature-pill-btn" data-feature-name="{{ feat.name|escapejs }}" onclick="toggleFeaturePill('editHallAmenities', '{{ feat.name|escapejs }}', this)">
+                                                {{ feat.name }}
+                                            </button>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small text-uppercase">Amenities & Special Features</label>
+                                <textarea class="form-control rounded-3" id="editHallAmenities" rows="2"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Image Update -->
+                        <div class="col-md-5">
+                            <label class="form-label fw-bold small text-uppercase">Current Photo Preview</label>
+                            <div class="image-preview-box mb-3">
+                                <img id="editImagePreview" src="" alt="Hall Photo">
+                            </div>
+                            <label class="form-label fw-bold small text-uppercase">Change Photo File</label>
+                            <input type="file" class="form-control rounded-3 mb-2" accept="image/*" onchange="previewEditImage(this)">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light px-4 py-3 rounded-bottom-4">
+                    <button type="button" class="btn btn-outline-secondary rounded-3 px-4 fw-bold" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary rounded-3 px-4 fw-bold" id="btnSubmitEditHall" onclick="saveHallEdits()">Save Specifications</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= VIEW FULL SPECS MODAL ================= -->
+    <div class="modal fade" id="viewHallSpecsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-dark text-white rounded-top-4 px-4 py-3">
+                    <h5 class="modal-title fw-bold" id="specsHallTitle">Full Hall Specifications</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="row g-4 mb-3">
+                        <div class="col-md-5 text-center">
+                            <div class="image-preview-box mb-2" style="height:210px;">
+                                <img id="specsHallImage" src="" alt="Hall Photo">
+                            </div>
+                            <span class="badge badge-category px-3 py-2 text-uppercase mb-2" id="specsCategoryBadge">Marriage Banquet</span>
+                            <div class="fw-bold fs-4 text-primary" id="specsPriceTag">₹45,000 / day</div>
+                        </div>
+                        <div class="col-md-7">
+                            <h5 class="fw-bold mb-1" id="specsHallName">Royal Imperial Banquet</h5>
+                            <p class="text-muted small mb-3" id="specsLocationTag">Palace Road, Central Sector</p>
+                            
+                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                <span class="spec-icon-badge"><span id="specsCapacityTag">500 Guests</span></span>
+                                <span class="spec-icon-badge"><span id="specsAcTag">Central AC</span></span>
+                                <span class="spec-icon-badge"><span id="specsParkingTag">150 Vehicles</span></span>
+                            </div>
+
+                            <div class="bg-light p-3 rounded-3 border mb-3">
+                                <div class="mb-2"><strong>Catering Policy:</strong> <span id="specsCateringTag">In-House Pure Veg</span></div>
+                                <div class="mb-2"><strong>Stage & DJ Setup:</strong> <span id="specsStageDjTag">LED Stage + DJ Included</span></div>
+                                <div><strong>Availability Status:</strong> <span id="specsStatusBadge" class="badge-status badge-available">Available</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-light p-3 rounded-3 border">
+                        <h6 class="fw-bold text-dark mb-1">Key Amenities & Facility Features:</h6>
+                        <p class="text-secondary small mb-0" id="specsAmenitiesText">2 Luxury AC Bridal Dressing Rooms, 24/7 Generator Backup, Valet Parking assistance.</p>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light px-4 py-3 rounded-bottom-4">
+                    <button type="button" class="btn btn-secondary rounded-3 px-4 fw-bold" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= DELETE HALL MODAL ================= -->
+    <div class="modal fade" id="deleteHallModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-danger text-white rounded-top-4 px-4 py-3">
+                    <h5 class="modal-title fw-bold">Confirm Delete</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4 text-center">
+                    <input type="hidden" id="deleteHallId">
+                    <h5 class="fw-bold text-dark mb-2" id="deleteHallTitle">Hall Name</h5>
+                    <p class="text-muted mb-0">Are you sure you want to remove this hall listing from the database?</p>
+                </div>
+                <div class="modal-footer bg-light justify-content-center px-4 py-3 rounded-bottom-4">
+                    <button type="button" class="btn btn-outline-secondary rounded-3 px-4 fw-bold" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger rounded-3 px-4 fw-bold" onclick="executeHallDelete()">Delete Hall</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= DATABASE QUERY & RESPONSE STATUS POPUP MODAL ================= -->
+    <div class="modal fade" id="dbOperationModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header rounded-top-4 px-4 py-3" id="dbModalHeader">
+                    <h5 class="modal-title fw-bold" id="dbModalTitle">Database Operation in Progress</h5>
+                    <button type="button" class="btn-close btn-close-white d-none" id="dbModalCloseBtn" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4 text-center" id="dbModalBody">
+                    <div id="dbLoadingState" class="py-3">
+                        <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+                        <h6 class="fw-bold text-dark mb-1">Sending Query to Database...</h6>
+                        <p class="text-muted small mb-0">Please wait while server processes the request and updates database records.</p>
+                    </div>
+                    <div id="dbResultState" class="d-none py-2">
+                        <h5 class="fw-bold mb-2" id="dbResultMessage">Operation Complete</h5>
+                        <p class="text-muted small mb-0" id="dbResultDetail">Server responded successfully.</p>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light justify-content-center px-4 py-3 rounded-bottom-4 d-none" id="dbModalFooter">
+                    <button type="button" class="btn btn-primary rounded-3 px-4 fw-bold" data-bs-dismiss="modal" id="dbModalConfirmBtn">OK / Continue</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Bundle & Logic -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let serverHalls = {{ halls_json|safe|default:"[]" }};
+        let hallsData = (serverHalls && serverHalls.length > 0) ? serverHalls : [];
+        let uploadedImageBase64 = "";
+        let editUploadedImageBase64 = "";
+        let currentStatusFilter = 'ALL';
+        let currentPage = 1;
+        let dbStatusModal = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            renderHallsGrid();
+            setInterval(fetchLiveHalls, 4000);
+            dbStatusModal = new bootstrap.Modal(document.getElementById('dbOperationModal'));
+        });
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Small Toast Popup for Real-Time Live Sync Updates
+        function showLiveSyncNotification(text = 'Live Data Synced - Database Updated') {
+            const toast = document.getElementById('liveSyncToast');
+            if (!toast) return;
+            toast.textContent = text;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+
+        // Database Operation Modal Handlers (Query Sent & Response Received)
+        function showDbOperationLoading(title, queryMsg) {
+            const header = document.getElementById('dbModalHeader');
+            header.className = 'modal-header bg-dark text-white rounded-top-4 px-4 py-3';
+            document.getElementById('dbModalTitle').textContent = title || 'Database Operation in Progress';
+            
+            document.getElementById('dbLoadingState').classList.remove('d-none');
+            document.getElementById('dbResultState').classList.add('d-none');
+            document.getElementById('dbModalFooter').classList.add('d-none');
+            document.getElementById('dbModalCloseBtn').classList.add('d-none');
+
+            dbStatusModal.show();
+        }
+
+        function showDbOperationResult(isSuccess, message, detail = '') {
+            const header = document.getElementById('dbModalHeader');
+            header.className = `modal-header ${isSuccess ? 'bg-success' : 'bg-danger'} text-white rounded-top-4 px-4 py-3`;
+            document.getElementById('dbModalTitle').textContent = isSuccess ? 'Database Operation Successful' : 'Database Operation Failed';
+
+            document.getElementById('dbLoadingState').classList.add('d-none');
+            document.getElementById('dbResultState').classList.remove('d-none');
+            
+            const msgElem = document.getElementById('dbResultMessage');
+            msgElem.textContent = isSuccess ? 'Success!' : 'Error Occurred';
+            msgElem.className = `fw-bold mb-2 ${isSuccess ? 'text-success' : 'text-danger'}`;
+
+            document.getElementById('dbResultDetail').textContent = message || detail || (isSuccess ? 'Operation executed cleanly.' : 'Failed to update database.');
+            
+            document.getElementById('dbModalFooter').classList.remove('d-none');
+            document.getElementById('dbModalCloseBtn').classList.remove('d-none');
+        }
+
+        // Real-Time Validation Functions
+        function validateAddForm() {
+            const name = document.getElementById('addHallName').value.trim();
+            const price = Number(document.getElementById('addHallPrice').value);
+            const capacity = Number(document.getElementById('addHallCapacity').value);
+            const location = document.getElementById('addHallLocation').value.trim();
+
+            let isValid = true;
+
+            const nameErr = document.getElementById('addNameError');
+            if (name.length < 3) {
+                nameErr.style.display = 'block';
+                document.getElementById('addHallName').classList.add('input-invalid');
+                isValid = false;
+            } else {
+                nameErr.style.display = 'none';
+                document.getElementById('addHallName').classList.remove('input-invalid');
+                document.getElementById('addHallName').classList.add('input-valid');
+            }
+
+            const priceErr = document.getElementById('addPriceError');
+            if (price <= 0) {
+                priceErr.style.display = 'block';
+                document.getElementById('addHallPrice').classList.add('input-invalid');
+                isValid = false;
+            } else {
+                priceErr.style.display = 'none';
+                document.getElementById('addHallPrice').classList.remove('input-invalid');
+                document.getElementById('addHallPrice').classList.add('input-valid');
+            }
+
+            const capErr = document.getElementById('addCapacityError');
+            if (capacity <= 0) {
+                capErr.style.display = 'block';
+                document.getElementById('addHallCapacity').classList.add('input-invalid');
+                isValid = false;
+            } else {
+                capErr.style.display = 'none';
+                document.getElementById('addHallCapacity').classList.remove('input-invalid');
+                document.getElementById('addHallCapacity').classList.add('input-valid');
+            }
+
+            const locErr = document.getElementById('addLocationError');
+            if (location.length < 3) {
+                locErr.style.display = 'block';
+                document.getElementById('addHallLocation').classList.add('input-invalid');
+                isValid = false;
+            } else {
+                locErr.style.display = 'none';
+                document.getElementById('addHallLocation').classList.remove('input-invalid');
+                document.getElementById('addHallLocation').classList.add('input-valid');
+            }
+
+            return isValid;
+        }
+
+        function validateEditForm() {
+            const name = document.getElementById('editHallName').value.trim();
+            const price = Number(document.getElementById('editHallPrice').value);
+            const capacity = Number(document.getElementById('editHallCapacity').value);
+            const location = document.getElementById('editHallLocation').value.trim();
+
+            let isValid = true;
+
+            const nameErr = document.getElementById('editNameError');
+            if (name.length < 3) {
+                nameErr.style.display = 'block';
+                document.getElementById('editHallName').classList.add('input-invalid');
+                isValid = false;
+            } else {
+                nameErr.style.display = 'none';
+                document.getElementById('editHallName').classList.remove('input-invalid');
+            }
+
+            const priceErr = document.getElementById('editPriceError');
+            if (price <= 0) {
+                priceErr.style.display = 'block';
+                document.getElementById('editHallPrice').classList.add('input-invalid');
+                isValid = false;
+            } else {
+                priceErr.style.display = 'none';
+                document.getElementById('editHallPrice').classList.remove('input-invalid');
+            }
+
+            const capErr = document.getElementById('editCapacityError');
+            if (capacity <= 0) {
+                capErr.style.display = 'block';
+                document.getElementById('editHallCapacity').classList.add('input-invalid');
+                isValid = false;
+            } else {
+                capErr.style.display = 'none';
+                document.getElementById('editHallCapacity').classList.remove('input-invalid');
+            }
+
+            const locErr = document.getElementById('editLocationError');
+            if (location.length < 3) {
+                locErr.style.display = 'block';
+                document.getElementById('editHallLocation').classList.add('input-invalid');
+                isValid = false;
+            } else {
+                locErr.style.display = 'none';
+                document.getElementById('editHallLocation').classList.remove('input-invalid');
+            }
+
+            return isValid;
+        }
+
+        function validateCategoryInput() {
+            const name = document.getElementById('newCategoryName').value.trim();
+            const err = document.getElementById('newCatNameError');
+            if (name.length < 3) {
+                err.style.display = 'block';
+                return false;
+            }
+            err.style.display = 'none';
+            return true;
+        }
+
+        function validateFeatureInput() {
+            const name = document.getElementById('newFeatureName').value.trim();
+            const err = document.getElementById('newFeatNameError');
+            if (name.length < 3) {
+                err.style.display = 'block';
+                return false;
+            }
+            err.style.display = 'none';
+            return true;
+        }
+
+        function fetchLiveHalls() {
+            fetch('/admin-portal/api/halls/live-list/')
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success' && data.halls) {
+                    const prevCount = hallsData.length;
+                    hallsData = data.halls;
+                    renderHallsGrid();
+                    showLiveSyncNotification(`Live Data Synced • ${hallsData.length} Halls Listed`);
+                }
+            })
+            .catch(err => console.log('Polling live halls...'));
+        }
+
+        function filterHallsByStatus() {
+            currentStatusFilter = document.getElementById('hallStatusFilter').value;
+            currentPage = 1;
+            renderHallsGrid();
+        }
+
+        function changePageSize() {
+            currentPage = 1;
+            renderHallsGrid();
+        }
+
+        function renderHallsGrid() {
+            const container = document.getElementById('hallsGridContainer');
+            if (!container) return;
+            const searchVal = document.getElementById('hallSearchInput').value.toLowerCase();
+            const pageSize = Number(document.getElementById('pageSizeSelect').value) || 4;
+            container.innerHTML = '';
+
+            let filtered = hallsData.filter(h => {
+                const matchStatus = currentStatusFilter === 'ALL' || h.status === currentStatusFilter;
+                const matchSearch = h.name.toLowerCase().includes(searchVal) || h.location.toLowerCase().includes(searchVal) || h.category.toLowerCase().includes(searchVal);
+                return matchStatus && matchSearch;
+            });
+
+            const totalEntries = filtered.length;
+            const totalPages = Math.ceil(totalEntries / pageSize) || 1;
+            if (currentPage > totalPages) currentPage = totalPages;
+
+            const startIndex = (currentPage - 1) * pageSize;
+            const endIndex = Math.min(startIndex + pageSize, totalEntries);
+            const pageData = filtered.slice(startIndex, endIndex);
+
+            if (pageData.length === 0) {
+                container.innerHTML = `
+                    <div class="col-12 text-center py-5 bg-white rounded-4 border">
+                        <h6 class="fw-bold text-muted mb-1">No event halls match your search or filter criteria.</h6>
+                        <p class="text-secondary small mb-0">Try clearing search input or adding a new event hall.</p>
+                    </div>
+                `;
+            } else {
+                pageData.forEach(hall => {
+                    const badgeClass = hall.status === 'Available' ? 'badge-available' : (hall.status === 'Booked' ? 'badge-booked' : 'bg-warning text-dark');
+                    const html = `
+                        <div class="col-12 col-md-6 col-lg-3">
+                            <div class="crud-card">
+                                <div class="crud-img-wrapper">
+                                    <img src="${hall.image}" class="crud-img" alt="${hall.name}" onerror="this.src='/static/images/image/c1.jpg'">
+                                    <span class="badge-status badge-category position-absolute top-0 start-0 m-3">${hall.category}</span>
+                                    <span class="badge-status ${badgeClass} position-absolute top-0 end-0 m-3">${hall.status}</span>
+                                </div>
+                                <div class="card-body p-3 d-flex flex-column justify-content-between">
+                                    <div>
+                                        <h6 class="fw-bold text-dark mb-1 text-truncate" title="${hall.name}">${hall.name}</h6>
+                                        <div class="fw-extrabold text-primary mb-2">₹${Number(hall.price).toLocaleString('en-IN')} <small class="text-muted fw-normal">/ day</small></div>
+
+                                        <div class="d-flex flex-wrap gap-1 mb-2">
+                                            <span class="badge bg-light text-secondary border fw-semibold small">${hall.capacity} Guests</span>
+                                            <span class="badge bg-light text-secondary border fw-semibold small">${hall.acType || 'AC'}</span>
+                                            <span class="badge bg-light text-secondary border fw-semibold small">${hall.parking || 'Parking'}</span>
+                                        </div>
+
+                                        <p class="text-muted small mb-2 text-truncate">${hall.location || 'Bhavnagar'}</p>
+                                    </div>
+
+                                    <div class="d-grid gap-2 pt-2 border-top">
+                                        <button class="btn btn-sm btn-outline-primary fw-bold rounded-2" onclick="openSpecsModal(${hall.id})">View Specifications</button>
+                                        <div class="d-flex gap-2">
+                                            <button class="btn btn-sm btn-dark fw-bold rounded-2 flex-grow-1" onclick="openEditModal(${hall.id})">Edit</button>
+                                            <button class="btn btn-sm btn-outline-danger fw-bold rounded-2" onclick="openDeleteModal(${hall.id}, '${hall.name.replace(/'/g, "\\'")}')">Delete</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', html);
+                });
+            }
+
+            document.getElementById('paginationInfoText').textContent = totalEntries > 0 ? `Showing ${startIndex + 1} to ${endIndex} of ${totalEntries} entries` : 'Showing 0 entries';
+            renderPaginationControls(totalPages);
+        }
+
+        function renderPaginationControls(totalPages) {
+            const ul = document.getElementById('paginationControls');
+            if (!ul) return;
+            ul.innerHTML = '';
+            for (let i = 1; i <= totalPages; i++) {
+                ul.insertAdjacentHTML('beforeend', `<li class="page-item ${i === currentPage ? 'active' : ''}"><button class="page-link" onclick="currentPage=${i};renderHallsGrid()">${i}</button></li>`);
+            }
+        }
+
+        function toggleFeaturePill(targetInputId, featureName, btnElem) {
+            const inputElem = document.getElementById(targetInputId);
+            if (!inputElem) return;
+
+            let currentVal = inputElem.value.trim();
+            let currentArray = currentVal ? currentVal.split(',').map(s => s.trim()).filter(Boolean) : [];
+
+            const index = currentArray.findIndex(item => item.toLowerCase() === featureName.toLowerCase());
+            if (index !== -1) {
+                currentArray.splice(index, 1);
+                btnElem.classList.remove('btn-primary', 'active');
+                btnElem.classList.add('btn-outline-secondary');
+            } else {
+                currentArray.push(featureName);
+                btnElem.classList.remove('btn-outline-secondary');
+                btnElem.classList.add('btn-primary', 'active');
+            }
+            inputElem.value = currentArray.join(', ');
+        }
+
+        function syncFeaturePills(targetInputId, containerId) {
+            const inputElem = document.getElementById(targetInputId);
+            const container = document.getElementById(containerId);
+            if (!inputElem || !container) return;
+
+            const currentVal = inputElem.value.trim();
+            const currentArray = currentVal ? currentVal.split(',').map(s => s.trim().toLowerCase()).filter(Boolean) : [];
+
+            const buttons = container.querySelectorAll('.feature-pill-btn');
+            buttons.forEach(btn => {
+                const featName = (btn.dataset.featureName || btn.textContent.trim()).toLowerCase();
+                if (currentArray.includes(featName)) {
+                    btn.classList.remove('btn-outline-secondary');
+                    btn.classList.add('btn-primary', 'active');
+                } else {
+                    btn.classList.remove('btn-primary', 'active');
+                    btn.classList.add('btn-outline-secondary');
+                }
+            });
+        }
+
+        function previewUploadImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    uploadedImageBase64 = e.target.result;
+                    const img = document.getElementById('liveImagePreview');
+                    img.src = uploadedImageBase64;
+                    img.classList.remove('d-none');
+                    document.getElementById('previewPlaceholder').classList.add('d-none');
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function usePresetImage(selectElem) {
+            if (selectElem.value) {
+                uploadedImageBase64 = selectElem.value;
+                const img = document.getElementById('liveImagePreview');
+                img.src = uploadedImageBase64;
+                img.classList.remove('d-none');
+                document.getElementById('previewPlaceholder').classList.add('d-none');
+            }
+        }
+
+        function handleAddHallSubmit(e) {
+            e.preventDefault();
+
+            if (!validateAddForm()) {
+                return;
+            }
+
+            const payload = {
+                name: document.getElementById('addHallName').value.trim(),
+                category: document.getElementById('addHallCategory').value,
+                price: Number(document.getElementById('addHallPrice').value),
+                capacity: Number(document.getElementById('addHallCapacity').value),
+                acType: document.getElementById('addHallAc').value,
+                parking: document.getElementById('addHallParking').value.trim(),
+                catering: document.getElementById('addHallCatering').value,
+                stageDj: document.getElementById('addHallStageDj').value.trim(),
+                location: document.getElementById('addHallLocation').value.trim(),
+                amenities: document.getElementById('addHallAmenities').value.trim() || "24/7 Power Backup, Dressing Rooms",
+                image: uploadedImageBase64 || "/static/images/image/c1.jpg",
+                status: "Available"
+            };
+
+            bootstrap.Modal.getInstance(document.getElementById('addHallModal')).hide();
+            showDbOperationLoading('Creating Event Hall Listing', 'Sending insert query to database server...');
+
+            fetch('/admin-portal/api/halls/add/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken') || '{{ csrf_token }}'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showDbOperationResult(true, data.message || 'New Event Hall card created successfully in database!');
+                    fetchLiveHalls();
+                    document.getElementById('addHallForm').reset();
+                    document.getElementById('liveImagePreview').classList.add('d-none');
+                    document.getElementById('previewPlaceholder').classList.remove('d-none');
+                    uploadedImageBase64 = "";
+                } else {
+                    showDbOperationResult(false, data.message || 'Error adding hall listing.');
+                }
+            })
+            .catch(err => showDbOperationResult(false, 'Network error sending query to database.'));
+        }
+
+        function openEditModal(id) {
+            const h = hallsData.find(item => item.id === id);
+            if (!h) return;
+
+            editUploadedImageBase64 = "";
+            document.getElementById('editHallId').value = h.id;
+            document.getElementById('editHallName').value = h.name;
+            document.getElementById('editHallCategory').value = h.category || "Marriage Banquet";
+            document.getElementById('editHallPrice').value = h.price;
+            document.getElementById('editHallCapacity').value = h.capacity;
+            document.getElementById('editHallAc').value = h.acType || "Central AC";
+            document.getElementById('editHallParking').value = h.parking || "100 Vehicles";
+            document.getElementById('editHallCatering').value = h.catering || "In-House Pure Veg";
+            document.getElementById('editHallStageDj').value = h.stageDj || "Stage + DJ Console Included";
+            document.getElementById('editHallLocation').value = h.location;
+            document.getElementById('editHallStatus').value = h.status;
+            document.getElementById('editHallAmenities').value = h.amenities || "";
+            document.getElementById('editImagePreview').src = h.image;
+
+            syncFeaturePills('editHallAmenities', 'editHallFeaturePillsContainer');
+
+            new bootstrap.Modal(document.getElementById('editHallModal')).show();
+        }
+
+        function previewEditImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    editUploadedImageBase64 = e.target.result;
+                    document.getElementById('editImagePreview').src = editUploadedImageBase64;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function saveHallEdits() {
+            if (!validateEditForm()) {
+                return;
+            }
+
+            const id = Number(document.getElementById('editHallId').value);
+            const payload = {
+                id: id,
+                name: document.getElementById('editHallName').value.trim(),
+                category: document.getElementById('editHallCategory').value,
+                price: Number(document.getElementById('editHallPrice').value),
+                capacity: Number(document.getElementById('editHallCapacity').value),
+                acType: document.getElementById('editHallAc').value,
+                parking: document.getElementById('editHallParking').value.trim(),
+                catering: document.getElementById('editHallCatering').value,
+                stageDj: document.getElementById('editHallStageDj').value.trim(),
+                location: document.getElementById('editHallLocation').value.trim(),
+                status: document.getElementById('editHallStatus').value,
+                amenities: document.getElementById('editHallAmenities').value.trim()
+            };
+
+            if (editUploadedImageBase64) {
+                payload.image = editUploadedImageBase64;
+            }
+
+            bootstrap.Modal.getInstance(document.getElementById('editHallModal')).hide();
+            showDbOperationLoading('Updating Event Hall Specifications', 'Sending update query to database server...');
+
+            fetch('/admin-portal/api/halls/edit/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken') || '{{ csrf_token }}'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showDbOperationResult(true, data.message || 'Event Hall specifications updated successfully in database!');
+                    fetchLiveHalls();
+                } else {
+                    showDbOperationResult(false, data.message || 'Error updating hall specifications.');
+                }
+            })
+            .catch(err => showDbOperationResult(false, 'Network error updating hall in database.'));
+        }
+
+        function openSpecsModal(id) {
+            const h = hallsData.find(item => item.id === id);
+            if (!h) return;
+
+            document.getElementById('specsHallTitle').textContent = `Full Specs: ${h.name}`;
+            document.getElementById('specsHallName').textContent = h.name;
+            document.getElementById('specsCategoryBadge').textContent = h.category;
+            document.getElementById('specsPriceTag').textContent = `₹${Number(h.price).toLocaleString('en-IN')} / day`;
+            document.getElementById('specsLocationTag').textContent = h.location;
+            
+            document.getElementById('specsCapacityTag').textContent = `${h.capacity} Guests Capacity`;
+            document.getElementById('specsAcTag').textContent = h.acType;
+            document.getElementById('specsParkingTag').textContent = h.parking;
+            document.getElementById('specsCateringTag').textContent = h.catering;
+            document.getElementById('specsStageDjTag').textContent = h.stageDj;
+            document.getElementById('specsAmenitiesText').textContent = h.amenities || "Standard banquet amenities provided.";
+
+            const statusBadge = document.getElementById('specsStatusBadge');
+            statusBadge.textContent = h.status;
+            statusBadge.className = `badge-status ${h.status === 'Available' ? 'badge-available' : 'badge-booked'}`;
+
+            document.getElementById('specsHallImage').src = h.image;
+
+            new bootstrap.Modal(document.getElementById('viewHallSpecsModal')).show();
+        }
+
+        function openDeleteModal(id, title) {
+            document.getElementById('deleteHallId').value = id;
+            document.getElementById('deleteHallTitle').textContent = title;
+            new bootstrap.Modal(document.getElementById('deleteHallModal')).show();
+        }
+
+        function executeHallDelete() {
+            const id = Number(document.getElementById('deleteHallId').value);
+
+            bootstrap.Modal.getInstance(document.getElementById('deleteHallModal')).hide();
+            showDbOperationLoading('Deleting Hall Listing', 'Sending delete query to database server...');
+
+            fetch('/admin-portal/api/halls/delete/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken') || '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ id: id })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showDbOperationResult(true, 'Hall listing deleted from database.');
+                    fetchLiveHalls();
+                } else {
+                    showDbOperationResult(false, data.message || 'Error deleting hall listing.');
+                }
+            })
+            .catch(err => showDbOperationResult(false, 'Network error deleting hall listing.'));
+        }
+
+        function handleCategorySubmit(event, vehicleType) {
+            event.preventDefault();
+            if (!validateCategoryInput()) return;
+
+            const name = document.getElementById('newCategoryName').value.trim();
+            const desc = document.getElementById('newCategoryDesc').value.trim();
+
+            showDbOperationLoading('Creating Hall Category', 'Adding category record to database...');
+
+            fetch('/admin-portal/api/categories/add/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken') || '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ name: name, vehicle_type: vehicleType, description: desc })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showDbOperationResult(true, `Hall category '${name}' created successfully!`);
+                    setTimeout(() => window.location.reload(), 800);
+                } else {
+                    showDbOperationResult(false, data.message || 'Error adding category.');
+                }
+            })
+            .catch(err => showDbOperationResult(false, 'Failed to connect to backend server.'));
+        }
+
+        function deleteCategory(catId, catName = '') {
+            if (!confirm(`Are you sure you want to delete category '${catName || catId}'?`)) return;
+            
+            showDbOperationLoading('Deleting Category', 'Removing category from database...');
+
+            fetch('/admin-portal/api/categories/delete/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken') || '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ id: catId, name: catName })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showDbOperationResult(true, 'Category deleted successfully!');
+                    const row = document.getElementById(`hall-cat-row-${catId}`);
+                    if (row) row.remove();
+                } else {
+                    showDbOperationResult(false, data.message || 'Error deleting category.');
+                }
+            })
+            .catch(err => showDbOperationResult(false, 'Failed to connect to backend server.'));
+        }
+
+        function handleFeatureSubmit(event, vehicleType) {
+            event.preventDefault();
+            if (!validateFeatureInput()) return;
+
+            const name = document.getElementById('newFeatureName').value.trim();
+            const desc = document.getElementById('newFeatureDesc').value.trim();
+
+            showDbOperationLoading('Creating Hall Feature', 'Adding feature record to database...');
+
+            fetch('/admin-portal/api/features/add/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken') || '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ name: name, vehicle_type: vehicleType, description: desc })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showDbOperationResult(true, `Hall feature '${name}' added to database!`);
+                    setTimeout(() => window.location.reload(), 800);
+                } else {
+                    showDbOperationResult(false, data.message || 'Error adding feature.');
+                }
+            })
+            .catch(err => showDbOperationResult(false, 'Failed to connect to backend server.'));
+        }
+
+        function deleteFeature(featId, featName = '') {
+            if (!confirm(`Are you sure you want to delete feature '${featName || featId}'?`)) return;
+
+            showDbOperationLoading('Deleting Feature', 'Removing feature from database...');
+
+            fetch('/admin-portal/api/features/delete/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken') || '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ id: featId, name: featName })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showDbOperationResult(true, 'Feature deleted successfully!');
+                    const row = document.getElementById(`hall-feat-row-${featId}`);
+                    if (row) row.remove();
+                } else {
+                    showDbOperationResult(false, data.message || 'Error deleting feature.');
+                }
+            })
+            .catch(err => showDbOperationResult(false, 'Failed to connect to backend server.'));
+        }
+    </script>
+</body>
+</html>

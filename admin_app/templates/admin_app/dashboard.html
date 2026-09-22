@@ -1,0 +1,682 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Executive Operations Dashboard - Rentify Admin</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="{% static 'css/admin_sidebar.css' %}">
+    <style>
+        :root {
+            --admin-bg: #f1f5f9;
+            --card-bg: #ffffff;
+            --primary-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            --accent-blue: #2563eb;
+            --emerald-green: #059669;
+            --amber-gold: #d97706;
+            --rose-red: #dc2626;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            background-color: var(--admin-bg);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            color: var(--text-dark);
+        }
+
+        /* Executive Header Banner */
+        .executive-dashboard-header {
+            background: var(--primary-gradient);
+            padding: 28px 32px;
+            border-radius: 20px;
+            color: #ffffff;
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.12);
+            margin-bottom: 26px;
+            border-left: 6px solid #2563eb;
+        }
+
+        .pulse-live-dot {
+            width: 9px;
+            height: 9px;
+            background: #10b981;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            animation: pulse-ring 1.8s infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        /* Analytics KPI Cards */
+        .clean-kpi-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 22px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+            transition: all 0.22s ease;
+            height: 100%;
+        }
+
+        .clean-kpi-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+        }
+
+        .kpi-card-green { border-top: 4px solid var(--emerald-green); }
+        .kpi-card-blue { border-top: 4px solid var(--accent-blue); }
+        .kpi-card-amber { border-top: 4px solid var(--amber-gold); }
+        .kpi-card-dark { border-top: 4px solid #334155; }
+
+        .kpi-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .kpi-value {
+            font-size: 2.1rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 6px;
+        }
+
+        .kpi-subtext {
+            font-size: 0.78rem;
+            font-weight: 600;
+        }
+
+        /* Chart Containers */
+        .clean-chart-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 18px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+            height: 100%;
+        }
+
+        .timeframe-tab-btn {
+            border: 1px solid #cbd5e1;
+            background: #f8fafc;
+            color: #334155;
+            font-weight: 700;
+            font-size: 0.8rem;
+            padding: 6px 16px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .timeframe-tab-btn.active, .timeframe-tab-btn:hover {
+            background: #0f172a;
+            color: #ffffff;
+            border-color: #0f172a;
+        }
+
+        .inventory-mini-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .inventory-mini-card:hover {
+            border-color: #2563eb;
+            box-shadow: 0 6px 14px rgba(37, 99, 235, 0.08);
+        }
+
+        .status-progress-bar {
+            height: 8px;
+            border-radius: 4px;
+            background-color: #e2e8f0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-layout-wrapper">
+        <!-- Sidebar Navigation -->
+        {% include 'admin_app/admin_header.html' %}
+
+        <!-- Main Workspace -->
+        <main class="admin-main-content">
+            <!-- Executive Header Banner (Icon-Free Clean Design) -->
+            <div class="executive-dashboard-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <span class="pulse-live-dot"></span>
+                        <span class="text-uppercase fw-bold small letter-spacing-1" style="color: #34d399;">Real-Time Database Synchronization Active</span>
+                    </div>
+                    <h2 class="fw-bold mb-1 text-white">Rentify Executive Operations Control Dashboard</h2>
+                    <p class="text-white-50 small mb-0">Live transaction monitoring, multi-timeframe revenue analytics, and real-time fleet status metrics.</p>
+                </div>
+                <div class="d-flex gap-2 align-items-center flex-wrap">
+                    <span class="badge bg-success text-white px-3 py-2 rounded-pill fw-bold fs-7 shadow-sm border border-light border-opacity-25 d-inline-flex align-items-center gap-1">
+                        <span class="spinner-grow spinner-grow-sm text-light me-1" style="width: 8px; height: 8px;" role="status"></span> Live 4s Auto-Sync
+                    </span>
+                    <a href="/admin-portal/manage-bookings/" class="btn btn-primary text-white fw-bold rounded-3 px-3 py-2 btn-sm">
+                        Manage Bookings Log
+                    </a>
+                </div>
+            </div>
+
+            <!-- KPI Metric Cards Row -->
+            <div class="row g-3 mb-4">
+                <div class="col-12 col-sm-6 col-xl-3">
+                    <div class="clean-kpi-card kpi-card-green">
+                        <div class="kpi-title">Gross Revenue (Total)</div>
+                        <div class="kpi-value text-success" id="kpiRevenueValue">₹0</div>
+                        <div class="kpi-subtext text-muted" id="kpiRevenueSub">Confirmed Customer Value</div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-sm-6 col-xl-3">
+                    <div class="clean-kpi-card kpi-card-blue">
+                        <div class="kpi-title">Total Bookings Count</div>
+                        <div class="kpi-value text-primary" id="kpiUsageValue">0</div>
+                        <div class="kpi-subtext text-primary" id="kpiUsageSub">All Customer Inquiries</div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-sm-6 col-xl-3">
+                    <div class="clean-kpi-card kpi-card-amber">
+                        <div class="kpi-title">Pending Action Requests</div>
+                        <div class="kpi-value text-warning" id="kpiPendingValue">0</div>
+                        <div class="kpi-subtext text-warning" id="kpiPendingSub">Requires Admin Review</div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-sm-6 col-xl-3">
+                    <div class="clean-kpi-card kpi-card-dark">
+                        <div class="kpi-title">Total Fleet & Property Assets</div>
+                        <div class="kpi-value text-dark" id="kpiInventoryValue">0</div>
+                        <div class="kpi-subtext text-muted" id="kpiInventorySub">Cars, Bikes, Halls, Offices, Houses</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Revenue Analytics Chart with 1 Day, 1 Week, 1 Month Timeframe Switcher -->
+            <div class="row g-4 mb-4">
+                <!-- Timeframe Revenue Stream -->
+                <div class="col-12 col-lg-8">
+                    <div class="clean-chart-card">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                            <div>
+                                <h5 class="fw-bold mb-1 text-dark">Revenue Performance Analytics</h5>
+                                <span class="text-muted small">Select timeframe below to view revenue distribution</span>
+                            </div>
+                            <!-- Timeframe Selector Buttons (Pure Text) -->
+                            <div class="btn-group p-1 bg-light border rounded-3" role="group">
+                                <button type="button" class="timeframe-tab-btn active" id="btnTf1Day" onclick="switchRevenueTimeframe('1_day')">
+                                    1 Day (24h)
+                                </button>
+                                <button type="button" class="timeframe-tab-btn" id="btnTf1Week" onclick="switchRevenueTimeframe('1_week')">
+                                    1 Week (7d)
+                                </button>
+                                <button type="button" class="timeframe-tab-btn" id="btnTf1Month" onclick="switchRevenueTimeframe('1_month')">
+                                    1 Month (30d)
+                                </button>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-3 p-3 bg-light rounded-3 border">
+                            <div>
+                                <span class="text-muted small fw-bold text-uppercase">Timeframe Revenue Total:</span>
+                                <div class="fs-4 fw-extrabold text-success" id="timeframeTotalVal">₹0</div>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-dark text-white px-3 py-2 rounded-pill fw-bold" id="activeTimeframeBadge">1 Day (24h) View</span>
+                            </div>
+                        </div>
+                        <div style="height: 300px; position: relative;">
+                            <canvas id="timeframeRevenueChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Booking Status Matrix Breakdown -->
+                <div class="col-12 col-lg-4">
+                    <div class="clean-chart-card d-flex flex-column justify-content-between">
+                        <div>
+                            <h5 class="fw-bold mb-1 text-dark">Booking Status Matrix</h5>
+                            <span class="text-muted small mb-3 d-block">Real-time status ratio of database inquiries</span>
+
+                            <!-- Status Breakdown Progress Meters -->
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="fw-bold small text-success">CONFIRMED & APPROVED</span>
+                                    <span class="fw-extrabold small text-dark" id="txtConfirmedCount">0</span>
+                                </div>
+                                <div class="status-progress-bar mb-3">
+                                    <div class="bg-success h-100" id="barConfirmed" style="width: 0%;"></div>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="fw-bold small text-warning">PENDING APPROVAL</span>
+                                    <span class="fw-extrabold small text-dark" id="txtPendingCount">0</span>
+                                </div>
+                                <div class="status-progress-bar mb-3">
+                                    <div class="bg-warning h-100" id="barPending" style="width: 0%;"></div>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="fw-bold small text-danger">CANCELLED / REJECTED</span>
+                                    <span class="fw-extrabold small text-dark" id="txtCancelledCount">0</span>
+                                </div>
+                                <div class="status-progress-bar mb-3">
+                                    <div class="bg-danger h-100" id="barCancelled" style="width: 0%;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Category Demand Chart -->
+                        <div class="mt-2 pt-3 border-top">
+                            <h6 class="fw-bold mb-2 small text-uppercase text-muted">Category Demand Ratio</h6>
+                            <div style="height: 160px; position: relative;">
+                                <canvas id="categoryRatioChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Inventory Counters Row -->
+            <div class="row g-3 mb-4">
+                <div class="col-6 col-md">
+                    <div class="inventory-mini-card text-center">
+                        <div class="text-muted small fw-bold mb-1">CAR FLEET</div>
+                        <div class="fs-4 fw-extrabold text-primary" id="cntCars">0</div>
+                        <span class="badge bg-primary-subtle text-primary mt-1 fw-bold">Available Fleet</span>
+                    </div>
+                </div>
+                <div class="col-6 col-md">
+                    <div class="inventory-mini-card text-center">
+                        <div class="text-muted small fw-bold mb-1">BIKE FLEET</div>
+                        <div class="fs-4 fw-extrabold text-success" id="cntBikes">0</div>
+                        <span class="badge bg-success-subtle text-success mt-1 fw-bold">Active Fleet</span>
+                    </div>
+                </div>
+                <div class="col-6 col-md">
+                    <div class="inventory-mini-card text-center">
+                        <div class="text-muted small fw-bold mb-1">EVENT HALLS</div>
+                        <div class="fs-4 fw-extrabold text-warning" id="cntHalls">0</div>
+                        <span class="badge bg-warning-subtle text-warning mt-1 fw-bold">Banquet Halls</span>
+                    </div>
+                </div>
+                <div class="col-6 col-md">
+                    <div class="inventory-mini-card text-center">
+                        <div class="text-muted small fw-bold mb-1">COMMERCIAL OFFICES</div>
+                        <div class="fs-4 fw-extrabold text-info" id="cntOffices">0</div>
+                        <span class="badge bg-info-subtle text-info mt-1 fw-bold">Suites</span>
+                    </div>
+                </div>
+                <div class="col-6 col-md">
+                    <div class="inventory-mini-card text-center">
+                        <div class="text-muted small fw-bold mb-1">HOUSES & VILLAS</div>
+                        <div class="fs-4 fw-extrabold text-danger" id="cntHouses">0</div>
+                        <span class="badge bg-danger-subtle text-danger mt-1 fw-bold">Luxury Villas</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Real-Time Activity Feed Table -->
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                    <div>
+                        <h5 class="fw-bold mb-0 text-dark">Live Customer Activity & Booking Log</h5>
+                        <span class="text-muted small">Real-time database records with quick status modifier controls</span>
+                    </div>
+                    <a href="/admin-portal/manage-bookings/" class="btn btn-outline-primary btn-sm rounded-3 fw-bold">
+                        View Full Log Center
+                    </a>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 70px;">ID</th>
+                                <th>Category</th>
+                                <th>Vehicle / Property</th>
+                                <th>Applicant</th>
+                                <th>Phone</th>
+                                <th>Payment Mode</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th class="text-end">Quick Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="liveActivityTableBody">
+                            <tr>
+                                <td colspan="9" class="text-center py-4 text-muted">
+                                    <span class="spinner-border spinner-border-sm me-2"></span> Syncing live customer activity...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Portal Shortcuts -->
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white mb-4">
+                <h5 class="fw-bold mb-3 text-dark">Admin Operations Shortcuts</h5>
+                <div class="row g-3">
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <a href="/admin-portal/manage-cars/" class="btn btn-outline-dark w-100 py-3 rounded-3 text-center text-decoration-none">
+                            <div class="fw-bold">Manage Cars</div>
+                            <div class="small opacity-75">Fleet CRUD</div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <a href="/admin-portal/manage-bikes/" class="btn btn-outline-dark w-100 py-3 rounded-3 text-center text-decoration-none">
+                            <div class="fw-bold">Manage Bikes</div>
+                            <div class="small opacity-75">Fleet CRUD</div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <a href="/admin-portal/manage-halls/" class="btn btn-outline-dark w-100 py-3 rounded-3 text-center text-decoration-none">
+                            <div class="fw-bold">Manage Halls</div>
+                            <div class="small opacity-75">Banquets</div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <a href="/admin-portal/manage-offices/" class="btn btn-outline-dark w-100 py-3 rounded-3 text-center text-decoration-none">
+                            <div class="fw-bold">Manage Offices</div>
+                            <div class="small opacity-75">Suites</div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <a href="/admin-portal/manage-houses/" class="btn btn-outline-dark w-100 py-3 rounded-3 text-center text-decoration-none">
+                            <div class="fw-bold">Manage Houses</div>
+                            <div class="small opacity-75">Villas</div>
+                        </a>
+                    </div>
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <a href="/admin-portal/view-inquiries/" class="btn btn-outline-dark w-100 py-3 rounded-3 text-center text-decoration-none">
+                            <div class="fw-bold">Inquiries</div>
+                            <div class="small opacity-75">Approvals</div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Bootstrap 5 Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Chart.js Real-Time Analytics & Timeframe Switching Logic -->
+    <script>
+        let dbDashboardData = null;
+        try {
+            dbDashboardData = {{ dashboard_json|safe }};
+        } catch (e) {
+            console.error('Failed to parse dashboard_json:', e);
+        }
+
+        let revenueChart = null;
+        let ratioChart = null;
+        let activeTimeframe = '1_day'; // Options: '1_day', '1_week', '1_month'
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initCharts();
+            if (dbDashboardData) {
+                updateDashboardUI(dbDashboardData);
+            }
+            setInterval(fetchLiveDashboard, 4000);
+        });
+
+        function fetchLiveDashboard() {
+            fetch('/admin-portal/api/dashboard-analytics-live/')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success' && data.data) {
+                        dbDashboardData = data.data;
+                        updateDashboardUI(data.data);
+                    }
+                })
+                .catch(err => console.error('Dashboard live polling error:', err));
+        }
+
+        function switchRevenueTimeframe(tfKey) {
+            activeTimeframe = tfKey;
+            
+            document.getElementById('btnTf1Day').classList.remove('active');
+            document.getElementById('btnTf1Week').classList.remove('active');
+            document.getElementById('btnTf1Month').classList.remove('active');
+
+            if (tfKey === '1_day') {
+                document.getElementById('btnTf1Day').classList.add('active');
+                document.getElementById('activeTimeframeBadge').textContent = '1 Day (24h) View';
+            } else if (tfKey === '1_week') {
+                document.getElementById('btnTf1Week').classList.add('active');
+                document.getElementById('activeTimeframeBadge').textContent = '1 Week (7d) View';
+            } else if (tfKey === '1_month') {
+                document.getElementById('btnTf1Month').classList.add('active');
+                document.getElementById('activeTimeframeBadge').textContent = '1 Month (30d) View';
+            }
+
+            if (dbDashboardData) {
+                renderRevenueChartForTimeframe(dbDashboardData);
+            }
+        }
+
+        function renderRevenueChartForTimeframe(d) {
+            if (!d.timeframe_revenue || !d.timeframe_revenue[activeTimeframe]) return;
+
+            const tfData = d.timeframe_revenue[activeTimeframe];
+            document.getElementById('timeframeTotalVal').textContent = `₹${(tfData.total || 0).toLocaleString('en-IN')}`;
+
+            if (revenueChart) {
+                revenueChart.data.labels = tfData.labels;
+                revenueChart.data.datasets[0].data = tfData.data;
+
+                if (activeTimeframe === '1_day') {
+                    revenueChart.data.datasets[0].label = 'Revenue - 24 Hours (₹)';
+                    revenueChart.data.datasets[0].backgroundColor = 'rgba(37, 99, 235, 0.75)';
+                    revenueChart.data.datasets[0].borderColor = '#2563eb';
+                } else if (activeTimeframe === '1_week') {
+                    revenueChart.data.datasets[0].label = 'Revenue - Past 7 Days (₹)';
+                    revenueChart.data.datasets[0].backgroundColor = 'rgba(5, 150, 105, 0.75)';
+                    revenueChart.data.datasets[0].borderColor = '#059669';
+                } else {
+                    revenueChart.data.datasets[0].label = 'Revenue - Past 30 Days (₹)';
+                    revenueChart.data.datasets[0].backgroundColor = 'rgba(217, 119, 6, 0.75)';
+                    revenueChart.data.datasets[0].borderColor = '#d97706';
+                }
+
+                revenueChart.update();
+            }
+        }
+
+        function updateDashboardUI(d) {
+            // Update KPI metric cards
+            document.getElementById('kpiUsageValue').textContent = d.total_bookings;
+            document.getElementById('kpiRevenueValue').textContent = `₹${(d.gross_revenue || 0).toLocaleString('en-IN')}`;
+            document.getElementById('kpiInventoryValue').textContent = d.total_inventory;
+            document.getElementById('kpiPendingValue').textContent = d.pending_bookings;
+
+            document.getElementById('cntCars').textContent = d.total_cars;
+            document.getElementById('cntBikes').textContent = d.total_bikes;
+            document.getElementById('cntHalls').textContent = d.total_halls;
+            document.getElementById('cntOffices').textContent = d.total_offices;
+            document.getElementById('cntHouses').textContent = d.total_houses;
+
+            // Status Matrix breakdown calculation
+            const total = d.total_bookings || 1;
+            const confirmed = d.status_breakdown ? d.status_breakdown.confirmed : d.approved_bookings;
+            const pending = d.status_breakdown ? d.status_breakdown.pending : d.pending_bookings;
+            const cancelled = d.status_breakdown ? d.status_breakdown.cancelled : (d.rejected_bookings || 0);
+
+            document.getElementById('txtConfirmedCount').textContent = `${confirmed} (${Math.round((confirmed/total)*100)}%)`;
+            document.getElementById('txtPendingCount').textContent = `${pending} (${Math.round((pending/total)*100)}%)`;
+            document.getElementById('txtCancelledCount').textContent = `${cancelled} (${Math.round((cancelled/total)*100)}%)`;
+
+            document.getElementById('barConfirmed').style.width = `${(confirmed/total)*100}%`;
+            document.getElementById('barPending').style.width = `${(pending/total)*100}%`;
+            document.getElementById('barCancelled').style.width = `${(cancelled/total)*100}%`;
+
+            // Update Timeframe Revenue Chart
+            renderRevenueChartForTimeframe(d);
+
+            // Update Category Ratio Doughnut Chart
+            if (ratioChart && d.category_ratio) {
+                ratioChart.data.datasets[0].data = d.category_ratio;
+                ratioChart.update();
+            }
+
+            // Update Live Activity Feed Table
+            renderLiveActivityTable(d.recent_activity || []);
+        }
+
+        function renderLiveActivityTable(activities) {
+            const tbody = document.getElementById('liveActivityTableBody');
+            tbody.innerHTML = '';
+
+            if (activities.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="text-center py-4 text-muted">No recent activity entries found in database.</td></tr>';
+                return;
+            }
+
+            activities.forEach(act => {
+                let badgeClass = act.status === 'Approved' || act.status === 'Confirmed' ? 'bg-success' : (act.status === 'Pending' ? 'bg-warning text-dark' : 'bg-danger');
+                let catBadge = act.category === 'Car' ? 'bg-primary' : (act.category === 'Bike' ? 'bg-success' : 'bg-info');
+                let amountFormatted = act.amount ? `₹${Number(act.amount).toLocaleString('en-IN')}` : 'N/A';
+
+                const row = `
+                    <tr>
+                        <td class="fw-bold text-muted">#${act.id}</td>
+                        <td><span class="badge ${catBadge} rounded-pill px-3 py-1">${act.category}</span></td>
+                        <td class="fw-bold text-dark">${act.title}</td>
+                        <td>${act.user}</td>
+                        <td class="small"><a href="tel:${act.phone}" class="text-decoration-none fw-bold">${act.phone}</a></td>
+                        <td><span class="badge bg-light text-dark border px-2 py-1">${act.payment_method || 'Online'}</span></td>
+                        <td class="fw-extrabold text-success">${amountFormatted}</td>
+                        <td><span class="badge ${badgeClass} rounded-pill px-3 py-1">${act.status}</span></td>
+                        <td class="text-end">
+                            <select class="form-select form-select-sm d-inline-block w-auto rounded-3 fw-bold" onchange="quickUpdateStatus(${act.id}, this.value)">
+                                <option value="Pending" ${act.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                                <option value="Approved" ${act.status === 'Approved' || act.status === 'Confirmed' ? 'selected' : ''}>Approved</option>
+                                <option value="Rejected" ${act.status === 'Rejected' || act.status === 'Cancelled' ? 'selected' : ''}>Rejected</option>
+                            </select>
+                        </td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function quickUpdateStatus(id, newStatus) {
+            fetch('/admin-portal/api/bookings/update-status/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ id: id, status: newStatus })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    fetchLiveDashboard();
+                } else {
+                    alert(data.message || 'Error updating status');
+                }
+            })
+            .catch(err => fetchLiveDashboard());
+        }
+
+        function initCharts() {
+            // Revenue Bar / Line Chart (Switchable between 1 Day, 1 Week, 1 Month)
+            const ctxRev = document.getElementById('timeframeRevenueChart').getContext('2d');
+            revenueChart = new Chart(ctxRev, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Revenue (₹)',
+                        data: [],
+                        backgroundColor: 'rgba(37, 99, 235, 0.75)',
+                        borderColor: '#2563eb',
+                        borderWidth: 2,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: true, position: 'top' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ' Revenue: ₹' + Number(context.raw).toLocaleString('en-IN');
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#f1f5f9' },
+                            ticks: {
+                                callback: function(value) {
+                                    return '₹' + value.toLocaleString('en-IN');
+                                }
+                            }
+                        },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // Doughnut Chart: Category Ratio
+            const ctxRatio = document.getElementById('categoryRatioChart').getContext('2d');
+            ratioChart = new Chart(ctxRatio, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Cars', 'Bikes', 'Halls', 'Offices', 'Houses'],
+                    datasets: [{
+                        data: [0, 0, 0, 0, 0],
+                        backgroundColor: ['#2563eb', '#059669', '#d97706', '#0891b2', '#dc2626'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } } }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

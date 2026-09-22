@@ -1,0 +1,1304 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Bikes Fleet & Inspection - Rentify Admin</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/admin_sidebar.css' %}">
+    <style>
+        :root {
+            --admin-bg: #f8fafc;
+            --card-bg: #ffffff;
+            --border-color: #e2e8f0;
+        }
+
+        /* Top Corner Animated Toast Message Styling */
+        .toast-message-item {
+            pointer-events: auto;
+            min-width: 320px;
+            max-width: 440px;
+            padding: 14px 20px;
+            border-radius: 14px;
+            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.25);
+            color: #ffffff;
+            opacity: 0;
+            transform: translateX(120%) scale(0.9);
+            transition: all 0.38s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .toast-message-item.toast-show {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+        }
+
+        .toast-message-item.toast-hide {
+            opacity: 0;
+            transform: translateX(120%) scale(0.85);
+            transition: all 0.35s ease-in;
+        }
+
+        .toast-success {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            border-left: 6px solid #34d399;
+        }
+
+        .toast-error {
+            background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+            border-left: 6px solid #fca5a5;
+        }
+
+        body {
+            background-color: var(--admin-bg);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: #0f172a;
+        }
+
+
+        .page-header-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px 24px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+            margin-bottom: 24px;
+        }
+
+        .bike-crud-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+            transition: all 0.22s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .bike-crud-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.07);
+            border-color: #cbd5e1;
+        }
+
+        .bike-img-wrapper {
+            height: 170px;
+            overflow: hidden;
+            position: relative;
+            background: #e2e8f0;
+        }
+
+        .bike-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .bike-crud-card:hover .bike-img {
+            transform: scale(1.05);
+        }
+
+        .badge-status-pill {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .badge-available-pill { background: #059669; color: #ffffff; }
+        .badge-booked-pill { background: #dc2626; color: #ffffff; }
+        .badge-maintenance-pill { background: #d97706; color: #ffffff; }
+
+        .bike-price-tag-overlay {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(15, 23, 42, 0.88);
+            color: #ffffff;
+            padding: 4px 12px;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 0.95rem;
+        }
+
+        .spec-chip {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #475569;
+        }
+
+
+        .badge-available { background: #dcfce7; color: #166534; }
+        .badge-booked { background: #fee2e2; color: #991b1b; }
+        .badge-maintenance { background: #fef3c7; color: #92400e; }
+
+        /* Image Preview Boxes */
+        .image-preview-box {
+            width: 100%;
+            height: 160px;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: #f8fafc;
+            position: relative;
+        }
+
+        .image-preview-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Comparison Image Frame */
+        .comparison-img-card {
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #ffffff;
+        }
+
+        .comparison-img-card img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+    <!-- Top-Right Animated Toast Container -->
+    <div id="toastNotificationContainer" style="position: fixed; top: 24px; right: 24px; z-index: 10000; display: flex; flex-direction: column; gap: 12px; pointer-events: none;"></div>
+
+    <div class="admin-layout-wrapper">
+
+        <!-- Sidebar Navigation -->
+        {% include 'admin_app/admin_header.html' %}
+
+        <!-- Main Workspace -->
+        <main class="admin-main-content">
+            <!-- Executive Header Banner (Icon-Free Clean Design) -->
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 text-white" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-left: 6px solid #10b981 !important;">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <span class="badge bg-success bg-opacity-20 text-white px-3 py-1 rounded-pill fw-bold border border-light border-opacity-25 small">
+                                Bike Fleet Management Center
+                            </span>
+                        </div>
+                        <h2 class="fw-bold mb-1 text-white">Manage Bike Listings & Database Operations</h2>
+                        <p class="text-white-50 small mb-0">Create new bike listings, add custom categories and features in real time, and monitor fleet status.</p>
+                    </div>
+                    <button class="btn btn-success fw-extrabold rounded-3 px-4 py-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#addBikeModal">
+                        Add New Bike Listing
+                    </button>
+                </div>
+            </div>
+
+            <!-- Executive 3-Tab Control Switcher (Icon-Free) -->
+            <ul class="nav nav-pills gap-2 mb-4 p-2 bg-white rounded-4 border shadow-sm" id="bikeMgmtTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active rounded-3 px-4 py-2 fw-bold" id="tab-bike-fleet-btn" data-bs-toggle="tab" data-bs-target="#tab-bike-fleet" type="button" role="tab">
+                        1. All Bike Fleet ({{ bikes.count }})
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link rounded-3 px-4 py-2 fw-bold" id="tab-bike-categories-btn" data-bs-toggle="tab" data-bs-target="#tab-bike-categories" type="button" role="tab">
+                        2. Bike Types / Categories ({{ bike_categories_list|length }})
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link rounded-3 px-4 py-2 fw-bold" id="tab-bike-features-btn" data-bs-toggle="tab" data-bs-target="#tab-bike-features" type="button" role="tab">
+                        3. Bike Features ({{ bike_features_list|length }})
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="bikeMgmtTabContent">
+                <!-- TAB 1: ALL BIKE FLEET -->
+                <div class="tab-pane fade show active" id="tab-bike-fleet" role="tabpanel">
+                    <!-- Filter & Pagination Controls Bar -->
+                    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4 bg-white">
+                        <div class="row g-3 align-items-center">
+                            <div class="col-12 col-md-5">
+                                <input type="text" class="form-control rounded-3" id="bikeSearchInput" placeholder="Search bikes by model name..." onkeyup="handleSearchInput()">
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <select class="form-select rounded-3" id="bikeStatusFilter" onchange="filterBikes()">
+                                    <option value="ALL">All Statuses</option>
+                                    <option value="Available">Available Only</option>
+                                    <option value="Booked">Booked Only</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-3 d-flex align-items-center justify-content-md-end gap-2">
+                                <span class="text-muted small fw-bold">Per Page:</span>
+                                <select class="form-select form-select-sm rounded-3 w-auto" id="pageSizeSelect" onchange="changePageSize()">
+                                    <option value="4" selected>4 per page</option>
+                                    <option value="8">8 per page</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bikes Cards Grid -->
+                    <div class="row g-4 mb-4" id="bikesGridContainer">
+                        <!-- Dynamically rendered via JS -->
+                    </div>
+
+                    <!-- Pagination Bar -->
+                    <div class="d-flex flex-wrap justify-content-between align-items-center bg-white p-3 rounded-4 shadow-sm border">
+                        <div class="text-muted small fw-bold" id="paginationInfoText">
+                            Showing 1 to 4 of 4 entries
+                        </div>
+                        <nav aria-label="Bikes Pagination">
+                            <ul class="pagination pagination-sm mb-0" id="paginationControls">
+                                <!-- Rendered via JS -->
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+
+                <!-- TAB 2: BIKE TYPES / CATEGORIES CRUD -->
+                <div class="tab-pane fade" id="tab-bike-categories" role="tabpanel">
+                    <div class="row g-4 mb-4">
+                        <div class="col-lg-4">
+                            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                                <h5 class="fw-bold mb-3">Add New Bike Category</h5>
+                                <form id="addBikeCategoryForm" onsubmit="handleCategorySubmit(event, 'bike')">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold small text-uppercase">Category Name</label>
+                                        <input type="text" class="form-control rounded-3" id="newBikeCategoryName" placeholder="e.g. Cruiser, Superbike, Electric Scooter" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold small text-uppercase">Description</label>
+                                        <textarea class="form-control rounded-3" id="newBikeCategoryDesc" rows="3" placeholder="Category specs & summary..."></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-success w-100 rounded-3 fw-bold py-2 shadow-sm">
+                                        Save Bike Category
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-8">
+                            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                                <h5 class="fw-bold mb-3">Active Bike Categories & Fleet Counts</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Category Name</th>
+                                                <th>Description</th>
+                                                <th>Bikes Assigned</th>
+                                                <th class="text-end">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="bikeCategoriesTableBody">
+                                            {% for cat in bike_categories_list %}
+                                                <tr id="bike-cat-row-{{ cat.id }}">
+                                                    <td class="fw-bold text-dark">{{ cat.name }}</td>
+                                                    <td class="text-muted small">{{ cat.description|default:"Standard bike category" }}</td>
+                                                    <td><span class="badge bg-success bg-opacity-10 text-success fw-bold px-3 py-1 rounded-pill">{{ cat.count }} Bikes</span></td>
+                                                    <td class="text-end">
+                                                        <button class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="deleteCategory({{ cat.id }}, '{{ cat.name|escapejs }}')">
+                                                            Delete
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            {% empty %}
+                                                <tr>
+                                                    <td colspan="4" class="text-muted small text-center py-4">No custom bike categories added yet. Active categories in fleet: {{ categories|join:", " }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: BIKE FEATURES CRUD -->
+                <div class="tab-pane fade" id="tab-bike-features" role="tabpanel">
+                    <div class="row g-4 mb-4">
+                        <div class="col-lg-4">
+                            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                                <h5 class="fw-bold mb-3">Add Custom Bike Feature</h5>
+                                <form id="addBikeFeatureForm" onsubmit="handleFeatureSubmit(event, 'bike')">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold small text-uppercase">Feature Name</label>
+                                        <input type="text" class="form-control rounded-3" id="newBikeFeatureName" placeholder="e.g. Dual Channel ABS, Slipper Clutch, Electric Start" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold small text-uppercase">Description</label>
+                                        <textarea class="form-control rounded-3" id="newBikeFeatureDesc" rows="3" placeholder="Feature details..."></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-success w-100 rounded-3 fw-bold py-2 shadow-sm">
+                                        Save Bike Feature
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-8">
+                            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                                <h5 class="fw-bold mb-3">Active Bike Features Library</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Feature Name</th>
+                                                <th>Description</th>
+                                                <th class="text-end">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="bikeFeaturesTableBody">
+                                            {% for feat in bike_features_list %}
+                                                <tr id="bike-feat-row-{{ feat.id }}">
+                                                    <td class="fw-bold text-dark">{{ feat.name }}</td>
+                                                    <td class="text-muted small">{{ feat.description|default:"Standard bike feature" }}</td>
+                                                    <td class="text-end">
+                                                        <button class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="deleteFeature({{ feat.id }}, '{{ feat.name|escapejs }}')">
+                                                            Delete
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            {% empty %}
+                                                <tr>
+                                                    <td colspan="3" class="text-muted small text-center py-4">No custom bike features added yet. Default features: Dual Channel ABS, Electric Start, Digital Console, Disc Brakes</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- ================= POPUP MODALS ================= -->
+
+    <!-- ADD BIKE MODAL WITH LIVE FILE UPLOAD PREVIEW -->
+    <div class="modal fade" id="addBikeModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-dark text-white rounded-top-4 px-4 py-3">
+                    <h5 class="modal-title fw-bold">+ Add New Bike Listing</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="addBikeForm" onsubmit="handleAddBikeSubmit(event)">
+                    <div class="modal-body p-4">
+                        <div class="row g-3">
+                            <div class="col-md-7">
+                                <div class="row g-3 mb-3">
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">Bike Model Name</label>
+                                        <input type="text" class="form-control rounded-3" id="addBikeName" placeholder="e.g. Royal Enfield Bullet 350" required>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">Category</label>
+                                        <select class="form-select rounded-3" id="addBikeCategorySelect">
+                                            {% for cat in categories %}
+                                                <option value="{{ cat }}">{{ cat }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">Daily Price (₹)</label>
+                                        <input type="number" class="form-control rounded-3" id="addBikePrice" placeholder="899" required>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">Initial KM Odometer</label>
+                                        <input type="number" class="form-control rounded-3" id="addBikeKm" placeholder="5400" required>
+                                    </div>
+                                </div>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-4">
+                                        <label class="form-label fw-bold small text-uppercase">Engine</label>
+                                        <input type="text" class="form-control rounded-3" id="addBikeEngine" placeholder="349cc" required>
+                                    </div>
+                                    <div class="col-4">
+                                        <label class="form-label fw-bold small text-uppercase">Power</label>
+                                        <input type="text" class="form-control rounded-3" id="addBikePower" placeholder="20.2 BHP" required>
+                                    </div>
+                                    <div class="col-4">
+                                        <label class="form-label fw-bold small text-uppercase">Mileage</label>
+                                        <input type="text" class="form-control rounded-3" id="addBikeAverage" placeholder="38 kmpl" required>
+                                    </div>
+                                </div>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-4">
+                                        <label class="form-label fw-bold small text-uppercase">Fuel Type</label>
+                                        <select class="form-select rounded-3" id="addBikeFuelType">
+                                            <option value="Petrol">Petrol</option>
+                                            <option value="Electric">Electric</option>
+                                            <option value="Hybrid">Hybrid</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-4">
+                                        <label class="form-label fw-bold small text-uppercase">Rating (1.0 to 5.0)</label>
+                                        <input type="number" step="0.1" max="5.0" min="1.0" class="form-control rounded-3" id="addBikeRating" value="4.8" required>
+                                    </div>
+                                    <div class="col-4">
+                                        <label class="form-label fw-bold small text-uppercase">Availability Status</label>
+                                        <select class="form-select rounded-3" id="addBikeStatus">
+                                            <option value="Available">Available</option>
+                                            <option value="Booked">Booked</option>
+                                            <option value="Maintenance">Under Maintenance</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small text-uppercase">Bike Description</label>
+                                    <textarea class="form-control rounded-3" id="addBikeDescription" rows="2" placeholder="Enter full bike details and overview..."></textarea>
+                                </div>
+
+                                <!-- Interactive Feature Toggle Pills -->
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small text-uppercase">Toggle Active Features</label>
+                                    <div class="mb-2 p-3 bg-light rounded-3 border" id="addBikeFeaturePillsContainer">
+                                        <small class="text-muted fw-bold d-block mb-2">Click feature pills to toggle on/off:</small>
+                                        <div class="d-flex flex-wrap gap-2">
+                                            {% for feat in bike_features_list %}
+                                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill py-1 px-3 fw-semibold feature-pill-btn" data-feature-name="{{ feat.name|escapejs }}" onclick="toggleFeaturePill('addBikeFeatures', '{{ feat.name|escapejs }}', this)">
+                                                    {{ feat.name }}
+                                                </button>
+                                            {% empty %}
+                                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill py-1 px-3 fw-semibold feature-pill-btn" data-feature-name="Dual Channel ABS" onclick="toggleFeaturePill('addBikeFeatures', 'Dual Channel ABS', this)">Dual Channel ABS</button>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill py-1 px-3 fw-semibold feature-pill-btn" data-feature-name="Electric Start" onclick="toggleFeaturePill('addBikeFeatures', 'Electric Start', this)">Electric Start</button>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill py-1 px-3 fw-semibold feature-pill-btn" data-feature-name="Digital Console" onclick="toggleFeaturePill('addBikeFeatures', 'Digital Console', this)">Digital Console</button>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill py-1 px-3 fw-semibold feature-pill-btn" data-feature-name="Disc Brakes" onclick="toggleFeaturePill('addBikeFeatures', 'Disc Brakes', this)">Disc Brakes</button>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    <input type="text" class="form-control rounded-3" id="addBikeFeatures" placeholder="Selected features list..." readonly>
+                                </div>
+                            </div>
+
+                            <!-- Live Image Upload & Preview Box -->
+                            <div class="col-md-5">
+                                <label class="form-label fw-bold small text-uppercase">Upload Bike Photo</label>
+                                <input type="file" class="form-control rounded-3 mb-3" id="addBikeFileInput" accept="image/*" onchange="previewUploadImage(this)">
+                                
+                                <div class="image-preview-box mb-2" id="previewContainer">
+                                    <span class="text-muted small" id="previewPlaceholder">Selected image will preview here live</span>
+                                    <img id="liveImagePreview" class="d-none" alt="Preview">
+                                </div>
+                                <small class="text-muted d-block">Or choose preset below:</small>
+                                <select class="form-select rounded-3 form-select-sm mt-1" id="addBikePresetSelect" onchange="usePresetImage(this)">
+                                    <option value="">-- Choose Preset Image --</option>
+                                    <option value="/static/images/image/carimg/kia.jpg">Royal Enfield Classic</option>
+                                    <option value="/static/images/image/carimgs/thar1.jpg">KTM Duke Sports</option>
+                                    <option value="/static/images/image/carimg/bmw.jpg">Yamaha R15 Racing</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light px-4 py-3 rounded-bottom-4">
+                        <button type="button" class="btn btn-outline-secondary rounded-3 px-4 fw-bold" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-success rounded-3 px-4 fw-bold">Create Bike Card</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- FULL EDIT BIKE DETAILS MODAL -->
+    <div class="modal fade" id="editBikeModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-success text-white rounded-top-4 px-4 py-3">
+                    <h5 class="modal-title fw-bold">Edit Full Bike Details</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <input type="hidden" id="editBikeId">
+                    <div class="row g-3">
+                        <div class="col-md-7">
+                            <div class="row g-3 mb-3">
+                                <div class="col-6">
+                                    <label class="form-label fw-bold small text-uppercase">Bike Model Name</label>
+                                    <input type="text" class="form-control rounded-3" id="editBikeName" required>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label fw-bold small text-uppercase">Category</label>
+                                    <select class="form-select rounded-3" id="editBikeCategorySelect">
+                                        {% for cat in categories %}
+                                            <option value="{{ cat }}">{{ cat }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row g-3 mb-3">
+                                <div class="col-6">
+                                    <label class="form-label fw-bold small text-uppercase">Price per Day (₹)</label>
+                                    <input type="number" class="form-control rounded-3" id="editBikePrice" required>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label fw-bold small text-uppercase">Engine (cc)</label>
+                                    <input type="text" class="form-control rounded-3" id="editBikeEngine" required>
+                                </div>
+                            </div>
+                            <div class="row g-3 mb-3">
+                                <div class="col-4">
+                                    <label class="form-label fw-bold small text-uppercase">Power</label>
+                                    <input type="text" class="form-control rounded-3" id="editBikePower" required>
+                                </div>
+                                <div class="col-4">
+                                    <label class="form-label fw-bold small text-uppercase">Mileage</label>
+                                    <input type="text" class="form-control rounded-3" id="editBikeAverage" required>
+                                </div>
+                                <div class="col-4">
+                                    <label class="form-label fw-bold small text-uppercase">Fuel Type</label>
+                                    <select class="form-select rounded-3" id="editBikeFuelType">
+                                        <option value="Petrol">Petrol</option>
+                                        <option value="Electric">Electric</option>
+                                        <option value="Hybrid">Hybrid</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row g-3 mb-3">
+                                <div class="col-6">
+                                    <label class="form-label fw-bold small text-uppercase">Pickup KM (Start)</label>
+                                    <input type="number" class="form-control rounded-3" id="editBikeStartKm" required>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label fw-bold small text-uppercase">Return KM (Current)</label>
+                                    <input type="number" class="form-control rounded-3" id="editBikeEndKm" required>
+                                </div>
+                            </div>
+                            <div class="row g-3 mb-3">
+                                <div class="col-6">
+                                    <label class="form-label fw-bold small text-uppercase">Rating (1.0 to 5.0)</label>
+                                    <input type="number" step="0.1" max="5.0" min="1.0" class="form-control rounded-3" id="editBikeRating" required>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label fw-bold small text-uppercase">Availability Status</label>
+                                    <select class="form-select rounded-3" id="editBikeStatus">
+                                        <option value="Available">Available</option>
+                                        <option value="Booked">Booked</option>
+                                        <option value="Maintenance">Under Maintenance</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small text-uppercase">Bike Description</label>
+                                <textarea class="form-control rounded-3" id="editBikeDescription" rows="2"></textarea>
+                            </div>
+
+                            <!-- Interactive Feature Toggle Pills -->
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small text-uppercase">Toggle Active Features</label>
+                                <div class="mb-2 p-3 bg-light rounded-3 border" id="editBikeFeaturePillsContainer">
+                                    <small class="text-muted fw-bold d-block mb-2">Click feature pills to toggle on/off:</small>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        {% for feat in bike_features_list %}
+                                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill py-1 px-3 fw-semibold feature-pill-btn" data-feature-name="{{ feat.name|escapejs }}" onclick="toggleFeaturePill('editBikeFeatures', '{{ feat.name|escapejs }}', this)">
+                                                {{ feat.name }}
+                                            </button>
+                                        {% empty %}
+                                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill py-1 px-3 fw-semibold feature-pill-btn" data-feature-name="Dual Channel ABS" onclick="toggleFeaturePill('editBikeFeatures', 'Dual Channel ABS', this)">Dual Channel ABS</button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill py-1 px-3 fw-semibold feature-pill-btn" data-feature-name="Electric Start" onclick="toggleFeaturePill('editBikeFeatures', 'Electric Start', this)">Electric Start</button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill py-1 px-3 fw-semibold feature-pill-btn" data-feature-name="Digital Console" onclick="toggleFeaturePill('editBikeFeatures', 'Digital Console', this)">Digital Console</button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill py-1 px-3 fw-semibold feature-pill-btn" data-feature-name="Disc Brakes" onclick="toggleFeaturePill('editBikeFeatures', 'Disc Brakes', this)">Disc Brakes</button>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <input type="text" class="form-control rounded-3" id="editBikeFeatures" placeholder="Selected features list..." readonly>
+                            </div>
+                        </div>
+
+                        <!-- Image Update Section -->
+                        <div class="col-md-5">
+                            <label class="form-label fw-bold small text-uppercase">Bike Photo Preview</label>
+                            <div class="image-preview-box mb-3">
+                                <img id="editImagePreview" src="" alt="Bike Photo">
+                            </div>
+                            <label class="form-label fw-bold small text-uppercase">Change Photo File</label>
+                            <input type="file" class="form-control rounded-3 mb-2" accept="image/*" onchange="previewEditImage(this)">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light px-4 py-3 rounded-bottom-4">
+                    <button type="button" class="btn btn-outline-secondary rounded-3 px-4 fw-bold" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-success rounded-3 px-4 fw-bold" onclick="saveBikeEdits()">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <!-- DELETE BIKE CONFIRMATION MODAL -->
+    <div class="modal fade" id="deleteBikeModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-danger text-white rounded-top-4 px-4 py-3">
+                    <h5 class="modal-title fw-bold">Confirm Delete</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4 text-center">
+                    <input type="hidden" id="deleteBikeId">
+                    <h5 class="fw-bold text-dark mb-2" id="deleteBikeTitle">Bike Title</h5>
+                    <p class="text-muted mb-0">Are you sure you want to remove this bike card from the database?</p>
+                </div>
+                <div class="modal-footer bg-light justify-content-center px-4 py-3 rounded-bottom-4">
+                    <button type="button" class="btn btn-outline-secondary rounded-3 px-4 fw-bold" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger rounded-3 px-4 fw-bold" onclick="executeBikeDelete()">Delete Bike</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let bikesData = {{ bikes_json|safe }};
+
+        let uploadedBikeImageBase64 = "";
+        let editUploadedImageBase64 = "";
+        let currentPage = 1;
+        let pageSize = 4;
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const viewParam = urlParams.get('view');
+            
+            if (viewParam === 'booked') {
+                filterBikesBySubmenu('booked');
+            } else if (viewParam === 'km') {
+                filterBikesBySubmenu('km');
+            } else {
+                setActiveSublink('bike', 'all');
+                renderBikesGrid();
+            }
+        });
+
+        function filterBikesBySubmenu(viewType) {
+            if (viewType === 'booked') {
+                document.getElementById('bikeStatusFilter').value = 'Booked';
+                currentPage = 1;
+                renderBikesGrid();
+            } else if (viewType === 'all') {
+                document.getElementById('bikeStatusFilter').value = 'ALL';
+                currentPage = 1;
+                renderBikesGrid();
+            } else if (viewType === 'km') {
+                window.location.href = '/admin-portal/manage-bookings/';
+            }
+            setActiveSublink('bike', viewType);
+        }
+
+        function handleSearchInput() {
+            currentPage = 1;
+            renderBikesGrid();
+        }
+
+        function filterBikes() {
+            currentPage = 1;
+            renderBikesGrid();
+        }
+
+        function changePageSize() {
+            pageSize = Number(document.getElementById('pageSizeSelect').value);
+            currentPage = 1;
+            renderBikesGrid();
+        }
+
+        function renderBikesGrid() {
+            const container = document.getElementById('bikesGridContainer');
+            const searchVal = document.getElementById('bikeSearchInput').value.toLowerCase();
+            const statusVal = document.getElementById('bikeStatusFilter').value;
+
+            container.innerHTML = '';
+            let filtered = bikesData.filter(b => {
+                const matchSearch = b.name.toLowerCase().includes(searchVal);
+                const matchStatus = statusVal === 'ALL' || b.status === statusVal;
+                return matchSearch && matchStatus;
+            });
+
+            const totalEntries = filtered.length;
+            const totalPages = Math.ceil(totalEntries / pageSize) || 1;
+            if (currentPage > totalPages) currentPage = totalPages;
+
+            const startIndex = (currentPage - 1) * pageSize;
+            const endIndex = Math.min(startIndex + pageSize, totalEntries);
+            const pageData = filtered.slice(startIndex, endIndex);
+
+            if (pageData.length === 0) {
+                container.innerHTML = '<div class="col-12 text-center py-5"><h5 class="text-muted">No bikes match filter criteria.</h5></div>';
+            } else {
+                pageData.forEach(bike => {
+                    const badgeClass = bike.status === 'Available' ? 'badge-available-pill' : (bike.status === 'Booked' ? 'badge-booked-pill' : 'badge-maintenance-pill');
+                    const totalKmDriven = Math.max(0, bike.endKm - bike.startKm);
+                    const formattedPrice = Number(bike.price).toLocaleString('en-IN');
+
+                    const html = `
+                        <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
+                            <div class="bike-crud-card">
+                                <div class="bike-img-wrapper">
+                                    <img src="${bike.image}" class="bike-img" alt="${bike.name}" onerror="this.src='/static/images/image/bikeimg/bullet.jpg'">
+                                    <span class="position-absolute top-0 end-0 m-2 badge badge-status-pill ${badgeClass}">${bike.status}</span>
+                                    <span class="position-absolute top-0 start-0 m-2 badge bg-dark text-white rounded-pill px-3 py-1 fw-bold fs-7">${bike.category || 'Cruiser'}</span>
+                                    <div class="bike-price-tag-overlay">₹${formattedPrice} <small class="fw-normal text-white-50" style="font-size:0.75rem;">/day</small></div>
+                                </div>
+                                <div class="p-3 d-flex flex-column flex-grow-1">
+                                    <h6 class="fw-bold mb-2 text-dark text-truncate">${bike.name}</h6>
+                                    
+                                    <div class="d-flex flex-wrap gap-1 mb-3">
+                                        <span class="spec-chip">${bike.engineCc || '350cc'}</span>
+                                        <span class="spec-chip">${bike.powerHp || '20.2 BHP'}</span>
+                                        <span class="spec-chip">${bike.fuelType || 'Petrol'}</span>
+                                        <span class="spec-chip">${bike.averageMileage || '38 kmpl'}</span>
+                                    </div>
+
+                                    <div class="bg-light p-2 rounded-3 small mb-3 border">
+                                        <div class="d-flex justify-content-between text-muted mb-1">
+                                            <span>Odometer Start:</span>
+                                            <strong class="text-dark">${Number(bike.startKm).toLocaleString()} KM</strong>
+                                        </div>
+                                        <div class="d-flex justify-content-between text-muted">
+                                            <span>Total Driven:</span>
+                                            <strong class="text-success">+${totalKmDriven.toLocaleString()} KM</strong>
+                                        </div>
+                                    </div>
+
+                                    <!-- Clean Action Buttons (Icon-Free) -->
+                                    <div class="mt-auto pt-2 border-top d-flex gap-2">
+                                        <button class="btn btn-success btn-sm rounded-3 fw-bold flex-grow-1" onclick="openFullEditModal(${bike.id})">
+                                            Edit Full Listing
+                                        </button>
+                                        <button class="btn btn-outline-danger btn-sm rounded-3 fw-bold" onclick="openDeleteModal(${bike.id}, '${bike.name.replace(/'/g, "\\'")}')">
+                                            Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', html);
+                });
+
+            }
+
+            // Pagination Controls Text
+            const infoText = totalEntries > 0 ? `Showing ${startIndex + 1} to ${endIndex} of ${totalEntries} entries` : 'Showing 0 entries';
+            document.getElementById('paginationInfoText').textContent = infoText;
+
+            renderPaginationControls(totalPages);
+        }
+
+        function renderPaginationControls(totalPages) {
+            const paginationUl = document.getElementById('paginationControls');
+            paginationUl.innerHTML = '';
+
+            // Previous Button
+            let prevLi = `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                <button class="page-link" onclick="goToPage(${currentPage - 1})">Prev</button>
+            </li>`;
+            paginationUl.insertAdjacentHTML('beforeend', prevLi);
+
+            // Page Number Buttons
+            for (let i = 1; i <= totalPages; i++) {
+                let pageLi = `<li class="page-item ${i === currentPage ? 'active' : ''}">
+                    <button class="page-link" onclick="goToPage(${i})">${i}</button>
+                </li>`;
+                paginationUl.insertAdjacentHTML('beforeend', pageLi);
+            }
+
+            // Next Button
+            let nextLi = `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                <button class="page-link" onclick="goToPage(${currentPage + 1})">Next</button>
+            </li>`;
+            paginationUl.insertAdjacentHTML('beforeend', nextLi);
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            renderBikesGrid();
+        }
+
+        // Live Upload File Preview
+        function previewUploadImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    uploadedBikeImageBase64 = e.target.result;
+                    const img = document.getElementById('liveImagePreview');
+                    img.src = uploadedBikeImageBase64;
+                    img.classList.remove('d-none');
+                    document.getElementById('previewPlaceholder').classList.add('d-none');
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function usePresetImage(selectElem) {
+            if (selectElem.value) {
+                uploadedBikeImageBase64 = selectElem.value;
+                const img = document.getElementById('liveImagePreview');
+                img.src = uploadedBikeImageBase64;
+                img.classList.remove('d-none');
+                document.getElementById('previewPlaceholder').classList.add('d-none');
+            }
+        }
+
+        function toggleFeaturePill(targetInputId, featureName, btnElem) {
+            const inputElem = document.getElementById(targetInputId);
+            if (!inputElem) return;
+
+            let currentVal = inputElem.value.trim();
+            let currentArray = currentVal ? currentVal.split(',').map(s => s.trim()).filter(Boolean) : [];
+
+            const index = currentArray.findIndex(item => item.toLowerCase() === featureName.toLowerCase());
+            if (index !== -1) {
+                currentArray.splice(index, 1);
+                btnElem.classList.remove('btn-success', 'active');
+                btnElem.classList.add('btn-outline-secondary');
+            } else {
+                currentArray.push(featureName);
+                btnElem.classList.remove('btn-outline-secondary');
+                btnElem.classList.add('btn-success', 'active');
+            }
+            inputElem.value = currentArray.join(', ');
+        }
+
+        function syncFeaturePills(targetInputId, containerId) {
+            const inputElem = document.getElementById(targetInputId);
+            const container = document.getElementById(containerId);
+            if (!inputElem || !container) return;
+
+            const currentVal = inputElem.value.trim();
+            const currentArray = currentVal ? currentVal.split(',').map(s => s.trim().toLowerCase()).filter(Boolean) : [];
+
+            const buttons = container.querySelectorAll('.feature-pill-btn');
+            buttons.forEach(btn => {
+                const featName = (btn.dataset.featureName || btn.textContent.trim()).toLowerCase();
+                if (currentArray.includes(featName)) {
+                    btn.classList.remove('btn-outline-secondary');
+                    btn.classList.add('btn-success', 'active');
+                } else {
+                    btn.classList.remove('btn-success', 'active');
+                    btn.classList.add('btn-outline-secondary');
+                }
+            });
+        }
+
+        // Handle Add Bike Submit (Backend Django API Sync)
+        function handleAddBikeSubmit(e) {
+            e.preventDefault();
+            const name = document.getElementById('addBikeName').value;
+            const categoryElem = document.getElementById('addBikeCategorySelect');
+            const category = categoryElem ? categoryElem.value : 'Cruiser';
+            const price = Number(document.getElementById('addBikePrice').value);
+            const km = Number(document.getElementById('addBikeKm').value);
+            const engine = document.getElementById('addBikeEngine').value;
+            const power = document.getElementById('addBikePower').value;
+            const average = document.getElementById('addBikeAverage').value;
+            const fuelType = document.getElementById('addBikeFuelType').value;
+            const rating = Number(document.getElementById('addBikeRating').value) || 4.8;
+            const status = document.getElementById('addBikeStatus').value;
+            const description = document.getElementById('addBikeDescription').value;
+            const features = document.getElementById('addBikeFeatures').value;
+            const image = uploadedBikeImageBase64 || "/static/images/image/bikeimg/bullet.jpg";
+
+            fetch('/admin-portal/api/bikes/add/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    name: name,
+                    category: category,
+                    price: price,
+                    engineCc: engine,
+                    powerHp: power,
+                    averageMileage: average,
+                    fuelType: fuelType,
+                    rating: rating,
+                    startKm: km,
+                    endKm: km + 100,
+                    status: status,
+                    description: description,
+                    features: features,
+                    image: image
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    bikesData.unshift(data.bike);
+                    currentPage = 1;
+                    renderBikesGrid();
+                    document.getElementById('addBikeForm').reset();
+                    document.getElementById('liveImagePreview').classList.add('d-none');
+                    document.getElementById('previewPlaceholder').classList.remove('d-none');
+                    uploadedBikeImageBase64 = "";
+                    bootstrap.Modal.getInstance(document.getElementById('addBikeModal')).hide();
+                    showToastMessage('✅ New bike listing added successfully!', 'success', 3500);
+                } else {
+                    alert(data.message || 'Error adding bike listing.');
+                }
+
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Server error adding bike.');
+            });
+        }
+
+        // OPEN FULL EDIT MODAL (Populates ALL bike details!)
+        function openFullEditModal(id) {
+            const bike = bikesData.find(b => b.id === id);
+            if (!bike) return;
+
+            editUploadedImageBase64 = "";
+            document.getElementById('editBikeId').value = bike.id;
+            document.getElementById('editBikeName').value = bike.name;
+            const editCatSel = document.getElementById('editBikeCategorySelect');
+            if (editCatSel) {
+                editCatSel.value = bike.category || 'Cruiser';
+            }
+            document.getElementById('editBikePrice').value = bike.price;
+            document.getElementById('editBikeEngine').value = bike.engineCc || bike.engine;
+            document.getElementById('editBikePower').value = bike.powerHp || bike.power;
+            document.getElementById('editBikeAverage').value = bike.averageMileage || bike.average;
+            if (document.getElementById('editBikeFuelType')) {
+                document.getElementById('editBikeFuelType').value = bike.fuelType || 'Petrol';
+            }
+            document.getElementById('editBikeStartKm').value = bike.startKm;
+            document.getElementById('editBikeEndKm').value = bike.endKm;
+            if (document.getElementById('editBikeRating')) {
+                document.getElementById('editBikeRating').value = bike.rating || 4.8;
+            }
+            document.getElementById('editBikeStatus').value = bike.status;
+            if (document.getElementById('editBikeDescription')) {
+                document.getElementById('editBikeDescription').value = bike.description || '';
+            }
+            if (document.getElementById('editBikeFeatures')) {
+                document.getElementById('editBikeFeatures').value = bike.features || '';
+                syncFeaturePills('editBikeFeatures', 'editBikeFeaturePillsContainer');
+            }
+
+            document.getElementById('editImagePreview').src = bike.image;
+
+            new bootstrap.Modal(document.getElementById('editBikeModal')).show();
+        }
+
+        function previewEditImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    editUploadedImageBase64 = e.target.result;
+                    document.getElementById('editImagePreview').src = editUploadedImageBase64;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // SAVE ALL EDITED DETAILS
+        function saveBikeEdits() {
+            const id = Number(document.getElementById('editBikeId').value);
+            const name = document.getElementById('editBikeName').value;
+            const categoryElem = document.getElementById('editBikeCategorySelect');
+            const category = categoryElem ? categoryElem.value : 'Cruiser';
+            const price = Number(document.getElementById('editBikePrice').value);
+            const engine = document.getElementById('editBikeEngine').value;
+            const power = document.getElementById('editBikePower').value;
+            const average = document.getElementById('editBikeAverage').value;
+            const fuelType = document.getElementById('editBikeFuelType').value;
+            const startKm = Number(document.getElementById('editBikeStartKm').value);
+            const endKm = Number(document.getElementById('editBikeEndKm').value);
+            const rating = Number(document.getElementById('editBikeRating').value) || 4.8;
+            const status = document.getElementById('editBikeStatus').value;
+            const description = document.getElementById('editBikeDescription').value;
+            const features = document.getElementById('editBikeFeatures').value;
+
+            const payload = {
+                id: id,
+                name: name,
+                category: category,
+                price: price,
+                engineCc: engine,
+                powerHp: power,
+                averageMileage: average,
+                fuelType: fuelType,
+                rating: rating,
+                startKm: startKm,
+                endKm: endKm,
+                status: status,
+                description: description,
+                features: features
+            };
+            if (editUploadedImageBase64) {
+                payload.image = editUploadedImageBase64;
+            }
+
+            fetch('/admin-portal/api/bikes/edit/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const index = bikesData.findIndex(b => b.id === id);
+                    if (index !== -1) {
+                        bikesData[index] = data.bike;
+                    }
+                    renderBikesGrid();
+                    bootstrap.Modal.getInstance(document.getElementById('editBikeModal')).hide();
+                    showToastMessage('✅ Bike listing updated successfully!', 'success', 3500);
+                } else {
+                    alert(data.message || 'Error updating bike.');
+                }
+
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Server error updating bike.');
+            });
+        }
+
+
+
+        function openDeleteModal(id, title) {
+            document.getElementById('deleteBikeId').value = id;
+            document.getElementById('deleteBikeTitle').textContent = title;
+            new bootstrap.Modal(document.getElementById('deleteBikeModal')).show();
+        }
+
+        function executeBikeDelete() {
+            const id = Number(document.getElementById('deleteBikeId').value);
+
+            fetch('/admin-portal/api/bikes/delete/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ id: id })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    bikesData = bikesData.filter(b => b.id !== id);
+                    renderBikesGrid();
+                    bootstrap.Modal.getInstance(document.getElementById('deleteBikeModal')).hide();
+                } else {
+                    alert(data.message || 'Error deleting bike listing.');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Server error deleting bike.');
+            });
+        }
+
+        function showToastMessage(message, type = 'success', duration = 3500) {
+            const container = document.getElementById('toastNotificationContainer');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            toast.className = `toast-message-item ${type === 'success' ? 'toast-success' : 'toast-error'}`;
+            toast.innerHTML = `
+                <div class="d-flex align-items-center justify-content-between gap-3">
+                    <span class="fw-bold fs-6">${message}</span>
+                    <button type="button" class="btn-close btn-close-white btn-sm" onclick="this.parentElement.parentElement.remove()"></button>
+                </div>
+            `;
+
+            container.appendChild(toast);
+
+            requestAnimationFrame(() => {
+                toast.classList.add('toast-show');
+            });
+
+            setTimeout(() => {
+                toast.classList.remove('toast-show');
+                toast.classList.add('toast-hide');
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.remove();
+                    }
+                }, 400);
+            }, duration);
+        }
+
+        function addQuickFeatureToModal(textareaId, featureName) {
+            if (!featureName) return;
+            const textarea = document.getElementById(textareaId);
+            if (!textarea) return;
+
+            let currentVal = textarea.value.trim();
+            if (currentVal) {
+                if (!currentVal.toLowerCase().includes(featureName.toLowerCase())) {
+                    textarea.value = currentVal + ', ' + featureName;
+                } else {
+                    showToastMessage(`Info: Feature '${featureName}' is already included!`, 'error', 2500);
+                    return;
+                }
+            } else {
+                textarea.value = featureName;
+            }
+            showToastMessage(`✅ Feature '${featureName}' added to specifications!`, 'success', 3000);
+        }
+
+        function appendFeature(targetId, featureText) {
+            addQuickFeatureToModal(targetId, featureText);
+        }
+
+        function addFeatureFromSelect(selectElem, targetId) {
+            if (selectElem.value) {
+                appendFeature(targetId, selectElem.value);
+                selectElem.value = "";
+            }
+        }
+
+
+        function handleCategorySubmit(event, vehicleType) {
+            event.preventDefault();
+            const nameField = vehicleType === 'bike' ? 'newBikeCategoryName' : 'newCategoryName';
+            const descField = vehicleType === 'bike' ? 'newBikeCategoryDesc' : 'newCategoryDesc';
+            const name = document.getElementById(nameField).value.trim();
+            const desc = document.getElementById(descField).value.trim();
+            if (!name) return;
+
+            fetch('/admin-portal/api/categories/add/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ name: name, vehicle_type: vehicleType, description: desc })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Error adding category.');
+                }
+            })
+            .catch(err => alert('Failed to connect to backend server.'));
+        }
+
+        function deleteCategory(catId, catName = '') {
+            if (!confirm(`Are you sure you want to delete category '${catName || catId}'?`)) return;
+            fetch('/admin-portal/api/categories/delete/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ id: catId, name: catName })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const row = document.getElementById(`bike-cat-row-${catId}`);
+                    if (row) row.remove();
+                    showToastMessage('✅ Category deleted successfully!', 'success', 3000);
+                } else {
+                    showToastMessage(data.message || 'Error deleting category.', 'error', 3500);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showToastMessage('Failed to connect to backend server.', 'error', 3500);
+            });
+        }
+
+        function handleFeatureSubmit(event, vehicleType) {
+            event.preventDefault();
+            const nameField = vehicleType === 'bike' ? 'newBikeFeatureName' : 'newFeatureName';
+            const descField = vehicleType === 'bike' ? 'newBikeFeatureDesc' : 'newFeatureDesc';
+            const name = document.getElementById(nameField).value.trim();
+            const desc = document.getElementById(descField).value.trim();
+            if (!name) return;
+
+            fetch('/admin-portal/api/features/add/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ name: name, vehicle_type: vehicleType, description: desc })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showToastMessage('✅ Feature added to database!', 'success', 3000);
+                    setTimeout(() => window.location.reload(), 800);
+                } else {
+                    showToastMessage(data.message || 'Error adding feature.', 'error', 3500);
+                }
+            })
+            .catch(err => showToastMessage('Failed to connect to backend server.', 'error', 3500));
+        }
+
+        function deleteFeature(featId, featName = '') {
+            if (!confirm(`Are you sure you want to delete feature '${featName || featId}'?`)) return;
+            fetch('/admin-portal/api/features/delete/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ id: featId, name: featName })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const row = document.getElementById(`bike-feat-row-${featId}`);
+                    if (row) row.remove();
+                    showToastMessage('✅ Feature deleted successfully!', 'success', 3000);
+                } else {
+                    showToastMessage(data.message || 'Error deleting feature.', 'error', 3500);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showToastMessage('Failed to connect to backend server.', 'error', 3500);
+            });
+        }
+
+    </script>
+
+</body>
+</html>

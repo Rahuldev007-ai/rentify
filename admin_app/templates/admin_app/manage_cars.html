@@ -1,0 +1,1506 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Cars Fleet - Rentify Admin</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/admin_sidebar.css' %}">
+    <style>
+        :root {
+            --admin-bg: #f1f5f9;
+            --card-bg: #ffffff;
+            --border-color: #e2e8f0;
+            --primary-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        }
+
+        /* Top Corner Animated Toast Message Styling */
+        .toast-message-item {
+            pointer-events: auto;
+            min-width: 320px;
+            max-width: 440px;
+            padding: 14px 20px;
+            border-radius: 14px;
+            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.25);
+            color: #ffffff;
+            opacity: 0;
+            transform: translateX(120%) scale(0.9);
+            transition: all 0.38s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .toast-message-item.toast-show {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+        }
+
+        .toast-message-item.toast-hide {
+            opacity: 0;
+            transform: translateX(120%) scale(0.85);
+            transition: all 0.35s ease-in;
+        }
+
+        .toast-success {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            border-left: 6px solid #34d399;
+        }
+
+        .toast-error {
+            background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+            border-left: 6px solid #fca5a5;
+        }
+
+
+        /* Executive Header Banner */
+        .executive-page-header {
+            background: var(--primary-gradient);
+            border-radius: 18px;
+            padding: 26px 30px;
+            color: #ffffff;
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.12);
+            margin-bottom: 26px;
+            border-left: 6px solid #2563eb;
+        }
+
+        /* Luxury Car CRUD Cards */
+        .car-crud-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+            transition: all 0.22s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .car-crud-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.07);
+            border-color: #cbd5e1;
+        }
+
+        .car-img-wrapper {
+            height: 170px;
+            overflow: hidden;
+            position: relative;
+            background: #e2e8f0;
+        }
+
+        .car-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .car-crud-card:hover .car-img {
+            transform: scale(1.05);
+        }
+
+        .badge-status-pill {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .badge-available-pill { background: #059669; color: #ffffff; }
+        .badge-booked-pill { background: #dc2626; color: #ffffff; }
+        .badge-maintenance-pill { background: #d97706; color: #ffffff; }
+
+        .car-price-tag-overlay {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(15, 23, 42, 0.88);
+            color: #ffffff;
+            padding: 4px 12px;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 0.95rem;
+        }
+
+        .spec-chip {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        /* Image Preview Box */
+        .image-preview-box {
+            width: 100%;
+            height: 160px;
+            border: 2px dashed #cbd5e1;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: #f8fafc;
+            position: relative;
+        }
+
+        .image-preview-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+    <!-- Top-Right Animated Toast Container -->
+    <div id="toastNotificationContainer" style="position: fixed; top: 24px; right: 24px; z-index: 10000; display: flex; flex-direction: column; gap: 12px; pointer-events: none;"></div>
+
+    <div class="admin-layout-wrapper">
+
+        <!-- Sidebar Navigation -->
+        {% include 'admin_app/admin_header.html' %}
+
+        <!-- Main Workspace -->
+        <main class="admin-main-content">
+            <!-- Executive Header Banner (Icon-Free Clean Design) -->
+            <div class="executive-page-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="badge bg-primary bg-opacity-20 text-white px-3 py-1 rounded-pill fw-bold border border-light border-opacity-25 small">
+                            Car Fleet Management Center
+                        </span>
+                    </div>
+                    <h2 class="fw-bold mb-1 text-white">Manage Car Listings & Database Operations</h2>
+                    <p class="text-white-50 small mb-0">Create new vehicle listings, add custom categories and features in real time, and monitor fleet status.</p>
+                </div>
+                <button class="btn btn-warning text-dark fw-extrabold rounded-3 px-4 py-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#addCarModal">
+                    Add New Car Listing
+                </button>
+            </div>
+
+            <!-- Executive 3-Tab Control Switcher (Icon-Free) -->
+            <ul class="nav nav-pills gap-2 mb-4 p-2 bg-white rounded-4 border shadow-sm" id="carMgmtTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active rounded-3 px-4 py-2 fw-bold" id="tab-fleet-btn" data-bs-toggle="tab" data-bs-target="#tab-fleet" type="button" role="tab">
+                        1. All Car Fleet ({{ cars.count }})
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link rounded-3 px-4 py-2 fw-bold" id="tab-categories-btn" data-bs-toggle="tab" data-bs-target="#tab-categories" type="button" role="tab">
+                        2. Car Types / Categories ({{ car_categories_list|length }})
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link rounded-3 px-4 py-2 fw-bold" id="tab-features-btn" data-bs-toggle="tab" data-bs-target="#tab-features" type="button" role="tab">
+                        3. Car Features ({{ car_features_list|length }})
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="carMgmtTabContent">
+                <!-- TAB 1: ALL CAR FLEET -->
+                <div class="tab-pane fade show active" id="tab-fleet" role="tabpanel">
+                    <!-- Filter & Search Bar -->
+                    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4 bg-white">
+                        <div class="row g-3 align-items-center">
+                            <div class="col-12 col-md-5">
+                                <input type="text" class="form-control bg-light rounded-3" id="carSearchInput" placeholder="Search cars by model name or category..." onkeyup="handleSearchInput()">
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <select class="form-select rounded-3" id="carStatusFilter" onchange="filterCars()">
+                                    <option value="ALL">All Statuses (Available, Booked, Maintenance)</option>
+                                    <option value="Available">Available Fleet Only</option>
+                                    <option value="Booked">Booked Fleet Only</option>
+                                    <option value="Maintenance">Under Maintenance</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-3 d-flex align-items-center justify-content-md-end gap-2">
+                                <span class="text-muted small fw-bold">Cards / Page:</span>
+                                <select class="form-select form-select-sm rounded-3 w-auto fw-bold" id="pageSizeSelect" onchange="changePageSize()">
+                                    <option value="4" selected>4 per page</option>
+                                    <option value="8">8 per page</option>
+                                    <option value="12">12 per page</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cars Cards Grid -->
+                    <div class="row g-4 mb-4" id="carsGridContainer">
+                        <!-- Dynamically rendered via JS -->
+                    </div>
+
+                    <!-- Pagination Bar -->
+                    <div class="d-flex flex-wrap justify-content-between align-items-center bg-white p-3 rounded-4 shadow-sm border">
+                        <div class="text-muted small fw-bold" id="paginationInfoText">
+                            Showing 1 to 4 entries
+                        </div>
+                        <nav aria-label="Cars Pagination">
+                            <ul class="pagination pagination-sm mb-0" id="paginationControls">
+                                <!-- Rendered via JS -->
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+
+                <!-- TAB 2: CAR TYPES / CATEGORIES CRUD -->
+                <div class="tab-pane fade" id="tab-categories" role="tabpanel">
+                    <div class="row g-4 mb-4">
+                        <div class="col-lg-4">
+                            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                                <h5 class="fw-bold mb-3">Add New Car Category</h5>
+                                <form id="addCategoryForm" onsubmit="handleCategorySubmit(event, 'car')">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold small text-uppercase">Category Name</label>
+                                        <input type="text" class="form-control rounded-3" id="newCategoryName" placeholder="e.g. Thar / Off-Road, Luxury Sedan" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold small text-uppercase">Description</label>
+                                        <textarea class="form-control rounded-3" id="newCategoryDesc" rows="3" placeholder="Category specs & summary..."></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary w-100 rounded-3 fw-bold py-2 shadow-sm">
+                                        Save Car Category
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-8">
+                            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                                <h5 class="fw-bold mb-3">Active Car Categories & Fleet Counts</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Category Name</th>
+                                                <th>Description</th>
+                                                <th>Cars Assigned</th>
+                                                <th class="text-end">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="carCategoriesTableBody">
+                                            {% for cat in car_categories_list %}
+                                                <tr id="car-cat-row-{{ cat.id }}">
+                                                    <td class="fw-bold text-dark">{{ cat.name }}</td>
+                                                    <td class="text-muted small">{{ cat.description|default:"Standard car category" }}</td>
+                                                    <td><span class="badge bg-primary bg-opacity-10 text-primary fw-bold px-3 py-1 rounded-pill">{{ cat.count }} Cars</span></td>
+                                                    <td class="text-end">
+                                                        <button class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="deleteCategory({{ cat.id }})">
+                                                            Delete
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            {% empty %}
+                                                <tr>
+                                                    <td colspan="4" class="text-muted small text-center py-4">No custom car categories added yet. Active categories in fleet: {{ categories|join:", " }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: CAR FEATURES CRUD -->
+                <div class="tab-pane fade" id="tab-features" role="tabpanel">
+                    <div class="row g-4 mb-4">
+                        <div class="col-lg-4">
+                            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                                <h5 class="fw-bold mb-3">Add Custom Car Feature</h5>
+                                <form id="addFeatureForm" onsubmit="handleFeatureSubmit(event, 'car')">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold small text-uppercase">Feature Name</label>
+                                        <input type="text" class="form-control rounded-3" id="newFeatureName" placeholder="e.g. 4x4 Drive, ADAS, Air Conditioning" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold small text-uppercase">Description</label>
+                                        <textarea class="form-control rounded-3" id="newFeatureDesc" rows="3" placeholder="Feature details..."></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-success w-100 rounded-3 fw-bold py-2 shadow-sm">
+                                        Save Car Feature
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-8">
+                            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                                <h5 class="fw-bold mb-3">Active Car Features Library</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Feature Name</th>
+                                                <th>Description</th>
+                                                <th class="text-end">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="carFeaturesTableBody">
+                                            {% for feat in car_features_list %}
+                                                <tr id="car-feat-row-{{ feat.id }}">
+                                                    <td class="fw-bold text-dark">{{ feat.name }}</td>
+                                                    <td class="text-muted small">{{ feat.description|default:"Standard car feature" }}</td>
+                                                    <td class="text-end">
+                                                        <button class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="deleteFeature({{ feat.id }})">
+                                                            Delete
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            {% empty %}
+                                                <tr>
+                                                    <td colspan="3" class="text-muted small text-center py-4">No custom car features added yet. Default features: 4x4 Drive, Air Conditioning, Sunroof, ADAS, Touchscreen Infotainment</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- ================= POPUP MODALS ================= -->
+
+    <!-- ADD CAR MODAL (Supports Real-Time Custom Category & Feature Additions) -->
+    <div class="modal fade" id="addCarModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-dark text-white rounded-top-4 px-4 py-3">
+                    <h5 class="modal-title fw-bold">Add New Car Listing</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="addCarForm" onsubmit="handleAddCarSubmit(event)">
+                    <div class="modal-body p-4">
+                        <div class="row g-3">
+                            <div class="col-md-7">
+                                <div class="row g-3 mb-3">
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">Car Model Name</label>
+                                        <input type="text" class="form-control rounded-3" id="addCarName" placeholder="e.g. Mahindra Thar 4x4 LX" required>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">Category</label>
+                                        <select class="form-select rounded-3" id="addCarCategorySelect">
+                                            {% for cat in categories %}
+                                                <option value="{{ cat }}">{{ cat }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">Daily Price (₹)</label>
+                                        <input type="number" class="form-control rounded-3" id="addCarPrice" placeholder="2999" required>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">Initial Odometer (KM)</label>
+                                        <input type="number" class="form-control rounded-3" id="addCarKm" placeholder="12450" required>
+                                    </div>
+                                </div>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-4">
+                                        <label class="form-label fw-bold small text-uppercase">Seats</label>
+                                        <input type="number" class="form-control rounded-3" id="addCarSeats" value="5" required>
+                                    </div>
+                                    <div class="col-4">
+                                        <label class="form-label fw-bold small text-uppercase">Transmission</label>
+                                        <select class="form-select rounded-3" id="addCarTransmission">
+                                            <option value="Automatic">Automatic</option>
+                                            <option value="Manual">Manual</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-4">
+                                        <label class="form-label fw-bold small text-uppercase">Fuel Type</label>
+                                        <select class="form-select rounded-3" id="addCarFuelType">
+                                            <option value="Petrol">Petrol</option>
+                                            <option value="Diesel">Diesel</option>
+                                            <option value="Electric">Electric</option>
+                                            <option value="Hybrid">Hybrid</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">Rating (1.0 to 5.0)</label>
+                                        <input type="number" step="0.1" max="5.0" min="1.0" class="form-control rounded-3" id="addCarRating" value="4.9" required>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">Availability Status</label>
+                                        <select class="form-select rounded-3" id="addCarStatus">
+                                            <option value="Available">Available</option>
+                                            <option value="Booked">Booked</option>
+                                            <option value="Maintenance">Under Maintenance</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small text-uppercase">Car Description</label>
+                                    <textarea class="form-control rounded-3" id="addCarDescription" rows="2" placeholder="Overview overview for customer view..."></textarea>
+                                </div>
+                                
+                                <!-- Interactive Feature Toggle Pills -->
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small text-uppercase">Toggle Active Features</label>
+                                    <div class="mb-2 p-3 bg-light rounded-3 border" id="addCarFeaturePillsContainer">
+                                        <small class="text-muted fw-bold d-block mb-2">Click feature pills to toggle on/off:</small>
+                                        <div class="d-flex flex-wrap gap-2">
+                                            {% for feat in car_features_list %}
+                                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill py-1 px-3 fw-semibold feature-pill-btn" data-feature-name="{{ feat.name|escapejs }}" onclick="toggleFeaturePill('addCarFeatures', '{{ feat.name|escapejs }}', this)">
+                                                    {{ feat.name }}
+                                                </button>
+                                            {% empty %}
+                                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill py-1 px-3 fw-semibold feature-pill-btn" data-feature-name="4x4 Drive" onclick="toggleFeaturePill('addCarFeatures', '4x4 Drive', this)">4x4 Drive</button>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill py-1 px-3 fw-semibold feature-pill-btn" data-feature-name="Climate Control AC" onclick="toggleFeaturePill('addCarFeatures', 'Climate Control AC', this)">Climate Control AC</button>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill py-1 px-3 fw-semibold feature-pill-btn" data-feature-name="Touchscreen Infotainment" onclick="toggleFeaturePill('addCarFeatures', 'Touchscreen Infotainment', this)">Touchscreen Infotainment</button>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill py-1 px-3 fw-semibold feature-pill-btn" data-feature-name="Sunroof" onclick="toggleFeaturePill('addCarFeatures', 'Sunroof', this)">Sunroof</button>
+                                                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill py-1 px-3 fw-semibold feature-pill-btn" data-feature-name="ADAS" onclick="toggleFeaturePill('addCarFeatures', 'ADAS', this)">ADAS</button>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    <input type="text" class="form-control rounded-3" id="addCarFeatures" placeholder="Selected features list..." readonly>
+                                </div>
+
+                            </div>
+
+                            <!-- Image Upload & Live Preview -->
+                            <div class="col-md-5">
+                                <label class="form-label fw-bold small text-uppercase">Upload Photo</label>
+                                <input type="file" class="form-control rounded-3 mb-3" id="addCarFileInput" accept="image/*" onchange="previewUploadImage(this)">
+                                
+                                <div class="image-preview-box mb-2" id="previewContainer">
+                                    <span class="text-muted small" id="previewPlaceholder">Selected image will preview live</span>
+                                    <img id="liveImagePreview" class="d-none" alt="Preview">
+                                </div>
+                                <small class="text-muted d-block">Or choose preset image:</small>
+                                <select class="form-select rounded-3 form-select-sm mt-1" id="addCarPresetSelect" onchange="usePresetImage(this)">
+                                    <option value="">-- Choose Preset Image --</option>
+                                    <option value="/static/images/image/carimgs/thar1.jpg">Mahindra Thar 4x4</option>
+                                    <option value="/static/images/image/carimg/kia.jpg">Kia Seltos SUV</option>
+                                    <option value="/static/images/image/carimg/bmw.jpg">BMW Luxury Sedan</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light px-4 py-3 rounded-bottom-4">
+                        <button type="button" class="btn btn-outline-secondary rounded-3 px-4 fw-bold" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary rounded-3 px-4 fw-bold">Save Car to Database</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- EDIT CAR MODAL -->
+    <div class="modal fade" id="editCarModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-primary text-white rounded-top-4 px-4 py-3">
+                    <h5 class="modal-title fw-bold">Edit Car Listing</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <input type="hidden" id="editCarId">
+                    <div class="row g-3">
+                        <div class="col-md-7">
+                            <div class="row g-3 mb-3">
+                                <div class="col-6">
+                                    <label class="form-label fw-bold small text-uppercase">Car Name / Model</label>
+                                    <input type="text" class="form-control rounded-3" id="editCarName" required>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label fw-bold small text-uppercase">Category</label>
+                                    <select class="form-select rounded-3" id="editCarCategorySelect">
+                                        {% for cat in categories %}
+                                            <option value="{{ cat }}">{{ cat }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row g-3 mb-3">
+                                <div class="col-6">
+                                    <label class="form-label fw-bold small text-uppercase">Price per Day (₹)</label>
+                                    <input type="number" class="form-control rounded-3" id="editCarPrice" required>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label fw-bold small text-uppercase">Seats</label>
+                                    <input type="number" class="form-control rounded-3" id="editCarSeats" required>
+                                </div>
+                            </div>
+                            <div class="row g-3 mb-3">
+                                <div class="col-6">
+                                    <label class="form-label fw-bold small text-uppercase">Transmission</label>
+                                    <select class="form-select rounded-3" id="editCarTransmission">
+                                        <option value="Automatic">Automatic</option>
+                                        <option value="Manual">Manual</option>
+                                    </select>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label fw-bold small text-uppercase">Fuel Type</label>
+                                    <select class="form-select rounded-3" id="editCarFuelType">
+                                        <option value="Petrol">Petrol</option>
+                                        <option value="Diesel">Diesel</option>
+                                        <option value="Electric">Electric</option>
+                                        <option value="Hybrid">Hybrid</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row g-3 mb-3">
+                                <div class="col-6">
+                                    <label class="form-label fw-bold small text-uppercase">Pickup Odometer (KM)</label>
+                                    <input type="number" class="form-control rounded-3" id="editCarStartKm" required>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label fw-bold small text-uppercase">Return Odometer (KM)</label>
+                                    <input type="number" class="form-control rounded-3" id="editCarEndKm" required>
+                                </div>
+                            </div>
+                            <div class="row g-3 mb-3">
+                                <div class="col-6">
+                                    <label class="form-label fw-bold small text-uppercase">Rating (1.0 to 5.0)</label>
+                                    <input type="number" step="0.1" class="form-control rounded-3" id="editCarRating" required>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label fw-bold small text-uppercase">Availability Status</label>
+                                    <select class="form-select rounded-3" id="editCarStatus">
+                                        <option value="Available">Available</option>
+                                        <option value="Booked">Booked</option>
+                                        <option value="Maintenance">Under Maintenance</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small text-uppercase">Car Description</label>
+                                <textarea class="form-control rounded-3" id="editCarDescription" rows="2"></textarea>
+                            </div>
+
+                            <!-- Interactive Feature Toggle Pills -->
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small text-uppercase">Toggle Active Features</label>
+                                <div class="mb-2 p-3 bg-light rounded-3 border" id="editCarFeaturePillsContainer">
+                                    <small class="text-muted fw-bold d-block mb-2">Click feature pills to toggle on/off:</small>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        {% for feat in car_features_list %}
+                                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill py-1 px-3 fw-semibold feature-pill-btn" data-feature-name="{{ feat.name|escapejs }}" onclick="toggleFeaturePill('editCarFeatures', '{{ feat.name|escapejs }}', this)">
+                                                {{ feat.name }}
+                                            </button>
+                                        {% empty %}
+                                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill py-1 px-3 fw-semibold feature-pill-btn" data-feature-name="4x4 Drive" onclick="toggleFeaturePill('editCarFeatures', '4x4 Drive', this)">4x4 Drive</button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill py-1 px-3 fw-semibold feature-pill-btn" data-feature-name="Climate Control AC" onclick="toggleFeaturePill('editCarFeatures', 'Climate Control AC', this)">Climate Control AC</button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill py-1 px-3 fw-semibold feature-pill-btn" data-feature-name="Touchscreen Infotainment" onclick="toggleFeaturePill('editCarFeatures', 'Touchscreen Infotainment', this)">Touchscreen Infotainment</button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill py-1 px-3 fw-semibold feature-pill-btn" data-feature-name="Sunroof" onclick="toggleFeaturePill('editCarFeatures', 'Sunroof', this)">Sunroof</button>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill py-1 px-3 fw-semibold feature-pill-btn" data-feature-name="ADAS" onclick="toggleFeaturePill('editCarFeatures', 'ADAS', this)">ADAS</button>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <input type="text" class="form-control rounded-3" id="editCarFeatures" placeholder="Selected features list..." readonly>
+                            </div>
+
+                        </div>
+
+                        <!-- Image Preview Section -->
+                        <div class="col-md-5">
+                            <label class="form-label fw-bold small text-uppercase">Car Photo Preview</label>
+                            <div class="image-preview-box mb-3">
+                                <img id="editImagePreview" src="" alt="Car Photo">
+                            </div>
+                            <label class="form-label fw-bold small text-uppercase">Change Photo File</label>
+                            <input type="file" class="form-control rounded-3 mb-2" accept="image/*" onchange="previewEditImage(this)">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light px-4 py-3 rounded-bottom-4">
+                    <button type="button" class="btn btn-outline-secondary rounded-3 px-4 fw-bold" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary rounded-3 px-4 fw-bold" onclick="saveCarEdits()">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- KM INSPECTION MODAL -->
+    <div class="modal fade" id="kmInspectionModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-primary text-white rounded-top-4 px-4 py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="modal-title fw-bold" id="kmModalTitle">Odometer KM & GPS Inspection</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <input type="hidden" id="kmCarId">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold mb-2 text-dark">Pickup Odometer Photo</h6>
+                            <div class="comparison-img-card mb-2" style="border:1px solid #e2e8f0; border-radius:12px; overflow:hidden;">
+                                <img id="previousInspectionImg" src="" alt="Pickup Image" style="width:100%; height:170px; object-fit:cover;">
+                            </div>
+                            <div class="badge bg-secondary w-100 py-2 fs-7 fw-bold" id="previousKmTag">Pickup Reading: 0 KM</div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold mb-2 text-dark">Return Odometer Photo</h6>
+                            <div class="comparison-img-card mb-2" style="border:1px solid #e2e8f0; border-radius:12px; overflow:hidden;">
+                                <img id="currentReturnImg" src="" alt="Return Image" style="width:100%; height:170px; object-fit:cover;">
+                            </div>
+                            <div class="badge bg-success w-100 py-2 fs-7 fw-bold" id="currentKmTag">Return Reading: 0 KM</div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="row g-3 align-items-center mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-uppercase">Start Pickup Odometer (KM)</label>
+                            <input type="number" class="form-control rounded-3" id="kmStartInput" oninput="calculateKmDriven()">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-uppercase">Current Return Odometer (KM)</label>
+                            <input type="number" class="form-control rounded-3" id="kmEndInput" oninput="calculateKmDriven()">
+                        </div>
+                    </div>
+
+                    <div class="bg-light p-3 rounded-4 border mb-3">
+                        <div class="row g-2 text-center">
+                            <div class="col-4">
+                                <span class="text-muted small fw-bold d-block">TOTAL KM DRIVEN</span>
+                                <span class="fs-5 fw-extrabold text-primary" id="kmTotalDrivenLabel">+0 KM</span>
+                            </div>
+                            <div class="col-4">
+                                <span class="text-muted small fw-bold d-block">DAILY ALLOWANCE</span>
+                                <span class="fs-5 fw-extrabold text-dark" id="kmAllowedLimitLabel">150 KM / Day</span>
+                            </div>
+                            <div class="col-4">
+                                <span class="text-muted small fw-bold d-block">EXTRA CHARGE</span>
+                                <span class="fs-5 fw-extrabold text-danger" id="kmExtraChargeLabel">₹0</span>
+                            </div>
+                        </div>
+                        <div class="text-center mt-2 pt-2 border-top">
+                            <span class="small fw-bold" id="kmExtraNotice">Driven within allowed limit</span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center bg-dark text-white p-3 rounded-4">
+                        <div>
+                            <span class="fw-bold d-block small">GPS Anti-Theft Status</span>
+                            <span class="small text-white-50" id="gpsLocationText">Location: Hub | Ignition: OFF</span>
+                        </div>
+                        <button type="button" id="engineLockBtn" class="btn btn-danger fw-bold rounded-pill px-3 shadow-sm" onclick="toggleEngineLock('toggle')">
+                            Lock Engine
+                        </button>
+                    </div>
+
+                    <div class="mt-3">
+                        <label class="form-label fw-bold small text-uppercase">Inspection Status</label>
+                        <select class="form-select rounded-3" id="kmInspectionStatusSelect">
+                            <option value="Verified">Verified - No Damage</option>
+                            <option value="Pending Review">Pending Review</option>
+                            <option value="Minor Scratch Reported">Minor Scratch Reported</option>
+                            <option value="Damage Reported">Damage Reported</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light px-4 py-3 rounded-bottom-4">
+                    <button type="button" class="btn btn-outline-secondary rounded-3 px-4 fw-bold" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary rounded-3 px-4 fw-bold" onclick="saveKmInspection()">Save Inspection</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DELETE MODAL -->
+    <div class="modal fade" id="deleteCarModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-danger text-white rounded-top-4 px-4 py-3">
+                    <h5 class="modal-title fw-bold">Delete Car Listing</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4 text-center">
+                    <input type="hidden" id="deleteCarId">
+                    <h5 class="fw-bold text-dark mb-2" id="deleteCarTitle">Car Title</h5>
+                    <p class="text-muted mb-0">Are you sure you want to delete this car card from the database?</p>
+                </div>
+                <div class="modal-footer bg-light justify-content-center px-4 py-3 rounded-bottom-4">
+                    <button type="button" class="btn btn-outline-secondary rounded-3 px-4 fw-bold" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger rounded-3 px-4 fw-bold" onclick="executeCarDelete()">Confirm Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let carsData = {{ cars_json|safe }};
+
+        let uploadedCarImageBase64 = "";
+        let editUploadedImageBase64 = "";
+        let currentPage = 1;
+        let pageSize = 4;
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            renderCarsGrid();
+        });
+
+        function toggleCustomCategoryInput(mode) {
+            const selectId = mode === 'add' ? 'addCarCategorySelect' : 'editCarCategorySelect';
+            const customId = mode === 'add' ? 'addCarCategoryCustom' : 'editCarCategoryCustom';
+            const sel = document.getElementById(selectId);
+            const customInput = document.getElementById(customId);
+            if (sel && customInput) {
+                if (sel.value === 'CUSTOM') {
+                    customInput.classList.remove('d-none');
+                    customInput.focus();
+                } else {
+                    customInput.classList.add('d-none');
+                }
+            }
+        }
+
+        function showToastMessage(message, type = 'success', duration = 3500) {
+            const container = document.getElementById('toastNotificationContainer');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            toast.className = `toast-message-item ${type === 'success' ? 'toast-success' : 'toast-error'}`;
+            toast.innerHTML = `
+                <div class="d-flex align-items-center justify-content-between gap-3">
+                    <span class="fw-bold fs-6">${message}</span>
+                    <button type="button" class="btn-close btn-close-white btn-sm" onclick="this.parentElement.parentElement.remove()"></button>
+                </div>
+            `;
+
+            container.appendChild(toast);
+
+            requestAnimationFrame(() => {
+                toast.classList.add('toast-show');
+            });
+
+            setTimeout(() => {
+                toast.classList.remove('toast-show');
+                toast.classList.add('toast-hide');
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.remove();
+                    }
+                }, 400);
+            }, duration);
+        }
+
+        function addQuickFeatureToModal(textareaId, featureName) {
+            if (!featureName) return;
+            const textarea = document.getElementById(textareaId);
+            if (!textarea) return;
+
+            let currentVal = textarea.value.trim();
+            if (currentVal) {
+                if (!currentVal.toLowerCase().includes(featureName.toLowerCase())) {
+                    textarea.value = currentVal + ', ' + featureName;
+                } else {
+                    showToastMessage(`Info: Feature '${featureName}' is already included!`, 'error', 2500);
+                    return;
+                }
+            } else {
+                textarea.value = featureName;
+            }
+            showToastMessage(`✅ Feature '${featureName}' added to specifications!`, 'success', 3000);
+        }
+
+        function addCustomFeature(targetId, inputId) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            const featText = input.value.trim();
+            if (!featText) return;
+
+            addQuickFeatureToModal(targetId, featText);
+            input.value = "";
+        }
+
+
+        function handleSearchInput() {
+            currentPage = 1;
+            renderCarsGrid();
+        }
+
+        function filterCars() {
+            currentPage = 1;
+            renderCarsGrid();
+        }
+
+        function changePageSize() {
+            pageSize = Number(document.getElementById('pageSizeSelect').value);
+            currentPage = 1;
+            renderCarsGrid();
+        }
+
+        function renderCarsGrid() {
+            const container = document.getElementById('carsGridContainer');
+            const searchVal = document.getElementById('carSearchInput').value.toLowerCase();
+            const statusVal = document.getElementById('carStatusFilter').value;
+
+            container.innerHTML = '';
+            let filtered = carsData.filter(c => {
+                const matchSearch = c.name.toLowerCase().includes(searchVal) || (c.category && c.category.toLowerCase().includes(searchVal));
+                const matchStatus = statusVal === 'ALL' || c.status === statusVal;
+                return matchSearch && matchStatus;
+            });
+
+            const totalEntries = filtered.length;
+            const totalPages = Math.ceil(totalEntries / pageSize) || 1;
+            if (currentPage > totalPages) currentPage = totalPages;
+
+            const startIndex = (currentPage - 1) * pageSize;
+            const endIndex = Math.min(startIndex + pageSize, totalEntries);
+            const pageData = filtered.slice(startIndex, endIndex);
+
+            if (pageData.length === 0) {
+                container.innerHTML = '<div class="col-12 text-center py-5"><h5 class="text-muted">No car listings match your search or filter criteria.</h5></div>';
+            } else {
+                pageData.forEach(car => {
+                    const badgeClass = car.status === 'Available' ? 'badge-available-pill' : (car.status === 'Booked' ? 'badge-booked-pill' : 'badge-maintenance-pill');
+                    const totalKmDriven = Math.max(0, car.endKm - car.startKm);
+                    const formattedPrice = Number(car.price).toLocaleString('en-IN');
+
+                    const html = `
+                        <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
+                            <div class="car-crud-card">
+                                <div class="car-img-wrapper">
+                                    <img src="${car.image}" class="car-img" alt="${car.name}" onerror="this.src='/static/images/image/carimgs/thar1.jpg'">
+                                    <span class="position-absolute top-0 end-0 m-2 badge badge-status-pill ${badgeClass}">${car.status}</span>
+                                    <span class="position-absolute top-0 start-0 m-2 badge bg-dark text-white rounded-pill px-3 py-1 fw-bold fs-7">${car.category || 'SUV'}</span>
+                                    <div class="car-price-tag-overlay">₹${formattedPrice} <small class="fw-normal text-white-50" style="font-size:0.75rem;">/day</small></div>
+                                </div>
+                                <div class="p-3 d-flex flex-column flex-grow-1">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h6 class="fw-bold mb-0 text-dark text-truncate">${car.name}</h6>
+                                        <span class="badge bg-warning text-dark fw-bold">${car.rating || '4.9'} ★</span>
+                                    </div>
+
+                                    <!-- Specs Chips Row (Icon-Free Clean Typography) -->
+                                    <div class="d-flex flex-wrap gap-1 mb-3">
+                                        <span class="spec-chip">${car.transmission || 'Automatic'}</span>
+                                        <span class="spec-chip">${car.seats || '5'} Seats</span>
+                                        <span class="spec-chip">${car.fuelType || 'Petrol'}</span>
+                                    </div>
+
+                                    <!-- Mileage Odometer Card -->
+                                    <div class="bg-light p-2 rounded-3 small mb-3 border">
+                                        <div class="d-flex justify-content-between text-muted mb-1">
+                                            <span>Pickup Odometer:</span>
+                                            <strong class="text-dark">${car.startKm.toLocaleString()} KM</strong>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span>Total Driven:</span>
+                                            <strong class="text-success">+${totalKmDriven.toLocaleString()} KM</strong>
+                                        </div>
+                                    </div>
+
+                                    <!-- Clean Action Buttons (Icon-Free) -->
+                                    <div class="mt-auto pt-2 border-top">
+                                        <button class="btn btn-primary btn-sm rounded-3 fw-bold w-100 mb-2" onclick="openFullEditModal(${car.id})">
+                                            Edit Full Listing
+                                        </button>
+                                        <div class="d-flex gap-2">
+                                            <button class="btn btn-outline-dark btn-sm rounded-3 fw-bold flex-grow-1" onclick="openKmInspectionModal(${car.id})">
+                                                KM & GPS
+                                            </button>
+                                            <button class="btn btn-outline-danger btn-sm rounded-3 fw-bold" onclick="openDeleteModal(${car.id}, '${car.name.replace(/'/g, "\\'")}')">
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', html);
+                });
+            }
+
+            const infoText = totalEntries > 0 ? `Showing ${startIndex + 1} to ${endIndex} of ${totalEntries} entries` : 'Showing 0 entries';
+            document.getElementById('paginationInfoText').textContent = infoText;
+
+            renderPaginationControls(totalPages);
+        }
+
+        function renderPaginationControls(totalPages) {
+            const paginationUl = document.getElementById('paginationControls');
+            paginationUl.innerHTML = '';
+
+            let prevLi = `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                <button class="page-link rounded-start-3" onclick="goToPage(${currentPage - 1})">Prev</button>
+            </li>`;
+            paginationUl.insertAdjacentHTML('beforeend', prevLi);
+
+            for (let i = 1; i <= totalPages; i++) {
+                let pageLi = `<li class="page-item ${i === currentPage ? 'active' : ''}">
+                    <button class="page-link" onclick="goToPage(${i})">${i}</button>
+                </li>`;
+                paginationUl.insertAdjacentHTML('beforeend', pageLi);
+            }
+
+            let nextLi = `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                <button class="page-link rounded-end-3" onclick="goToPage(${currentPage + 1})">Next</button>
+            </li>`;
+            paginationUl.insertAdjacentHTML('beforeend', nextLi);
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            renderCarsGrid();
+        }
+
+        function previewUploadImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    uploadedCarImageBase64 = e.target.result;
+                    const img = document.getElementById('liveImagePreview');
+                    img.src = uploadedCarImageBase64;
+                    img.classList.remove('d-none');
+                    document.getElementById('previewPlaceholder').classList.add('d-none');
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function usePresetImage(selectElem) {
+            if (selectElem.value) {
+                uploadedCarImageBase64 = selectElem.value;
+                const img = document.getElementById('liveImagePreview');
+                img.src = uploadedCarImageBase64;
+                img.classList.remove('d-none');
+                document.getElementById('previewPlaceholder').classList.add('d-none');
+            }
+        }
+
+        function toggleFeaturePill(targetInputId, featureName, btnElem) {
+            const inputElem = document.getElementById(targetInputId);
+            if (!inputElem) return;
+
+            let currentVal = inputElem.value.trim();
+            let currentArray = currentVal ? currentVal.split(',').map(s => s.trim()).filter(Boolean) : [];
+
+            const index = currentArray.findIndex(item => item.toLowerCase() === featureName.toLowerCase());
+            if (index !== -1) {
+                currentArray.splice(index, 1);
+                btnElem.classList.remove('btn-primary', 'active');
+                btnElem.classList.add('btn-outline-secondary');
+            } else {
+                currentArray.push(featureName);
+                btnElem.classList.remove('btn-outline-secondary');
+                btnElem.classList.add('btn-primary', 'active');
+            }
+            inputElem.value = currentArray.join(', ');
+        }
+
+        function syncFeaturePills(targetInputId, containerId) {
+            const inputElem = document.getElementById(targetInputId);
+            const container = document.getElementById(containerId);
+            if (!inputElem || !container) return;
+
+            const currentVal = inputElem.value.trim();
+            const currentArray = currentVal ? currentVal.split(',').map(s => s.trim().toLowerCase()).filter(Boolean) : [];
+
+            const buttons = container.querySelectorAll('.feature-pill-btn');
+            buttons.forEach(btn => {
+                const featName = (btn.dataset.featureName || btn.textContent.trim()).toLowerCase();
+                if (currentArray.includes(featName)) {
+                    btn.classList.remove('btn-outline-secondary');
+                    btn.classList.add('btn-primary', 'active');
+                } else {
+                    btn.classList.remove('btn-primary', 'active');
+                    btn.classList.add('btn-outline-secondary');
+                }
+            });
+        }
+
+        function handleAddCarSubmit(e) {
+            e.preventDefault();
+            const name = document.getElementById('addCarName').value;
+            const category = document.getElementById('addCarCategorySelect').value || 'SUV';
+
+            const price = Number(document.getElementById('addCarPrice').value);
+            const km = Number(document.getElementById('addCarKm').value);
+            const seats = Number(document.getElementById('addCarSeats').value);
+            const transmission = document.getElementById('addCarTransmission').value;
+            const fuelType = document.getElementById('addCarFuelType').value;
+            const rating = Number(document.getElementById('addCarRating').value) || 4.9;
+            const status = document.getElementById('addCarStatus').value;
+            const description = document.getElementById('addCarDescription').value;
+            const features = document.getElementById('addCarFeatures').value;
+            const image = uploadedCarImageBase64 || "/static/images/image/carimgs/thar1.jpg";
+
+            fetch('/admin-portal/api/cars/add/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    name: name,
+                    category: category,
+                    price: price,
+                    seats: seats,
+                    transmission: transmission,
+                    fuelType: fuelType,
+                    rating: rating,
+                    status: status,
+                    description: description,
+                    features: features,
+                    startKm: km,
+                    endKm: km + 120,
+                    image: image
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    carsData.unshift(data.car);
+                    currentPage = 1;
+                    renderCarsGrid();
+                    document.getElementById('addCarForm').reset();
+                    document.getElementById('liveImagePreview').classList.add('d-none');
+                    document.getElementById('previewPlaceholder').classList.remove('d-none');
+                    uploadedCarImageBase64 = "";
+                    bootstrap.Modal.getInstance(document.getElementById('addCarModal')).hide();
+                    showToastMessage('✅ New car listing added successfully!', 'success', 3500);
+                } else {
+                    alert(data.message || 'Error adding car listing.');
+                }
+
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Failed to connect to backend server.');
+            });
+        }
+
+        function openFullEditModal(id) {
+            const car = carsData.find(c => c.id === id);
+            if (!car) return;
+
+            editUploadedImageBase64 = "";
+            document.getElementById('editCarId').value = car.id;
+            document.getElementById('editCarName').value = car.name;
+            
+            const editCatSel = document.getElementById('editCarCategorySelect');
+            if (editCatSel) {
+                editCatSel.value = car.category || 'SUV';
+            }
+            document.getElementById('editCarPrice').value = car.price;
+            document.getElementById('editCarSeats').value = car.seats;
+            if (document.getElementById('editCarTransmission')) {
+                document.getElementById('editCarTransmission').value = car.transmission || 'Automatic';
+            }
+            if (document.getElementById('editCarFuelType')) {
+                document.getElementById('editCarFuelType').value = car.fuelType || 'Petrol';
+            }
+            if (document.getElementById('editCarRating')) {
+                document.getElementById('editCarRating').value = car.rating || 4.9;
+            }
+            document.getElementById('editCarStartKm').value = car.startKm;
+            document.getElementById('editCarEndKm').value = car.endKm;
+            document.getElementById('editCarStatus').value = car.status;
+            if (document.getElementById('editCarDescription')) {
+                document.getElementById('editCarDescription').value = car.description || '';
+            }
+            if (document.getElementById('editCarFeatures')) {
+                document.getElementById('editCarFeatures').value = car.features || '';
+                syncFeaturePills('editCarFeatures', 'editCarFeaturePillsContainer');
+            }
+
+            document.getElementById('editImagePreview').src = car.image;
+
+            new bootstrap.Modal(document.getElementById('editCarModal')).show();
+        }
+
+        function previewEditImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    editUploadedImageBase64 = e.target.result;
+                    document.getElementById('editImagePreview').src = editUploadedImageBase64;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function saveCarEdits() {
+            const id = Number(document.getElementById('editCarId').value);
+            const name = document.getElementById('editCarName').value;
+            const category = document.getElementById('editCarCategorySelect').value || 'SUV';
+
+            const price = Number(document.getElementById('editCarPrice').value);
+            const seats = Number(document.getElementById('editCarSeats').value);
+            const transmission = document.getElementById('editCarTransmission').value;
+            const fuelType = document.getElementById('editCarFuelType').value;
+            const startKm = Number(document.getElementById('editCarStartKm').value);
+            const endKm = Number(document.getElementById('editCarEndKm').value);
+            const rating = Number(document.getElementById('editCarRating').value) || 4.9;
+            const status = document.getElementById('editCarStatus').value;
+            const description = document.getElementById('editCarDescription').value;
+            const features = document.getElementById('editCarFeatures').value;
+
+            const payload = {
+                id: id,
+                name: name,
+                category: category,
+                price: price,
+                seats: seats,
+                transmission: transmission,
+                fuelType: fuelType,
+                rating: rating,
+                startKm: startKm,
+                endKm: endKm,
+                status: status,
+                description: description,
+                features: features
+            };
+            if (editUploadedImageBase64) {
+                payload.image = editUploadedImageBase64;
+            }
+
+            fetch('/admin-portal/api/cars/edit/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const index = carsData.findIndex(c => c.id === id);
+                    if (index !== -1) {
+                        carsData[index] = data.car;
+                    }
+                    renderCarsGrid();
+                    bootstrap.Modal.getInstance(document.getElementById('editCarModal')).hide();
+                    showToastMessage('✅ Car listing updated successfully!', 'success', 3500);
+                } else {
+                    alert(data.message || 'Error updating car.');
+                }
+
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Failed to connect to backend server.');
+            });
+        }
+
+        let currentCarForInspection = null;
+
+        function openKmInspectionModal(id) {
+            const car = carsData.find(c => c.id === id);
+            if (!car) return;
+            currentCarForInspection = car;
+
+            document.getElementById('kmCarId').value = car.id;
+            document.getElementById('kmModalTitle').textContent = `Inspection & GPS: ${car.name}`;
+            document.getElementById('kmStartInput').value = car.startKm;
+            document.getElementById('kmEndInput').value = car.endKm;
+            
+            document.getElementById('previousInspectionImg').src = car.image;
+            document.getElementById('currentReturnImg').src = car.returnImage || car.image;
+            
+            document.getElementById('previousKmTag').textContent = `Pickup Reading: ${car.startKm.toLocaleString()} KM`;
+            document.getElementById('currentKmTag').textContent = `Return Reading: ${car.endKm.toLocaleString()} KM`;
+
+            document.getElementById('kmInspectionStatusSelect').value = car.inspectionStatus || 'Verified';
+
+            updateEngineLockButton(car.engineStatus || 'UNLOCKED');
+            document.getElementById('gpsLocationText').textContent = `Location: ${car.locationName || 'Bhavnagar Hub'} (${car.gpsLat || '21.7645'}, ${car.gpsLng || '72.1519'}) | Ignition: ${car.ignitionStatus || 'OFF'}`;
+
+            calculateKmDriven();
+            new bootstrap.Modal(document.getElementById('kmInspectionModal')).show();
+        }
+
+        function updateEngineLockButton(status) {
+            const btn = document.getElementById('engineLockBtn');
+            if (!btn) return;
+            if (status === 'LOCKED') {
+                btn.className = 'btn btn-success fw-bold rounded-pill px-3 shadow-sm';
+                btn.textContent = 'Unlock Engine (Normal Drive)';
+            } else {
+                btn.className = 'btn btn-danger fw-bold rounded-pill px-3 shadow-sm';
+                btn.textContent = 'Lock Engine (Prevent Theft)';
+            }
+        }
+
+        function toggleEngineLock(type) {
+            const id = Number(document.getElementById('kmCarId').value);
+            if (!id) return;
+
+            fetch('/admin-portal/api/vehicles/toggle-engine-lock/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ id: id, type: type })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const newStatus = data.engineStatus;
+                    updateEngineLockButton(newStatus);
+                    if (currentCarForInspection) {
+                        currentCarForInspection.engineStatus = newStatus;
+                    }
+                    if (newStatus === 'LOCKED') {
+                        alert('ANTI-THEFT ACTIVATED: Vehicle engine locked.');
+                    } else {
+                        alert('Vehicle engine unlocked successfully.');
+                    }
+                } else {
+                    alert(data.message || 'Error toggling engine lock.');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Server error toggling remote engine lock.');
+            });
+        }
+
+        function calculateKmDriven() {
+            const start = Number(document.getElementById('kmStartInput').value) || 0;
+            const end = Number(document.getElementById('kmEndInput').value) || 0;
+            const driven = Math.max(0, end - start);
+            
+            const allowedLimit = currentCarForInspection ? (currentCarForInspection.allowedKmPerDay || 150) : 150;
+            const extraKmRate = currentCarForInspection ? (currentCarForInspection.extraKmRate || 15) : 15;
+
+            document.getElementById('kmTotalDrivenLabel').textContent = `+${driven.toLocaleString()} KM`;
+            document.getElementById('kmAllowedLimitLabel').textContent = `${allowedLimit} KM / Day`;
+
+            const extraKm = Math.max(0, driven - allowedLimit);
+            const extraFee = extraKm * extraKmRate;
+
+            document.getElementById('kmExtraChargeLabel').textContent = `₹${extraFee.toLocaleString('en-IN')}`;
+
+            const noticeElem = document.getElementById('kmExtraNotice');
+            if (extraKm > 0) {
+                noticeElem.className = 'fw-bold text-danger';
+                noticeElem.textContent = `Exceeded limit by ${extraKm} KM (${extraKm} KM × ₹${extraKmRate}/km = ₹${extraFee} Extra Charge)`;
+            } else {
+                noticeElem.className = 'fw-semibold text-success';
+                noticeElem.textContent = `Driven within allowed limit (No extra charges)`;
+            }
+        }
+
+        function previewReturnImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('currentReturnImg').src = e.target.result;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function saveKmInspection() {
+            const id = Number(document.getElementById('kmCarId').value);
+            const startKm = Number(document.getElementById('kmStartInput').value);
+            const endKm = Number(document.getElementById('kmEndInput').value);
+            const returnImg = document.getElementById('currentReturnImg').src;
+            const inspectionStatus = document.getElementById('kmInspectionStatusSelect').value;
+
+            fetch('/admin-portal/api/cars/edit/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    id: id,
+                    startKm: startKm,
+                    endKm: endKm,
+                    returnImage: returnImg,
+                    inspectionStatus: inspectionStatus
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const index = carsData.findIndex(c => c.id === id);
+                    if (index !== -1) {
+                        carsData[index] = data.car;
+                    }
+                    renderCarsGrid();
+                    bootstrap.Modal.getInstance(document.getElementById('kmInspectionModal')).hide();
+                    alert('Inspection data & Extra KM billing saved successfully!');
+                } else {
+                    alert(data.message || 'Error updating inspection.');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Failed to connect to backend server.');
+            });
+        }
+
+        function openDeleteModal(id, title) {
+            document.getElementById('deleteCarId').value = id;
+            document.getElementById('deleteCarTitle').textContent = title;
+            new bootstrap.Modal(document.getElementById('deleteCarModal')).show();
+        }
+
+        function executeCarDelete() {
+            const id = Number(document.getElementById('deleteCarId').value);
+
+            fetch('/admin-portal/api/cars/delete/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ id: id })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    carsData = carsData.filter(c => c.id !== id);
+                    renderCarsGrid();
+                    bootstrap.Modal.getInstance(document.getElementById('deleteCarModal')).hide();
+                } else {
+                    alert(data.message || 'Error deleting car listing.');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Failed to connect to backend server.');
+            });
+        }
+
+        function handleCategorySubmit(event, vehicleType) {
+            event.preventDefault();
+            const name = document.getElementById('newCategoryName').value.trim();
+            const desc = document.getElementById('newCategoryDesc').value.trim();
+            if (!name) return;
+
+            fetch('/admin-portal/api/categories/add/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ name: name, vehicle_type: vehicleType, description: desc })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Error adding category.');
+                }
+            })
+            .catch(err => alert('Failed to connect to backend server.'));
+        }
+
+        function deleteCategory(catId, catName = '') {
+            if (!confirm(`Are you sure you want to delete category '${catName || catId}'?`)) return;
+            fetch('/admin-portal/api/categories/delete/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ id: catId, name: catName })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const row = document.getElementById(`car-cat-row-${catId}`);
+                    if (row) row.remove();
+                    showToastMessage('✅ Category deleted successfully!', 'success', 3000);
+                } else {
+                    showToastMessage(data.message || 'Error deleting category.', 'error', 3500);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showToastMessage('Failed to connect to backend server.', 'error', 3500);
+            });
+        }
+
+        function handleFeatureSubmit(event, vehicleType) {
+            event.preventDefault();
+            const name = document.getElementById('newFeatureName').value.trim();
+            const desc = document.getElementById('newFeatureDesc').value.trim();
+            if (!name) return;
+
+            fetch('/admin-portal/api/features/add/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ name: name, vehicle_type: vehicleType, description: desc })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showToastMessage('✅ Feature added to database!', 'success', 3000);
+                    setTimeout(() => window.location.reload(), 800);
+                } else {
+                    showToastMessage(data.message || 'Error adding feature.', 'error', 3500);
+                }
+            })
+            .catch(err => showToastMessage('Failed to connect to backend server.', 'error', 3500));
+        }
+
+        function deleteFeature(featId, featName = '') {
+            if (!confirm(`Are you sure you want to delete feature '${featName || featId}'?`)) return;
+            fetch('/admin-portal/api/features/delete/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ id: featId, name: featName })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const row = document.getElementById(`car-feat-row-${featId}`);
+                    if (row) row.remove();
+                    showToastMessage('✅ Feature deleted successfully!', 'success', 3000);
+                } else {
+                    showToastMessage(data.message || 'Error deleting feature.', 'error', 3500);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showToastMessage('Failed to connect to backend server.', 'error', 3500);
+            });
+        }
+
+    </script>
+
+</body>
+</html>

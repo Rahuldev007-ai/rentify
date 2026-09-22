@@ -1,0 +1,142 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>about-us</title>
+    <link rel="stylesheet" href="{% static 'css/aboutus.css' %}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        body {
+            background: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px auto;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        header {
+            background: linear-gradient(45deg, #FF512F, #DD2476);
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            animation: fadeIn 1s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        Welcome to Rentify
+    </header>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- About Description -->
+        <div class="about-description">
+            <h2>About Us</h2>
+
+            <p>Welcome to <strong>Rentify</strong>, your trusted partner for all rental needs. Whether you're looking for a reliable car, a convenient bike, a spacious office, a well-equipped hall, or a cozy house, we provide top-quality rental services across multiple categories. With our competitive prices, excellent customer service, and a wide range of options, we ensure a seamless rental experience every time.</p>
+
+            <p>We are dedicated to providing flexible rental terms, ensuring our clients' satisfaction, and making your rental experience as smooth as possible. At Rentify, we care about your convenience, and that's why we offer only the best and most reliable vehicles, spaces, and homes for rent.</p>
+
+            <p>At Rentify, we're more than just a rental service; we're your go-to solution for seamless, flexible, and reliable rentals. With a passion for providing top-quality vehicles, homes, office spaces, and event halls, we aim to deliver exceptional experiences tailored to your unique needs.<br>
+
+                Founded with a commitment to convenience, affordability, and customer satisfaction, Rentify has grown into a trusted name for individuals and businesses alike. Whether you're exploring the open road with a rental car or bike, seeking the perfect home away from home, or finding the ideal venue for your next big event, we have you covered.<br><br>
+                
+                Our extensive fleet of cars and bikes ensures that you have access to the best transportation options, from budget-friendly rides to premium vehicles. For those in need of short-term or long-term accommodations, our beautifully maintained homes offer a peaceful and comfortable stay. Our well-equipped office spaces cater to businesses of all sizes, while our versatile event halls create the perfect backdrop for celebrations and professional gatherings.<br><br>
+                
+                <strong><b>Why Choose Rentify?<br><br></b></strong>
+                
+               <strong><u>Variety and Quality:</u></strong> From cars to bikes, homes to offices, and event halls to suit every need.<br><br>
+                <strong><u>Flexibility:</u></strong> Rent what you need for the duration you need it—no long-term commitment.<br><br>
+                <strong><u>Customer-Centric Service:</u></strong> We prioritize your comfort and satisfaction, offering personalized service every step of the way.<br><br>
+                    <strong><u>Affordability:</u></strong> Competitive rates with no hidden fees, ensuring you get the best value for your rental.<br><br>
+                Whether you're traveling for work, pleasure, or hosting an event, Rentify is here to provide you with the perfect rental experience. We pride ourselves on our attention to detail and commitment to ensuring your rental process is simple and stress-free.<br><br>
+                
+                <b>Thank you ! </b>for choosing Rentify – where your convenience is our priority!</p>
+        </div><br><br>
+
+        <!-- Rental Services -->
+        <h2>Our Rental Services</h2>
+        <div class="service-section" style="display: flex; justify-content: space-between; align-items: stretch; flex-wrap: nowrap; gap: 15px; margin: 20px 0;">
+            <!-- Car Rental -->
+            <div class="service-box" style="flex: 1; min-width: 0; padding: 10px; background: rgba(255,255,255,0.9); border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div class="icon">🚗</div>
+                <h3>Car Rent</h3>
+                <p style="font-size: 14px; line-height: 1.4;">Choose from a wide range of vehicles, from economy cars to luxury models. Perfect for travel, business, and everyday use.</p>
+            </div>
+
+            <!-- Bike Rental -->
+            <div class="service-box" style="flex: 1; min-width: 0; padding: 10px; background: rgba(255,255,255,0.9); border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div class="icon">🚲</div>
+                <h3>Bike Rent</h3>
+                <p style="font-size: 14px; line-height: 1.4;">Rent a bike for a fun and eco-friendly way to explore the city. Perfect for short commutes, tourists, and fitness enthusiasts.</p>
+            </div>
+
+            <!-- Office Rental -->
+            <div class="service-box" style="flex: 1; min-width: 0; padding: 10px; background: rgba(255,255,255,0.9); border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div class="icon">🏢</div>
+                <h3>Office Rent</h3>
+                <p style="font-size: 14px; line-height: 1.4;">Find the ideal space for your business. Flexible office spaces equipped with all necessary amenities, suitable for startups and established businesses alike.</p>
+            </div>
+
+            <!-- Hall Rental -->
+            <div class="service-box" style="flex: 1; min-width: 0; padding: 10px; background: rgba(255,255,255,0.9); border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div class="icon">🏛</div>
+                <h3>Hall Rent</h3>
+                <p style="font-size: 14px; line-height: 1.4;">Looking for a venue for an event or meeting? Rent our spacious halls for conferences, weddings, and social gatherings.</p>
+            </div>
+
+            <!-- House Rental -->
+            <div class="service-box" style="flex: 1; min-width: 0; padding: 10px; background: rgba(255,255,255,0.9); border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div class="icon">🏠</div>
+                <h3>House Rent</h3>
+                <p style="font-size: 14px; line-height: 1.4;">Explore a variety of houses available for rent. Whether you're looking for a small apartment or a spacious family home, we have you covered.</p>
+            </div>
+        </div>
+
+        <h1>Contact Us</h1>
+        <div class="contact-info">
+            <!-- Mobile Phone Icon -->
+            <div>
+                <a href="tel:+917990521230">
+                    <i class="fas fa-phone-alt"></i>
+                    <p>+91 7990521230</p>
+                </a>
+            </div>
+            
+            <!-- Email Icon -->
+            <div>
+                <a href="mailto:contact.rentify@gmail.com">
+                    <i class="fas fa-envelope"></i>
+                    <p>contact.rentify@gmail.com</p>
+                </a>
+            </div>
+        </div>
+    
+
+
+    </div>
+
+   
+    <!-- Footer -->
+    
+    
+    {% include 'core/footer.html' %}
+</body>
+</html>

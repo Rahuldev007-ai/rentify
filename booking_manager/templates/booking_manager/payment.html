@@ -1,0 +1,460 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Payment Method - Rentify</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            --light-bg: #f4f6f9;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            color: #333;
+            min-height: 100vh;
+            padding-bottom: 3rem;
+        }
+
+        .payment-header {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 1rem 0;
+            margin-bottom: 2rem;
+        }
+
+        .payment-wrapper {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .summary-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            border: 1px solid #e2e8f0;
+        }
+
+        .payment-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            border: 1px solid #e2e8f0;
+        }
+
+        .payment-option-box {
+            border: 2px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            background: #ffffff;
+            position: relative;
+        }
+
+        .payment-option-box:hover {
+            border-color: #2a5298;
+            box-shadow: 0 4px 15px rgba(30, 60, 114, 0.1);
+        }
+
+        .payment-option-box.selected {
+            border-color: #1e3c72;
+            background: #f0f4f9;
+            box-shadow: 0 4px 18px rgba(30, 60, 114, 0.15);
+        }
+
+        .btn-confirm-pay {
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            padding: 0.9rem;
+            font-weight: 700;
+            font-size: 1.1rem;
+            border-radius: 12px;
+            width: 100%;
+            box-shadow: 0 4px 15px rgba(30, 60, 114, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .btn-confirm-pay:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(30, 60, 114, 0.4);
+            color: white;
+        }
+
+        #paymentOverlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 9999;
+            color: white;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        /* Razorpay Demo Gateway Modal Styling */
+        .rzp-modal-header {
+            background: #02042b;
+            color: #ffffff;
+            border-top-left-radius: 16px;
+            border-top-right-radius: 16px;
+            padding: 18px 24px;
+        }
+
+        .rzp-badge {
+            background: #3395ff;
+            color: white;
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 700;
+        }
+
+        .rzp-method-tab {
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .rzp-method-tab:hover, .rzp-method-tab.active {
+            border-color: #3395ff;
+            background: #f0f7ff;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header class="payment-header">
+        <div class="container d-flex justify-content-between align-items-center">
+            <a href="/vehicles/cars/" class="btn btn-outline-dark btn-sm rounded-pill px-3">
+                <i class="fas fa-arrow-left me-1"></i> Return to Catalog
+            </a>
+            <h5 class="mb-0 text-primary fw-bold"><i class="fas fa-lock me-2 text-success"></i>256-Bit SSL Encrypted Checkout</h5>
+            <span class="badge bg-success px-3 py-2">Step 2 of 2: Payment</span>
+        </div>
+    </header>
+
+    <div class="container payment-wrapper">
+        <div class="row g-4">
+            <!-- Left Side: Booking & Order Summary -->
+            <div class="col-lg-5">
+                <div class="summary-card">
+                    <h5 class="fw-bold mb-3 text-dark"><i class="fas fa-receipt text-primary me-2"></i>Booking Order Summary</h5>
+
+                    <div class="pb-3 border-bottom mb-3">
+                        <small class="text-muted d-block">RESERVED VEHICLE</small>
+                        <strong class="d-block text-dark fs-5">{% if inquiry %}{{ inquiry.item_title }}{% else %}Mahindra Thar 4x4 LX Hardtop{% endif %}</strong>
+                        <span class="badge bg-light text-primary border mt-1">Inquiry ID: #{% if inquiry %}{{ inquiry.id }}{% else %}43{% endif %}</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-secondary">Customer Name:</span>
+                        <strong class="text-dark">{% if inquiry %}{{ inquiry.applicant_name }}{% else %}Customer{% endif %}</strong>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-secondary">Pickup Location:</span>
+                        <strong class="text-dark">{% if inquiry %}{{ inquiry.appointment_time }}{% else %}Bhavnagar Central Hub{% endif %}</strong>
+                    </div>
+
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-secondary">Rental Dates:</span>
+                        <strong class="text-dark">{% if inquiry %}{{ inquiry.booking_date }}{% else %}Flexible{% endif %}</strong>
+                    </div>
+
+                    <hr class="my-3">
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <strong class="text-dark fs-5">Total Amount Payable:</strong>
+                        <strong class="text-primary fs-3">₹{{ amount_inr }}</strong>
+                    </div>
+
+                    <div class="alert alert-light border mt-3 mb-0 small text-muted">
+                        <i class="fas fa-shield-alt text-success me-1"></i> Includes zero-deductible insurance & 24/7 roadside assistance.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Dedicated Payment Method Selector -->
+            <div class="col-lg-7">
+                <div class="payment-card">
+                    <h4 class="fw-bold mb-1 text-dark"><i class="fas fa-credit-card text-primary me-2"></i>Select Payment Method</h4>
+                    <p class="text-muted small mb-4">Choose your preferred payment mode to finalize your vehicle booking.</p>
+
+                    <!-- Option 1: Razorpay (Test Mode) -->
+                    <div class="payment-option-box selected" id="opt-razorpay" onclick="selectPaymentOption('Razorpay Test Mode')">
+                        <div class="form-check d-flex align-items-center justify-content-between">
+                            <div>
+                                <input class="form-check-input me-2" type="radio" name="payment_choice" id="radio_razorpay" value="Razorpay Test Mode" checked>
+                                <label class="form-check-label fw-bold text-dark fs-6" for="radio_razorpay">
+                                    <i class="fas fa-bolt text-warning me-1"></i> Razorpay (Test Mode)
+                                </label>
+                                <span class="d-block text-muted small mt-1">Instant Online Payment via UPI, Debit/Credit Card, NetBanking & Wallets.</span>
+                            </div>
+                            <span class="badge bg-primary px-3 py-2">Instant Confirmation</span>
+                        </div>
+                    </div>
+
+                    <!-- Option 2: Cash at Showroom (COD) -->
+                    <div class="payment-option-box" id="opt-cod" onclick="selectPaymentOption('COD at Showroom')">
+                        <div class="form-check d-flex align-items-center justify-content-between">
+                            <div>
+                                <input class="form-check-input me-2" type="radio" name="payment_choice" id="radio_cod" value="COD at Showroom">
+                                <label class="form-check-label fw-bold text-dark fs-6" for="radio_cod">
+                                    <i class="fas fa-store text-primary me-1"></i> Cash at Showroom (COD)
+                                </label>
+                                <span class="d-block text-muted small mt-1">Pay cash when picking up your vehicle at our showroom.</span>
+                            </div>
+                            <span class="badge bg-secondary px-3 py-2">Pay at Pickup</span>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="button" class="btn btn-confirm-pay mt-3" onclick="processSelectedPayment()">
+                        <i class="fas fa-lock me-2"></i> Confirm Booking & Pay ₹{{ amount_inr }} &rarr;
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RAZORPAY TEST GATEWAY DEMO MODAL -->
+    <div class="modal fade" id="razorpayDemoModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="rzp-modal-header d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-2">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="#3395ff"><path d="M12 2L2 19h20L12 2zm0 3.8L18.5 17H5.5L12 5.8z"/></svg>
+                        <h6 class="mb-0 fw-bold text-white">Razorpay Test Gateway (Sandbox Mode)</h6>
+                    </div>
+                    <span class="rzp-badge">TEST MODE</span>
+                </div>
+                <div class="modal-body p-4 bg-light">
+                    <div class="card p-3 border-0 shadow-sm rounded-3 mb-3 bg-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <small class="text-muted d-block">PAYMENT AMOUNT</small>
+                                <h4 class="fw-bold text-dark mb-0">₹{{ amount_inr }}.00</h4>
+                            </div>
+                            <div class="text-end">
+                                <small class="text-muted d-block">ITEM</small>
+                                <strong class="text-primary">{% if inquiry %}{{ inquiry.item_title }}{% else %}Car Rental{% endif %}</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <label class="form-label fw-bold small text-uppercase text-secondary mb-2">Select Test Payment Instrument:</label>
+                    <div class="rzp-method-tab active" id="tabUpi" onclick="selectRzpInstrument('upi')">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fas fa-mobile-alt text-primary fs-5"></i>
+                            <div>
+                                <strong class="d-block text-dark small">UPI / QR (Google Pay, PhonePe, Paytm)</strong>
+                                <span class="text-muted extra-small">Instant test UPI transfer</span>
+                            </div>
+                        </div>
+                        <i class="fas fa-check-circle text-primary"></i>
+                    </div>
+
+                    <div class="rzp-method-tab" id="tabCard" onclick="selectRzpInstrument('card')">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fas fa-credit-card text-success fs-5"></i>
+                            <div>
+                                <strong class="d-block text-dark small">Credit / Debit Card (Razorpay Test Card)</strong>
+                                <span class="text-muted extra-small">Visa / MasterCard / RuPay</span>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right text-muted"></i>
+                    </div>
+
+                    <div class="rzp-method-tab" id="tabNb" onclick="selectRzpInstrument('nb')">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fas fa-university text-warning fs-5"></i>
+                            <div>
+                                <strong class="d-block text-dark small">NetBanking (SBI, HDFC, ICICI, Axis)</strong>
+                                <span class="text-muted extra-small">Simulated NetBanking Auth</span>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right text-muted"></i>
+                    </div>
+
+                    <div class="mt-4 pt-2 border-top">
+                        <button type="button" class="btn btn-success btn-lg fw-bold w-100 py-3 shadow-sm mb-2 rounded-3" onclick="completeRazorpayDemoPayment('success')">
+                            <i class="fas fa-check-circle me-2"></i> Pay ₹{{ amount_inr }} (Simulate Success)
+                        </button>
+                        <button type="button" class="btn btn-outline-danger btn-sm w-100 rounded-3 py-2 fw-semibold" onclick="completeRazorpayDemoPayment('failed')">
+                            <i class="fas fa-times-circle me-1"></i> Simulate Payment Failure
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-footer bg-white border-top-0 rounded-bottom-4 px-4 py-2 justify-content-center">
+                    <small class="text-muted"><i class="fas fa-shield-alt text-success me-1"></i> Safe & Secure Razorpay Test Environment</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Processing Overlay Loader -->
+    <div id="paymentOverlay">
+        <div class="spinner-border text-light mb-3" style="width: 3.5rem; height: 3.5rem;" role="status"></div>
+        <h4 class="fw-bold mb-1" id="overlayTitle">Processing Payment...</h4>
+        <p class="text-white-50">Please wait while we confirm your voucher.</p>
+    </div>
+
+    <!-- Razorpay JS Checkout Library -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let selectedPaymentMethod = "Razorpay Test Mode";
+
+        function selectPaymentOption(method) {
+            selectedPaymentMethod = method;
+            if (method === 'Razorpay Test Mode') {
+                document.getElementById('radio_razorpay').checked = true;
+                document.getElementById('opt-razorpay').classList.add('selected');
+                document.getElementById('opt-cod').classList.remove('selected');
+            } else {
+                document.getElementById('radio_cod').checked = true;
+                document.getElementById('opt-cod').classList.add('selected');
+                document.getElementById('opt-razorpay').classList.remove('selected');
+            }
+        }
+
+        function selectRzpInstrument(type) {
+            document.querySelectorAll('.rzp-method-tab').forEach(el => el.classList.remove('active'));
+            if (type === 'upi') document.getElementById('tabUpi').classList.add('active');
+            else if (type === 'card') document.getElementById('tabCard').classList.add('active');
+            else if (type === 'nb') document.getElementById('tabNb').classList.add('active');
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function submitPaymentToBackend(method, status, transactionId) {
+            const overlay = document.getElementById('paymentOverlay');
+            overlay.style.display = 'flex';
+
+            const inquiryId = "{% if inquiry %}{{ inquiry.id }}{% else %}43{% endif %}";
+
+            fetch('/bookings/api/process-payment/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    inquiry_id: inquiryId,
+                    payment_method: method,
+                    payment_status: status,
+                    transaction_id: transactionId
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    window.location.href = data.redirect_url;
+                } else {
+                    overlay.style.display = 'none';
+                    alert(data.message || 'Error processing payment.');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                overlay.style.display = 'none';
+                alert('Server connection failed during payment update.');
+            });
+        }
+
+        function completeRazorpayDemoPayment(outcome) {
+            const demoModalEl = document.getElementById('razorpayDemoModal');
+            const demoModal = bootstrap.Modal.getInstance(demoModalEl);
+            if (demoModal) demoModal.hide();
+
+            if (outcome === 'success') {
+                const txId = 'pay_rzp_test_' + Math.floor(100000000 + Math.random() * 900000000);
+                submitPaymentToBackend('Razorpay Test Mode', 'Paid', txId);
+            } else {
+                alert('❌ Razorpay Test Payment Cancelled / Failed.');
+            }
+        }
+
+        function processSelectedPayment() {
+            if (selectedPaymentMethod === 'Razorpay Test Mode') {
+                // Try official Razorpay Checkout SDK if valid key, else open interactive Razorpay Demo Test Gateway Modal
+                const key = "{{ razorpay_key_id }}";
+                if (typeof Razorpay !== 'undefined' && key && !key.includes('AntigravityDemoKey') && key.startsWith('rzp_test_')) {
+                    try {
+                        const options = {
+                            "key": key,
+                            "amount": "{{ amount_paise }}",
+                            "currency": "INR",
+                            "name": "Rentify Vehicle Rentals",
+                            "description": "Payment for {% if inquiry %}{{ inquiry.item_title|escapejs }}{% else %}Car Rental{% endif %}",
+                            "image": "https://cdn-icons-png.flaticon.com/512/3082/3082383.png",
+                            "handler": function (response) {
+                                const txId = response.razorpay_payment_id || ('pay_rzp_test_' + Math.floor(100000000 + Math.random() * 900000000));
+                                submitPaymentToBackend('Razorpay Test Mode', 'Paid', txId);
+                            },
+                            "prefill": {
+                                "name": "{% if inquiry %}{{ inquiry.applicant_name|escapejs }}{% else %}Customer{% endif %}",
+                                "email": "{% if inquiry %}{{ inquiry.email|escapejs }}{% else %}{% endif %}",
+                                "contact": "{% if inquiry %}{{ inquiry.phone_number|escapejs }}{% else %}{% endif %}"
+                            },
+                            "theme": {
+                                "color": "#1e3c72"
+                            }
+                        };
+                        const rzp1 = new Razorpay(options);
+                        rzp1.on('payment.failed', function (response){
+                            alert('Razorpay Payment Failed: ' + response.error.description);
+                        });
+                        rzp1.open();
+                    } catch(e) {
+                        const demoModal = new bootstrap.Modal(document.getElementById('razorpayDemoModal'));
+                        demoModal.show();
+                    }
+                } else {
+                    // Open interactive Razorpay Demo Gateway Modal
+                    const demoModal = new bootstrap.Modal(document.getElementById('razorpayDemoModal'));
+                    demoModal.show();
+                }
+            } else {
+                // Cash at Showroom (COD)
+                submitPaymentToBackend('COD at Showroom', 'Pending (Pay at Showroom)', '');
+            }
+        }
+    </script>
+    {% include 'core/footer.html' %}
+</body>
+</html>

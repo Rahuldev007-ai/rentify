@@ -1,0 +1,561 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Office Inquiries & Appointments - Rentify Admin</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/admin_sidebar.css' %}">
+    <style>
+        :root {
+            --admin-bg: #f8fafc;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            background-color: var(--admin-bg);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: #0f172a;
+        }
+
+        .header-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px 24px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+            margin-bottom: 24px;
+        }
+
+        .inquiry-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            transition: all 0.25s ease;
+            margin-bottom: 20px;
+        }
+
+        .inquiry-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+        }
+
+        .inquiry-header-bar {
+            background: linear-gradient(135deg, #0056b3 0%, #003d80 100%);
+            color: #ffffff;
+            padding: 16px 20px;
+        }
+
+        .office-thumbnail {
+            width: 130px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        .status-pill {
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+
+        .status-pending { background: #fef3c7; color: #92400e; }
+        .status-approved { background: #dcfce7; color: #166534; }
+        .status-rejected { background: #fee2e2; color: #991b1b; }
+
+        .filter-nav-btn {
+            font-weight: 700;
+            font-size: 0.88rem;
+            padding: 8px 18px;
+            border-radius: 10px;
+            border: 1px solid #cbd5e1;
+            background: #ffffff;
+            color: #475569;
+            transition: all 0.2s ease;
+        }
+
+        .filter-nav-btn.active {
+            background: #0056b3 !important;
+            color: #ffffff !important;
+            border-color: #0056b3 !important;
+            box-shadow: 0 4px 12px rgba(0, 86, 179, 0.25);
+        }
+
+        .btn-call { background: #16a34a; color: white; font-weight: 700; border: none; }
+        .btn-call:hover { background: #15803d; color: white; }
+
+        .btn-map { background: #ea4335; color: white; font-weight: 700; border: none; }
+        .btn-map:hover { background: #c5221f; color: white; }
+    </style>
+</head>
+<body>
+    <div class="admin-layout-wrapper">
+        <!-- Sidebar Navigation -->
+        {% include 'admin_app/admin_header.html' %}
+
+        <!-- Main Workspace -->
+        <main class="admin-main-content">
+            <!-- Header Bar -->
+            <div class="header-card d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div>
+                    <div class="d-flex align-items-center gap-3">
+                        <h2 class="fw-bold mb-1">Commercial Office Space Inquiries Tracker</h2>
+                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3 py-2 fw-semibold fs-7 d-inline-flex align-items-center gap-2">
+                            <span class="spinner-grow spinner-grow-sm text-success" role="status"></span> Live Auto-Sync Active
+                        </span>
+                    </div>
+                    <p class="text-muted mb-0 small">Office photo previews, direct Call & Google Maps links, meeting scheduling, & full details popup.</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <input type="text" class="form-control rounded-3" id="searchInput" placeholder="Search applicant or suite..." onkeyup="renderInquiries()">
+                </div>
+            </div>
+
+            <!-- Filter & Pagination Bar -->
+            <div class="card border-0 shadow-sm rounded-4 p-3 mb-4 bg-white">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button type="button" class="filter-nav-btn active" id="btnFilterAll" onclick="setFilter('ALL')">All Inquiries (<span id="countAllLabel">0</span>)</button>
+                        <button type="button" class="filter-nav-btn" id="btnFilterPending" onclick="setFilter('Pending')">Pending (<span id="countPendingLabel">0</span>)</button>
+                        <button type="button" class="filter-nav-btn" id="btnFilterApproved" onclick="setFilter('Approved')">Approved (<span id="countApprovedLabel">0</span>)</button>
+                        <button type="button" class="filter-nav-btn" id="btnFilterRejected" onclick="setFilter('Rejected')">Rejected (<span id="countRejectedLabel">0</span>)</button>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="text-muted small fw-bold">Per Page:</span>
+                        <select class="form-select form-select-sm rounded-3 w-auto" id="pageSizeSelect" onchange="renderInquiries()">
+                            <option value="5" selected>5 per page</option>
+                            <option value="10">10 per page</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inquiries Grid Container -->
+            <div id="inquiriesContainer"></div>
+
+            <!-- Pagination Bar -->
+            <div class="d-flex justify-content-between align-items-center bg-white p-3 rounded-4 shadow-sm border mt-4">
+                <div class="text-muted small fw-bold" id="paginationInfoText">Showing entries</div>
+                <ul class="pagination pagination-sm mb-0" id="paginationControls"></ul>
+            </div>
+        </main>
+    </div>
+
+    <!-- ADMIN RESPOND & MEETING SCHEDULING MODAL -->
+    <div class="modal fade" id="respondInquiryModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-success text-white rounded-top-4 px-4 py-3">
+                    <h5 class="modal-title fw-bold" id="respondModalTitle"><i class="fas fa-handshake me-2"></i>Respond & Schedule Commercial Office Meeting</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="respondInquiryForm" onsubmit="submitAdminResponse(event)">
+                    <input type="hidden" id="respInquiryId">
+                    <div class="modal-body p-4">
+                        <div class="mb-3 bg-light p-3 rounded-3 border d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="fw-bold text-dark mb-0" id="respOfficeTitle">Commercial Office Space</h6>
+                                <span class="text-muted small">Applicant: <strong id="respApplicantName">Rahul Patel</strong> (<span id="respApplicantPhone">+91 98765 43210</span>)</span>
+                            </div>
+                            <span class="badge bg-primary px-3 py-2 fw-bold text-uppercase">OFFICE</span>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-uppercase">Update Status</label>
+                                <select class="form-select rounded-3 fw-semibold" id="respStatus">
+                                    <option value="Pending">Pending Review</option>
+                                    <option value="Meeting Scheduled" selected>Meeting Scheduled</option>
+                                    <option value="Quoted">Quoted / Price Described</option>
+                                    <option value="Approved">Approved / Confirmed</option>
+                                    <option value="Rejected">Rejected</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-uppercase">Quoted Monthly Rent (₹)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light fw-bold">₹</span>
+                                    <input type="number" class="form-control rounded-end-3" id="respQuotedPrice" placeholder="e.g. 45000" min="0">
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-uppercase">Corporate Sales Representative</label>
+                                <input type="text" class="form-control rounded-3" id="respRepName" placeholder="e.g. Rahul Sharma (Commercial Lead)" value="Rahul Sharma (Commercial Lead)">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-uppercase">Representative Phone</label>
+                                <input type="tel" class="form-control rounded-3" id="respRepPhone" placeholder="+91 98765 43210" value="+91 98765 43210">
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-uppercase">Meeting Type</label>
+                                <select class="form-select rounded-3" id="respMeetingType" onchange="toggleMeetingLocationInput()">
+                                    <option value="Google Meet" selected>Google Meet Video Call</option>
+                                    <option value="On-Site Office Tour">On-Site Office Tour</option>
+                                    <option value="In-Person Showroom">In-Person Corporate Office</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-uppercase" id="lblMeetingLocation">Google Meet Link / Meeting Address</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="respMeetingLocation" placeholder="https://meet.google.com/abc-defg-hij">
+                                    <button type="button" class="btn btn-outline-success fw-bold" id="btnGenMeet" onclick="generateGoogleMeetUrl()">
+                                        <i class="fas fa-magic me-1"></i> Auto Meet URL
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="form-label fw-bold small text-uppercase">Admin Response Notes to Customer</label>
+                                <textarea class="form-control rounded-3" id="respAdminNotes" rows="3" placeholder="e.g. We have reviewed your office space request. Please join the Google Meet video call at the scheduled time to discuss possession date & corporate lease agreement."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light px-4 py-3 rounded-bottom-4">
+                        <button type="button" class="btn btn-outline-secondary rounded-3 px-4 fw-bold" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-success rounded-3 px-4 fw-bold" id="btnSaveResponse">
+                            <i class="fas fa-save me-1"></i> Save Response & Sync to User
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- VIEW FULL DETAILS POPUP MODAL -->
+    <div class="modal fade" id="viewDetailsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-dark text-white rounded-top-4 px-4 py-3">
+                    <h5 class="modal-title fw-bold" id="modalOfficeTitle">Full Commercial Office Inquiry & Appointment Data</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6 border-end">
+                            <h6 class="fw-bold text-primary mb-3">Customer Applicant Info</h6>
+                            <div class="mb-2"><strong>Contact Name:</strong> <span id="modalName">-</span></div>
+                            <div class="mb-2"><strong>Phone Number:</strong> <span id="modalPhone">-</span></div>
+                            <div class="mb-2"><strong>Work Email:</strong> <span id="modalEmail">-</span></div>
+                            <div class="mb-2"><strong>Preferred Possession:</strong> <span id="modalAppointment" class="fw-bold text-success">-</span></div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-primary mb-3">Office Lease Specs</h6>
+                            <div class="mb-2"><strong>Property Suite:</strong> <span id="modalSuite">-</span></div>
+                            <div class="mb-2"><strong>Location Address:</strong> <span id="modalLocation">-</span></div>
+                            <div class="mb-2"><strong>Lease Term & Layout:</strong> <span id="modalBusiness">-</span></div>
+                            <div class="mb-2"><strong>Workstations Needed:</strong> <span id="modalStaff">-</span></div>
+                            <div class="mb-2"><strong>Monthly Rent:</strong> <span id="modalRent" class="fw-bold text-primary">-</span></div>
+                            <div class="mb-2"><strong>Status:</strong> <span id="modalStatusBadge" class="status-pill status-pending">Pending</span></div>
+                        </div>
+                    </div>
+
+                    <div class="bg-light p-3 rounded-3 border">
+                        <h6 class="fw-bold text-dark mb-2">User Entered Special Requirements Data:</h6>
+                        <p class="text-secondary small mb-0" id="modalRequirements">No special requirements specified.</p>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light px-4 py-3 rounded-bottom-4">
+                    <a id="modalCallBtn" href="tel:" class="btn btn-call rounded-3 px-3 fw-bold">Call Customer</a>
+                    <a id="modalMapBtn" href="#" target="_blank" class="btn btn-map rounded-3 px-3 fw-bold">Google Maps Location</a>
+                    <button type="button" class="btn btn-secondary rounded-3 px-3 fw-bold" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let officeInquiriesData = [];
+        try {
+            officeInquiriesData = {{ office_inquiries_json|safe }};
+        } catch (e) {
+            console.error('Failed to parse office_inquiries_json:', e);
+        }
+
+        let currentFilter = 'ALL';
+        let currentPage = 1;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCounts();
+            renderInquiries();
+            setInterval(fetchLiveOfficeInquiries, 4000);
+        });
+
+        function fetchLiveOfficeInquiries() {
+            fetch('/admin-portal/api/offices/inquiries-live-list/')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success' && data.inquiries) {
+                        officeInquiriesData = data.inquiries;
+                        updateCounts();
+                        renderInquiries();
+                    }
+                })
+                .catch(err => console.error('Live polling error:', err));
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function updateCounts() {
+            document.getElementById('countAllLabel').innerText = officeInquiriesData.length;
+            document.getElementById('countPendingLabel').innerText = officeInquiriesData.filter(i => i.status === 'Pending').length;
+            document.getElementById('countApprovedLabel').innerText = officeInquiriesData.filter(i => ['Approved', 'Confirmed', 'Meeting Scheduled', 'Quoted'].includes(i.status)).length;
+            document.getElementById('countRejectedLabel').innerText = officeInquiriesData.filter(i => i.status === 'Rejected').length;
+        }
+
+        function setFilter(filter) {
+            currentFilter = filter;
+            currentPage = 1;
+            document.querySelectorAll('.filter-nav-btn').forEach(btn => btn.classList.remove('active'));
+            if (filter === 'ALL') document.getElementById('btnFilterAll').classList.add('active');
+            else if (filter === 'Pending') document.getElementById('btnFilterPending').classList.add('active');
+            else if (filter === 'Approved') document.getElementById('btnFilterApproved').classList.add('active');
+            else if (filter === 'Rejected') document.getElementById('btnFilterRejected').classList.add('active');
+            renderInquiries();
+        }
+
+        function renderInquiries() {
+            const container = document.getElementById('inquiriesContainer');
+            const search = (document.getElementById('searchInput').value || '').toLowerCase();
+            const pageSize = parseInt(document.getElementById('pageSizeSelect').value, 10) || 5;
+
+            let filtered = officeInquiriesData.filter(i => {
+                const matchesFilter = (currentFilter === 'ALL') ||
+                    (currentFilter === 'Pending' && i.status === 'Pending') ||
+                    (currentFilter === 'Approved' && ['Approved', 'Confirmed', 'Meeting Scheduled', 'Quoted'].includes(i.status)) ||
+                    (currentFilter === 'Rejected' && i.status === 'Rejected');
+
+                const matchesSearch = !search ||
+                    i.name.toLowerCase().includes(search) ||
+                    i.suite.toLowerCase().includes(search) ||
+                    i.phone.toLowerCase().includes(search);
+
+                return matchesFilter && matchesSearch;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="card p-5 text-center shadow-sm border-0 rounded-4"><i class="fas fa-briefcase text-muted fa-3x mb-3"></i><h5 class="fw-bold">No Office Space Inquiries Found</h5><p class="text-muted">No records match your selected filter or search terms.</p></div>`;
+                document.getElementById('paginationControls').innerHTML = '';
+                document.getElementById('paginationInfoText').innerText = 'Showing 0 entries';
+                return;
+            }
+
+            const totalPages = Math.ceil(filtered.length / pageSize);
+            if (currentPage > totalPages) currentPage = totalPages;
+            const startIdx = (currentPage - 1) * pageSize;
+            const pageData = filtered.slice(startIdx, startIdx + pageSize);
+
+            let html = '';
+            pageData.forEach(item => {
+                let badgeClass = 'status-pending';
+                if (['Approved', 'Confirmed', 'Meeting Scheduled', 'Quoted'].includes(item.status)) badgeClass = 'status-approved';
+                else if (item.status === 'Rejected') badgeClass = 'status-rejected';
+
+                html += `
+                <div class="inquiry-card">
+                    <div class="inquiry-header-bar d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-0 fw-bold"><i class="fas fa-briefcase me-2"></i>${item.suite}</h5>
+                            <small class="text-white-50"><i class="fas fa-map-marker-alt me-1"></i>${item.location}</small>
+                        </div>
+                        <span class="status-pill ${badgeClass}">${item.status}</span>
+                    </div>
+                    <div class="p-4">
+                        <div class="row align-items-center g-3">
+                            <div class="col-md-2 text-center">
+                                <img src="${item.image || '/static/images/image/officeimg/o1.jpg'}" class="office-thumbnail shadow-sm mb-2" onerror="this.src='/static/images/image/officeimg/o1.jpg'">
+                                <div class="fw-bold text-success fs-6">${item.rent}</div>
+                            </div>
+                            <div class="col-md-6 border-end">
+                                <h6 class="fw-bold text-primary mb-2"><i class="fas fa-user-circle me-1"></i>Applicant Info</h6>
+                                <p class="mb-1"><strong>Contact Name:</strong> ${item.name}</p>
+                                <p class="mb-1"><strong>Phone:</strong> <a href="tel:${item.phone}" class="fw-bold text-decoration-none">${item.displayPhone}</a></p>
+                                <p class="mb-1"><strong>Email:</strong> ${item.email}</p>
+                                <p class="mb-0"><strong>Possession Date:</strong> <span class="badge bg-light text-dark border">${item.moveIn}</span></p>
+                            </div>
+                            <div class="col-md-4">
+                                <h6 class="fw-bold text-primary mb-2"><i class="fas fa-sliders-h me-1"></i>Lease Specs & Actions</h6>
+                                <p class="mb-1"><strong>Layout & Term:</strong> ${item.duration || '12 Months'} (${item.staff || '25 Seats'})</p>
+                                <p class="mb-2"><strong>Special Requirements:</strong> <span class="text-muted small">${(item.req || '').substring(0, 60)}...</span></p>
+                                <div class="d-flex flex-wrap gap-2 mt-3">
+                                    <button class="btn btn-success btn-sm fw-bold rounded-pill px-3" onclick="openRespondModal(${item.id})">
+                                        <i class="fas fa-handshake me-1"></i> Respond / Schedule
+                                    </button>
+                                    <button class="btn btn-outline-primary btn-sm fw-bold rounded-pill px-3" onclick="openDetailsModal(${item.id})">
+                                        <i class="fas fa-eye me-1"></i> Full Details
+                                    </button>
+                                    <a href="${item.mapUrl || '#'}" target="_blank" class="btn btn-map btn-sm fw-bold rounded-pill px-3">
+                                        <i class="fas fa-map-marked-alt me-1"></i> Maps
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            });
+
+            container.innerHTML = html;
+            document.getElementById('paginationInfoText').innerText = `Showing ${startIdx + 1} to ${Math.min(startIdx + pageSize, filtered.length)} of ${filtered.length} entries`;
+
+            // Render Pagination Controls
+            let pagHtml = '';
+            for (let p = 1; p <= totalPages; p++) {
+                pagHtml += `<li class="page-item ${p === currentPage ? 'active' : ''}"><a class="page-link" href="#" onclick="changePage(${p}); return false;">${p}</a></li>`;
+            }
+            document.getElementById('paginationControls').innerHTML = pagHtml;
+        }
+
+        function changePage(p) {
+            currentPage = p;
+            renderInquiries();
+        }
+
+        function openRespondModal(id) {
+            const item = officeInquiriesData.find(i => i.id === id);
+            if (!item) return;
+
+            document.getElementById('respInquiryId').value = item.id;
+            document.getElementById('respOfficeTitle').innerText = item.suite;
+            document.getElementById('respApplicantName').innerText = item.name;
+            document.getElementById('respApplicantPhone').innerText = item.displayPhone;
+
+            document.getElementById('respStatus').value = item.status || 'Meeting Scheduled';
+            document.getElementById('respQuotedPrice').value = item.quotedPrice || (parseFloat(item.rent.replace(/[^0-9.]/g, '')) || 45000);
+            document.getElementById('respRepName').value = item.representativeName || 'Rahul Sharma (Commercial Lead)';
+            document.getElementById('respRepPhone').value = item.representativePhone || '+91 98765 43210';
+            
+            document.getElementById('respMeetingLocation').value = item.meetingLocation || '';
+            document.getElementById('respAdminNotes').value = item.adminNotes || '';
+
+            toggleMeetingLocationInput();
+            const modal = new bootstrap.Modal(document.getElementById('respondInquiryModal'));
+            modal.show();
+        }
+
+        function toggleMeetingLocationInput() {
+            const mType = document.getElementById('respMeetingType').value;
+            const lbl = document.getElementById('lblMeetingLocation');
+            const btn = document.getElementById('btnGenMeet');
+
+            if (mType === 'Google Meet') {
+                lbl.innerText = 'Google Meet Video Call URL';
+                btn.style.display = 'inline-block';
+            } else {
+                lbl.innerText = 'Meeting Venue Address / Details';
+                btn.style.display = 'none';
+            }
+        }
+
+        function generateGoogleMeetUrl() {
+            const randomCode = Math.random().toString(36).substring(2, 5) + '-' + Math.random().toString(36).substring(2, 6) + '-' + Math.random().toString(36).substring(2, 5);
+            document.getElementById('respMeetingLocation').value = `https://meet.google.com/${randomCode}`;
+        }
+
+        function submitAdminResponse(event) {
+            event.preventDefault();
+            const id = document.getElementById('respInquiryId').value;
+            const btn = document.getElementById('btnSaveResponse');
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> Saving...`;
+
+            let meetingLoc = document.getElementById('respMeetingLocation').value.trim();
+            const mType = document.getElementById('respMeetingType').value;
+            if (!meetingLoc && mType === 'Google Meet') {
+                const randomCode = Math.random().toString(36).substring(2, 5) + '-' + Math.random().toString(36).substring(2, 6) + '-' + Math.random().toString(36).substring(2, 5);
+                meetingLoc = `https://meet.google.com/${randomCode}`;
+            }
+
+            const payload = {
+                id: id,
+                status: document.getElementById('respStatus').value,
+                quoted_price: document.getElementById('respQuotedPrice').value,
+                representative_name: document.getElementById('respRepName').value,
+                representative_phone: document.getElementById('respRepPhone').value,
+                meeting_location: meetingLoc,
+                admin_notes: document.getElementById('respAdminNotes').value
+            };
+
+            fetch('/admin-portal/api/bookings/update-status/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const modalEl = document.getElementById('respondInquiryModal');
+                    bootstrap.Modal.getInstance(modalEl).hide();
+                    alert('🎉 Office Response & Meeting details saved successfully!');
+                    fetchLiveOfficeInquiries();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fas fa-save me-1"></i> Save Response & Sync to User`;
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Failed to save response.');
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fas fa-save me-1"></i> Save Response & Sync to User`;
+            });
+        }
+
+        function openDetailsModal(id) {
+            const item = officeInquiriesData.find(i => i.id === id);
+            if (!item) return;
+
+            document.getElementById('modalOfficeTitle').textContent = `Full Office Inquiry Data: ${item.suite}`;
+            document.getElementById('modalName').textContent = item.name;
+            document.getElementById('modalPhone').textContent = item.displayPhone;
+            document.getElementById('modalEmail').textContent = item.email;
+            document.getElementById('modalAppointment').textContent = item.moveIn;
+
+            document.getElementById('modalSuite').textContent = item.suite;
+            document.getElementById('modalLocation').textContent = item.location;
+            document.getElementById('modalBusiness').textContent = item.business || 'IT Tech Suite';
+            document.getElementById('modalStaff').textContent = item.staff || '25 Seats';
+            document.getElementById('modalRent').textContent = `${item.rent} / month`;
+            document.getElementById('modalRequirements').textContent = item.req;
+
+            const badge = document.getElementById('modalStatusBadge');
+            badge.textContent = item.status;
+            badge.className = `status-pill ${['Approved', 'Confirmed', 'Meeting Scheduled', 'Quoted'].includes(item.status) ? 'status-approved' : (item.status === 'Pending' ? 'status-pending' : 'status-rejected')}`;
+
+            document.getElementById('modalCallBtn').href = `tel:${item.phone}`;
+            document.getElementById('modalMapBtn').href = item.mapUrl || '#';
+
+            new bootstrap.Modal(document.getElementById('viewDetailsModal')).show();
+        }
+    </script>
+</body>
+</html>

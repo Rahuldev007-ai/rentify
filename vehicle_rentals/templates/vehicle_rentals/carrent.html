@@ -1,0 +1,461 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Rentals Fleet - Rentify</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            --accent-gradient: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            --light-bg: #f8fafc;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            color: #1e293b;
+            min-height: 100vh;
+        }
+
+        /* Filter Pills Bar (Icon-Free, Modern Sleek Design) */
+        .category-filter-pill {
+            border: 1.5px solid #cbd5e1;
+            background: white;
+            color: #475569;
+            border-radius: 30px;
+            padding: 8px 22px;
+            font-weight: 700;
+            font-size: 0.88rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .category-filter-pill:hover {
+            color: #1e3c72;
+            border-color: #1e3c72;
+            transform: translateY(-2px);
+        }
+
+        .category-filter-pill.active {
+            background: var(--primary-gradient);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 4px 14px rgba(30, 60, 114, 0.3);
+        }
+
+        .btn-add-category-pill {
+            background: rgba(243, 156, 18, 0.12);
+            color: #d97706;
+            border: 1.5px dashed #f59e0b;
+            border-radius: 30px;
+            padding: 8px 20px;
+            font-weight: 700;
+            font-size: 0.88rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-add-category-pill:hover {
+            background: #f59e0b;
+            color: white;
+            border-style: solid;
+        }
+
+        /* Modern Car Card Layout */
+        .car-card-modern {
+            border: none;
+            border-radius: 22px;
+            overflow: hidden;
+            background: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+            transition: transform 0.35s ease, box-shadow 0.35s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #f1f5f9;
+        }
+
+        .car-card-modern:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+        }
+
+        .car-image-box {
+            position: relative;
+            height: 220px;
+            overflow: hidden;
+            background: #f1f5f9;
+        }
+
+        .car-image-box img {
+            height: 100%;
+            width: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+
+        .car-card-modern:hover .car-image-box img {
+            transform: scale(1.06);
+        }
+
+        .badge-cat-tag {
+            position: absolute;
+            top: 14px;
+            left: 14px;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(8px);
+            color: #f8fafc;
+            font-size: 0.75rem;
+            font-weight: 800;
+            padding: 5px 14px;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .badge-price-tag {
+            position: absolute;
+            bottom: 14px;
+            right: 14px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(8px);
+            color: #1e3c72;
+            font-size: 1rem;
+            font-weight: 800;
+            padding: 6px 14px;
+            border-radius: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .badge-rating-pill {
+            position: absolute;
+            top: 14px;
+            right: 14px;
+            background: rgba(255, 255, 255, 0.92);
+            color: #d97706;
+            font-size: 0.8rem;
+            font-weight: 800;
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        /* Specification Pills (Icon-Free Clean Format) */
+        .spec-pill {
+            background: #f1f5f9;
+            color: #475569;
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 5px 12px;
+            border-radius: 8px;
+            display: inline-block;
+        }
+
+        .btn-action-book {
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            padding: 11px;
+            font-weight: 800;
+            border-radius: 12px;
+            width: 100%;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+        }
+
+        .btn-action-book:hover {
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(30, 60, 114, 0.35);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Navigation -->
+    {% include 'core/navbar.html' %}
+
+    <!-- Main Container -->
+    <div class="container my-5">
+        
+        <!-- Header & Category Filter Bar -->
+        <div class="text-center mb-5" data-aos="fade-down">
+            <span class="badge bg-primary-subtle text-primary fw-bold px-3 py-2 rounded-pill mb-2">Verified Vehicle Fleet</span>
+            <h2 class="fw-extrabold text-dark display-6 mb-2">Explore Car Rentals</h2>
+            <p class="text-muted fs-6">Select a category below to filter available cars instantly.</p>
+            
+            <!-- Category Filter Bar (Client View) -->
+            <div class="d-flex justify-content-center flex-wrap gap-2 mt-4">
+                <a href="/vehicles/cars/?category=all{% if selected_location %}&location={{ selected_location|urlencode }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}" class="category-filter-pill {% if selected_category == 'all' or not selected_category %}active{% endif %}">
+                    All Cars
+                </a>
+                {% for cat in categories %}
+                    <a href="/vehicles/cars/?category={{ cat|urlencode }}{% if selected_location %}&location={{ selected_location|urlencode }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}" class="category-filter-pill {% if selected_category|lower == cat|lower %}active{% endif %}">
+                        {{ cat }}
+                    </a>
+                {% endfor %}
+            </div>
+
+            <!-- Date Range Filter & Search Bar -->
+            <form method="GET" action="/vehicles/cars/" id="carSearchForm" class="bg-white p-3 rounded-4 shadow-sm my-4 border text-start">
+                <input type="hidden" name="category" value="{{ selected_category }}">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold small text-secondary mb-1">Pickup City / Hub</label>
+                        <select name="location" class="form-select form-select-sm rounded-3">
+                            <option value="">All Pickup Hubs / Cities</option>
+                            {% for loc in locations %}
+                                <option value="{{ loc }}" {% if selected_location|lower == loc|lower %}selected{% endif %}>{{ loc }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold small text-secondary mb-1">Start Date (Pickup)</label>
+                        <input type="date" name="start_date" id="search_start_date" class="form-control form-control-sm rounded-3" value="{{ start_date }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold small text-secondary mb-1">End Date (Return)</label>
+                        <input type="date" name="end_date" id="search_end_date" class="form-control form-control-sm rounded-3" value="{{ end_date }}">
+                    </div>
+                    <div class="col-md-3 d-flex gap-2">
+                        <button type="submit" class="btn btn-primary btn-sm rounded-3 flex-grow-1 fw-bold">
+                            <i class="fas fa-search me-1"></i> Check Availability
+                        </button>
+                        {% if start_date or end_date or selected_location or selected_category != 'all' %}
+                            <a href="/vehicles/cars/" class="btn btn-outline-secondary btn-sm rounded-3 fw-bold" title="Reset Filters">
+                                Reset
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </form>
+
+            {% if start_date and end_date %}
+                <div class="alert alert-info border-info-subtle bg-info-subtle rounded-4 p-3 mb-4 shadow-sm text-start d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div>
+                        <h6 class="fw-bold text-dark mb-1"><i class="fas fa-check-circle text-success me-2"></i>Real-Time Available Vehicles Filter</h6>
+                        <span class="small text-secondary">
+                            Displaying <strong>{{ cars_count }} available car(s)</strong> for travel dates <strong>{{ start_date }} to {{ end_date }}</strong>.
+                            {% if filtered_out_count > 0 %}
+                                <span class="text-danger fw-bold">({{ filtered_out_count }} booked vehicle(s) filtered out).</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                    {% if filtered_out_count > 0 %}
+                        <button class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-bold" onclick="openDateModal('Search Travel Dates', '{{ start_date }}', '{{ end_date }}')">
+                            <i class="fas fa-calendar-alt me-1"></i> Change Dates
+                        </button>
+                    {% endif %}
+                </div>
+            {% elif selected_location %}
+                <div class="mt-2 mb-4 d-flex justify-content-center align-items-center flex-wrap gap-2">
+                    <span class="badge bg-dark text-warning px-3 py-2 rounded-pill fw-bold">Location Filter: {{ selected_location|title }}</span>
+                    <a href="/vehicles/cars/" class="text-danger small fw-bold ms-2 text-decoration-none">
+                        &times; Reset All Filters
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Mobile-Responsive Grid (col-12 col-md-6 col-lg-4) -->
+        <div class="row g-4" id="carGrid">
+            {% for car in cars %}
+                <div class="col-12 col-md-6 col-lg-4" data-aos="fade-up">
+                    <div class="car-card-modern position-relative {% if car.is_booked_by_other %}border-danger shadow-sm{% endif %}">
+                        <div class="car-image-box">
+                            <span class="badge-cat-tag">{{ car.category }}</span>
+                            <span class="badge-rating-pill">★ {{ car.rating|default:"4.9" }}</span>
+                            <img src="{{ car.image }}" alt="{{ car.name }}" onerror="this.src='{% static 'images/image/carimgs/thar1.jpg' %}'">
+                            <span class="badge-price-tag">₹{{ car.price_per_day }}<small class="fw-normal text-muted fs-7">/day</small></span>
+                            
+                            {% if car.is_booked_by_other %}
+                                <div class="position-absolute top-50 start-50 translate-middle w-100 text-center px-2">
+                                    <span class="badge bg-danger text-white fs-7 py-2 px-3 rounded-pill shadow-lg border border-white">
+                                        <i class="fas fa-user-lock me-1"></i> BOOKED BY ANOTHER USER
+                                    </span>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="card-body p-4 d-flex flex-column justify-content-between">
+                            <div>
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 class="fw-bold text-dark mb-0">{{ car.name }}</h5>
+                                </div>
+
+                                {% if car.is_booked_by_other %}
+                                    <div class="alert alert-danger py-1 px-2 small mb-3 rounded-3 text-center border-0 fw-bold">
+                                        <i class="fas fa-exclamation-triangle me-1"></i> Reserved for your dates!
+                                    </div>
+                                {% endif %}
+                                
+                                <!-- Clean Specs Chips -->
+                                <div class="d-flex flex-wrap gap-2 mb-3">
+                                    <span class="spec-pill">{{ car.seats }} Seats</span>
+                                    <span class="spec-pill">{{ car.transmission }}</span>
+                                    <span class="spec-pill">{{ car.fuel_type }}</span>
+                                    <span class="spec-pill bg-info-subtle text-info-emphasis border border-info-subtle"><i class="fas fa-road me-1"></i> 150 KM/day Limit</span>
+                                </div>
+                                
+                                <p class="text-secondary small mb-4">
+                                    {{ car.description|truncatewords:15 }}
+                                </p>
+                            </div>
+
+                            <div class="mt-auto">
+                                {% if car.is_booked_by_other %}
+                                    <button class="btn btn-warning btn-sm w-100 fw-bold rounded-3 shadow-sm py-2" onclick="openDateModal('{{ car.name|escapejs }}', '{{ start_date }}', '{{ end_date }}')">
+                                        <i class="fas fa-calendar-plus me-1"></i> Booked - Select New Dates
+                                    </button>
+                                {% elif request.user.is_authenticated %}
+                                    <a href="/vehicles/car-details/?id={{ car.id }}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}{% if selected_location %}&location={{ selected_location|urlencode }}{% endif %}" class="btn-action-book">
+                                        Book Car Now &rarr;
+                                    </a>
+                                {% else %}
+                                    <a href="/accounts/login/?next=/vehicles/car-details/?id={{ car.id }}{% if start_date %}%26start_date={{ start_date }}{% endif %}{% if end_date %}%26end_date={{ end_date }}{% endif %}{% if selected_location %}%26location={{ selected_location|urlencode }}{% endif %}" class="btn-action-book" style="background: linear-gradient(135deg, #334155 0%, #0f172a 100%);">
+                                        Login to Book &rarr;
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12 text-center py-5">
+                    <h4 class="text-muted fw-bold mb-3">No cars available matching your selected category.</h4>
+                    <a href="/vehicles/cars/" class="btn btn-outline-primary rounded-pill px-4 py-2 fw-bold">Reset Filters</a>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination Controls (10 Cars per Page) -->
+        {% if cars.has_other_pages %}
+        <div class="d-flex justify-content-center align-items-center mt-5">
+            <nav aria-label="Page navigation">
+                <ul class="pagination pagination-md shadow-sm rounded-pill overflow-hidden">
+                    {% if cars.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link fw-bold px-3" href="?page={{ cars.previous_page_number }}{% if selected_category != 'all' %}&category={{ selected_category|urlencode }}{% endif %}{% if selected_location %}&location={{ selected_location|urlencode }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}{% if search_q %}&q={{ search_q|urlencode }}{% endif %}">&laquo; Prev</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link px-3">&laquo; Prev</span></li>
+                    {% endif %}
+
+                    {% for i in cars.paginator.page_range %}
+                        {% if cars.number == i %}
+                            <li class="page-item active"><span class="page-link fw-bold px-3">{{ i }}</span></li>
+                        {% else %}
+                            <li class="page-item">
+                                <a class="page-link px-3" href="?page={{ i }}{% if selected_category != 'all' %}&category={{ selected_category|urlencode }}{% endif %}{% if selected_location %}&location={{ selected_location|urlencode }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}{% if search_q %}&q={{ search_q|urlencode }}{% endif %}">{{ i }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if cars.has_next %}
+                        <li class="page-item">
+                            <a class="page-link fw-bold px-3" href="?page={{ cars.next_page_number }}{% if selected_category != 'all' %}&category={{ selected_category|urlencode }}{% endif %}{% if selected_location %}&location={{ selected_location|urlencode }}{% endif %}{% if start_date %}&start_date={{ start_date }}{% endif %}{% if end_date %}&end_date={{ end_date }}{% endif %}{% if search_q %}&q={{ search_q|urlencode }}{% endif %}">Next &raquo;</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link px-3">Next &raquo;</span></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+        {% endif %}
+
+    </div>
+
+    <!-- Modal for Booked Car Date Change Alert -->
+    <div class="modal fade" id="bookedOverlapModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-danger text-white rounded-top-4">
+                    <h5 class="modal-title fw-bold"><i class="fas fa-exclamation-circle me-2"></i>Car Reserved by Another Customer</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4 text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-calendar-times text-danger fa-4x mb-2"></i>
+                        <h5 class="fw-bold text-dark mb-1" id="modalCarName">Selected Vehicle is Reserved</h5>
+                        <p class="text-muted small">This car is already booked during your requested travel dates. Please select new dates to check available vehicles.</p>
+                    </div>
+
+                    <form method="GET" action="/vehicles/cars/" class="text-start bg-light p-3 rounded-3 border">
+                        <input type="hidden" name="category" value="{{ selected_category }}">
+                        <input type="hidden" name="location" value="{{ selected_location }}">
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">New Start Date</label>
+                            <input type="date" name="start_date" id="modal_start_date" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold small">New End Date</label>
+                            <input type="date" name="end_date" id="modal_end_date" class="form-control" required>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100 fw-bold rounded-3">
+                            <i class="fas fa-check-circle me-1"></i> Update Dates & Search Fleet
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    {% include 'core/footer.html' %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({ duration: 800, once: true });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const sInput = document.getElementById('search_start_date');
+            const eInput = document.getElementById('search_end_date');
+            const searchForm = document.getElementById('carSearchForm');
+
+            const todayStr = new Date().toISOString().split('T')[0];
+            if (sInput) {
+                sInput.min = todayStr;
+                sInput.addEventListener('change', function() {
+                    if (sInput.value) {
+                        const sDate = new Date(sInput.value);
+                        const nextDay = new Date(sDate);
+                        nextDay.setDate(nextDay.getDate() + 1);
+                        const nextDayStr = nextDay.toISOString().split('T')[0];
+                        eInput.min = nextDayStr;
+                        if (!eInput.value || eInput.value <= sInput.value) {
+                            eInput.value = nextDayStr;
+                        }
+                    }
+                });
+            }
+
+            if (searchForm) {
+                searchForm.addEventListener('submit', function(e) {
+                    if (sInput.value && eInput.value && eInput.value <= sInput.value) {
+                        e.preventDefault();
+                        alert('Return (End) Date must be at least 1 day after Pickup (Start) Date!');
+                    }
+                });
+            }
+        });
+
+        function openDateModal(carName, sDate, eDate) {
+            document.getElementById('modalCarName').innerText = carName ? `${carName} is Booked!` : 'Vehicle is Reserved!';
+            if (sDate) document.getElementById('modal_start_date').value = sDate;
+            if (eDate) document.getElementById('modal_end_date').value = eDate;
+            const modal = new bootstrap.Modal(document.getElementById('bookedOverlapModal'));
+            modal.show();
+        }
+    </script>
+</body>
+</html>
+

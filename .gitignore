@@ -1,0 +1,44 @@
+# Virtual Environments
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Database & SQLite files
+db.sqlite3
+db.sqlite3-journal
+*.sqlite3
+*.db
+database/
+
+# Media & User Uploads
+media/
+media/*
+
+# Environment variables & Secrets
+.env
+.env.*
+*.env
+
+# Python Bytecode & Cache files
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# IDE & Editor settings
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Temporary logs & Scratch test scripts
+scratch/
+test_*.py
+*.log
+
+# System files
+Thumbs.db
+ehthumbs.db

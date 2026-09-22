@@ -1,0 +1,613 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Commercial Offices for Lease & Rent - Rentify</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #0056b3;
+            --accent-color: #f39c12;
+            --light-bg: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            color: #333;
+        }
+
+        .top-bar {
+            background-color: white;
+            padding: 15px 0;
+            margin-bottom: 35px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .office-card {
+            border: none;
+            border-radius: 16px;
+            overflow: hidden;
+            background: white;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .office-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+        }
+
+        .office-image {
+            height: 220px;
+            object-fit: cover;
+            width: 100%;
+        }
+
+        .office-features {
+            list-style: none;
+            padding: 0;
+            margin: 15px 0;
+        }
+
+        .office-features li {
+            margin-bottom: 8px;
+            color: #555;
+            font-size: 0.95rem;
+        }
+
+        .office-features i {
+            margin-right: 10px;
+            color: var(--primary-color);
+            width: 20px;
+        }
+
+        .office-price {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #28a745;
+            margin: 10px 0;
+        }
+
+        .btn-inquiry {
+            background: linear-gradient(135deg, #0056b3 0%, #003d80 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem;
+            font-weight: 700;
+            border-radius: 10px;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .btn-inquiry:hover {
+            color: white;
+            opacity: 0.92;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <div class="top-bar">
+        <div class="container d-flex justify-content-between align-items-center">
+            <a href="/core/" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                <i class="fas fa-arrow-left me-1"></i> Home
+            </a>
+            <div class="d-flex align-items-center gap-2">
+                <h4 class="mb-0 text-primary fw-bold"><i class="fas fa-briefcase me-2"></i>Commercial Offices Catalog</h4>
+                <span class="badge bg-success-subtle text-success border border-success rounded-pill px-3 py-2 fw-bold d-flex align-items-center gap-1 small ms-2">
+                    <span class="spinner-grow spinner-grow-sm text-success" role="status"></span> LIVE AUTO-SYNC
+                </span>
+            </div>
+            <a href="/bookings/my-office-inquiries/" class="btn btn-primary btn-sm rounded-pill px-3">
+                <i class="fas fa-briefcase-clock me-1"></i> My Office Inquiries
+            </a>
+        </div>
+    </div>
+
+    <!-- Client Side Executive Category Filter Bar (Currently Available Categories Only) -->
+    <div class="container mb-4">
+        <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+            <div class="row g-3 align-items-center">
+                <div class="col-12 col-md-8">
+                    <div class="d-flex flex-wrap gap-2 align-items-center" id="clientCategoryFilterBar">
+                        <button class="btn btn-primary rounded-pill px-3 py-2 fw-bold text-uppercase small cat-filter-btn active" onclick="setClientCategoryFilter('ALL', this)">
+                            All Available Offices ({{ offices.count }})
+                        </button>
+                        {% for cat in available_categories %}
+                            <button class="btn btn-outline-primary rounded-pill px-3 py-2 fw-bold text-uppercase small cat-filter-btn" onclick="setClientCategoryFilter('{{ cat|escapejs }}', this)">
+                                {{ cat }}
+                            </button>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0 text-muted"><i class="fas fa-search"></i></span>
+                        <input type="text" class="form-control bg-light border-start-0 ps-0 rounded-end-pill" id="clientSearchInput" placeholder="Search office name or location..." onkeyup="renderClientOffices()">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container mb-5">
+        <div class="row g-4" id="officesContainer">
+            {% for office in offices %}
+            <div class="col-md-4">
+                <div class="office-card">
+                    <div class="position-relative">
+                        <img src="{{ office.image }}" class="office-image" alt="{{ office.name }}" onerror="this.src='/static/images/image/officeimg/o1.jpg'">
+                        <span class="position-absolute top-0 end-0 m-3 badge {% if office.status == 'Available' %}bg-success{% else %}bg-danger{% endif %} text-white fw-bold px-3 py-2 rounded-pill">
+                            {{ office.status }}
+                        </span>
+                    </div>
+                    <div class="card-body p-4 d-flex flex-column justify-content-between">
+                        <div>
+                            <h5 class="card-title fw-bold text-dark">{{ office.name }}</h5>
+                            <div class="office-price">₹{{ office.monthly_rent|floatformat:0 }} <small class="fs-6 text-muted fw-normal">/ month</small></div>
+                            
+                            <ul class="office-features">
+                                <li><i class="fas fa-users text-primary"></i> <strong>{{ office.workstations }} Workstations</strong> ({{ office.conference_rooms }} Conf Rooms)</li>
+                                <li><i class="fas fa-expand-arrows-alt text-info"></i> {{ office.area_sqft }}</li>
+                                <li><i class="fas fa-snowflake text-warning"></i> {{ office.ac_type }}</li>
+                                <li><i class="fas fa-parking text-success"></i> {{ office.parking }}</li>
+                            </ul>
+                            <p class="text-muted small mb-3">
+                                <i class="fas fa-map-marker-alt text-danger me-1"></i> {{ office.location }}
+                            </p>
+                        </div>
+                        <button class="btn btn-inquiry w-100 fw-bold" onclick="openQuickOfficeInquiryModal({{ office.id }}, '{{ office.name|escapejs }}', '{{ office.monthly_rent|floatformat:0 }}')">
+                            Submit Inquiry <i class="fas fa-paper-plane ms-2"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <p class="text-muted fw-bold">No commercial offices listed currently.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- QUICK COMMERCIAL OFFICE LEASE INQUIRY MODAL -->
+    <div class="modal fade" id="quickOfficeInquiryModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-primary text-white rounded-top-4 px-4 py-3">
+                    <h5 class="modal-title fw-bold" id="inquiryModalTitle"><i class="fas fa-briefcase me-2"></i>Commercial Office Space Inquiry</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="quickOfficeInquiryForm" onsubmit="submitQuickOfficeInquiry(event)" novalidate>
+                    {% csrf_token %}
+                    <input type="hidden" id="inquiryOfficeId">
+                    <input type="hidden" id="inquiryOfficeTitle">
+                    <div class="modal-body p-4">
+                        <div class="mb-3 bg-light p-3 rounded-3 border d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="fw-bold text-dark mb-1" id="inquiryOfficeNameDisplay">Apex Tech Suites</h6>
+                                <span class="text-muted small"><i class="fas fa-info-circle me-1"></i>Fill up inquiry details for corporate rent quote & meeting schedule.</span>
+                            </div>
+                            <span class="text-success fw-bold fs-5" id="inquiryOfficePriceDisplay">₹45,000 / month</span>
+                        </div>
+
+                        <div class="row g-3">
+                            <!-- Category / Inquiry Type (FIXED TO OFFICE) -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-uppercase">Inquiry Type (Fixed)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-primary text-white fw-bold"><i class="fas fa-briefcase me-1"></i></span>
+                                    <input type="text" class="form-control fw-bold bg-light" value="Commercial Office Space" readonly>
+                                    <input type="hidden" id="inquiryType" value="office">
+                                </div>
+                            </div>
+
+                            <!-- Possession Date -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-uppercase">Preferred Possession Date <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control rounded-3" id="inquiryPossessionDate" oninput="validateOfficeFormRealtime()" required>
+                                <div class="invalid-feedback text-danger small mt-1" id="possessionDateError">Possession date cannot be in the past.</div>
+                            </div>
+
+                            <!-- Lease Term -->
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-uppercase">Lease Term <span class="text-danger">*</span></label>
+                                <select class="form-select rounded-3" id="inquiryLeaseTerm">
+                                    <option value="12 Months (1 Year)" selected>1 Year Lease</option>
+                                    <option value="24 Months (2 Years)">2 Years Lease</option>
+                                    <option value="36 Months (3 Years)">3 Years Lease</option>
+                                    <option value="60 Months (5 Years)">5 Years Commercial Lease</option>
+                                </select>
+                            </div>
+
+                            <!-- Staff Seats Needed -->
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-uppercase">Workstations / Seats <span class="text-danger">*</span></label>
+                                <select class="form-select rounded-3" id="inquiryStaffSeats">
+                                    <option value="1-10 Seats">1-10 Seats</option>
+                                    <option value="11-25 Seats" selected>11-25 Seats</option>
+                                    <option value="26-50 Seats">26-50 Seats</option>
+                                    <option value="51-100 Seats">51-100 Seats</option>
+                                    <option value="100+ Enterprise Seats">100+ Enterprise Seats</option>
+                                </select>
+                            </div>
+
+                            <!-- Layout Preference -->
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-uppercase">Office Layout <span class="text-danger">*</span></label>
+                                <select class="form-select rounded-3" id="inquiryOfficeLayout">
+                                    <option value="IT Tech Suite" selected>IT Tech Suite</option>
+                                    <option value="Corporate Office Suite">Corporate Office Suite</option>
+                                    <option value="Enterprise Business Suite">Enterprise Suite</option>
+                                    <option value="Co-working Managed Desk">Co-working Space</option>
+                                </select>
+                            </div>
+
+                            <!-- Full Name -->
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-uppercase">Company / Contact Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control rounded-3" id="inquiryName" placeholder="e.g. Rahul Patel (Tech Corp)" value="{% if request.user.get_full_name %}{{ request.user.get_full_name }}{% else %}{{ request.user.username }}{% endif %}" oninput="validateOfficeFormRealtime()" required>
+                                <div class="invalid-feedback text-danger small mt-1" id="nameError">Name must be at least 2 characters.</div>
+                            </div>
+
+                            <!-- Phone Number -->
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-uppercase">Phone Number <span class="text-danger">*</span></label>
+                                <input type="tel" class="form-control rounded-3" id="inquiryPhone" placeholder="+91 98765 43210" value="+91 98765 43210" oninput="validateOfficeFormRealtime()" required>
+                                <div class="invalid-feedback text-danger small mt-1" id="phoneError">Please enter a valid 10-digit phone number.</div>
+                            </div>
+
+                            <!-- Email -->
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-uppercase">Work Email Address</label>
+                                <input type="email" class="form-control rounded-3" id="inquiryEmail" placeholder="corporate@company.com" value="{% if request.user.email %}{{ request.user.email }}{% endif %}">
+                            </div>
+
+                            <!-- Budget Min & Max -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-uppercase">Monthly Budget Min (₹) <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control rounded-3" id="inquiryBudgetMin" placeholder="30000" min="5000" oninput="validateOfficeFormRealtime()" required>
+                                <div class="invalid-feedback text-danger small mt-1" id="budgetMinError">Minimum budget must be a positive number.</div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-uppercase">Monthly Budget Max (₹) <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control rounded-3" id="inquiryBudgetMax" placeholder="60000" min="5000" oninput="validateOfficeFormRealtime()" required>
+                                <div class="invalid-feedback text-danger small mt-1" id="budgetMaxError">Max budget must be greater than or equal to Min budget.</div>
+                            </div>
+
+                            <!-- Location Preference -->
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold small text-uppercase">Preferred Location / Tech Park <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control rounded-3" id="inquiryLocation" placeholder="e.g. Palace Road Tech Park, Bhavnagar" value="Palace Road, Bhavnagar" oninput="validateOfficeFormRealtime()" required>
+                                <div class="invalid-feedback text-danger small mt-1" id="locationError">Please specify preferred location.</div>
+                            </div>
+
+                            <!-- Special Requirements -->
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold small text-uppercase">Special Requirements / IT Infrastructure</label>
+                                <textarea class="form-control rounded-3" id="inquiryRequirements" rows="2" placeholder="e.g. Server rack room needed, high-speed leased line fiber, 24/7 power backup."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light rounded-bottom-4 px-4 py-3">
+                        <button type="button" class="btn btn-outline-secondary fw-bold rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary fw-bold rounded-pill px-4" id="submitInquiryBtn">
+                            Submit Inquiry <i class="fas fa-paper-plane ms-2"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    {% include 'core/footer.html' %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init();
+
+        // Default today's date into Possession date
+        document.addEventListener("DOMContentLoaded", function() {
+            const today = new Date().toISOString().split('T')[0];
+            const possEl = document.getElementById('inquiryPossessionDate');
+            if (possEl) possEl.value = today;
+            startOfficeLivePolling();
+        });
+
+        function openQuickOfficeInquiryModal(id, title, price) {
+            document.getElementById('inquiryOfficeId').value = id;
+            document.getElementById('inquiryOfficeTitle').value = title;
+            document.getElementById('inquiryOfficeNameDisplay').innerText = title;
+            document.getElementById('inquiryOfficePriceDisplay').innerText = '₹' + Number(price).toLocaleString() + ' / month';
+            
+            // pre-populate budgets
+            const priceNum = parseFloat(price) || 45000;
+            document.getElementById('inquiryBudgetMin').value = Math.max(15000, priceNum - 10000);
+            document.getElementById('inquiryBudgetMax').value = priceNum + 15000;
+
+            const modal = new bootstrap.Modal(document.getElementById('quickOfficeInquiryModal'));
+            modal.show();
+            validateOfficeFormRealtime();
+        }
+
+        function validateOfficeFormRealtime() {
+            let isValid = true;
+            const todayStr = new Date().toISOString().split('T')[0];
+
+            // Possession Date validation
+            const possDate = document.getElementById('inquiryPossessionDate').value;
+            const possEl = document.getElementById('inquiryPossessionDate');
+            if (!possDate || possDate < todayStr) {
+                possEl.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                possEl.classList.remove('is-invalid');
+            }
+
+            // Name Validation
+            const nameEl = document.getElementById('inquiryName');
+            if (!nameEl.value.trim() || nameEl.value.trim().length < 2) {
+                nameEl.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                nameEl.classList.remove('is-invalid');
+            }
+
+            // Phone Validation
+            const phoneEl = document.getElementById('inquiryPhone');
+            const phoneRegex = /^[0-9+\s-]{8,15}$/;
+            if (!phoneRegex.test(phoneEl.value.trim())) {
+                phoneEl.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                phoneEl.classList.remove('is-invalid');
+            }
+
+            // Location Validation
+            const locEl = document.getElementById('inquiryLocation');
+            if (!locEl.value.trim()) {
+                locEl.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                locEl.classList.remove('is-invalid');
+            }
+
+            // Budget Min & Max Validation
+            const minEl = document.getElementById('inquiryBudgetMin');
+            const maxEl = document.getElementById('inquiryBudgetMax');
+            const minVal = parseFloat(minEl.value) || 0;
+            const maxVal = parseFloat(maxEl.value) || 0;
+
+            if (minVal <= 0) {
+                minEl.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                minEl.classList.remove('is-invalid');
+            }
+
+            if (maxVal < minVal || maxVal <= 0) {
+                maxEl.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                maxEl.classList.remove('is-invalid');
+            }
+
+            document.getElementById('submitInquiryBtn').disabled = !isValid;
+            return isValid;
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function submitQuickOfficeInquiry(event) {
+            event.preventDefault();
+            if (!validateOfficeFormRealtime()) return;
+
+            const submitBtn = document.getElementById('submitInquiryBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span> Submitting...`;
+
+            const payload = {
+                office_id: document.getElementById('inquiryOfficeId').value,
+                office_title: document.getElementById('inquiryOfficeTitle').value,
+                possession_date: document.getElementById('inquiryPossessionDate').value,
+                lease_term: document.getElementById('inquiryLeaseTerm').value,
+                staff_seats: document.getElementById('inquiryStaffSeats').value,
+                office_layout: document.getElementById('inquiryOfficeLayout').value,
+                name: document.getElementById('inquiryName').value.trim(),
+                phone: document.getElementById('inquiryPhone').value.trim(),
+                email: document.getElementById('inquiryEmail').value.trim(),
+                budget_min: document.getElementById('inquiryBudgetMin').value,
+                budget_max: document.getElementById('inquiryBudgetMax').value,
+                location_preference: document.getElementById('inquiryLocation').value.trim(),
+                requirements: document.getElementById('inquiryRequirements').value.trim()
+            };
+
+            const csrftoken = getCookie('csrftoken') || document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            fetch('/properties/api/offices/submit-inquiry/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const modalEl = document.getElementById('quickOfficeInquiryModal');
+                    const modal = bootstrap.Modal.getInstance(modalEl);
+                    modal.hide();
+                    alert('🎉 Office Space Inquiry Submitted Successfully! Redirecting to your inquiries page...');
+                    window.location.href = '/bookings/my-office-inquiries/';
+                } else {
+                    alert('Error: ' + data.message);
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = `Submit Inquiry <i class="fas fa-paper-plane ms-2"></i>`;
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('An error occurred submitting inquiry. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `Submit Inquiry <i class="fas fa-paper-plane ms-2"></i>`;
+            });
+        }
+
+        let serverOffices = {{ offices_json|safe|default:"[]" }};
+        let availableCategories = {{ available_categories_json|safe|default:"[]" }};
+        let currentSelectedCategory = 'ALL';
+
+        document.addEventListener('DOMContentLoaded', function() {
+            renderClientOffices();
+            setInterval(fetchLiveOffices, 4000);
+        });
+
+        function setClientCategoryFilter(cat, btn) {
+            currentSelectedCategory = cat;
+            document.querySelectorAll('.cat-filter-btn').forEach(b => {
+                b.classList.remove('btn-primary', 'active');
+                b.classList.add('btn-outline-primary');
+            });
+            btn.classList.remove('btn-outline-primary');
+            btn.classList.add('btn-primary', 'active');
+            renderClientOffices();
+        }
+
+        function updateClientCategoryFilterBar(categories) {
+            const bar = document.getElementById('clientCategoryFilterBar');
+            if (!bar) return;
+
+            let totalAvailCount = serverOffices.filter(o => o.status === 'Available').length;
+            let html = `
+                <button class="btn ${currentSelectedCategory === 'ALL' ? 'btn-primary active' : 'btn-outline-primary'} rounded-pill px-3 py-2 fw-bold text-uppercase small cat-filter-btn" onclick="setClientCategoryFilter('ALL', this)">
+                    All Available Offices (${totalAvailCount})
+                </button>
+            `;
+
+            if (categories && categories.length > 0) {
+                categories.forEach(cat => {
+                    const count = serverOffices.filter(o => o.status === 'Available' && o.category && o.category.toLowerCase() === cat.toLowerCase()).length;
+                    if (count > 0) {
+                        const isActive = currentSelectedCategory.toLowerCase() === cat.toLowerCase();
+                        html += `
+                            <button class="btn ${isActive ? 'btn-primary active' : 'btn-outline-primary'} rounded-pill px-3 py-2 fw-bold text-uppercase small cat-filter-btn" onclick="setClientCategoryFilter('${cat.replace(/'/g, "\\'")}', this)">
+                                ${cat} (${count})
+                            </button>
+                        `;
+                    }
+                });
+            }
+
+            bar.innerHTML = html;
+        }
+
+        function fetchLiveOffices() {
+            fetch('/properties/api/offices/live-list/')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success' && data.offices) {
+                        serverOffices = data.offices;
+                        if (data.available_categories) {
+                            updateClientCategoryFilterBar(data.available_categories);
+                        }
+                        renderClientOffices();
+                    }
+                })
+                .catch(err => console.log('Office live sync error:', err));
+        }
+
+        function renderClientOffices() {
+            const container = document.getElementById('officesContainer');
+            if (!container || !serverOffices) return;
+
+            const searchInput = document.getElementById('clientSearchInput');
+            const searchVal = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+            container.innerHTML = '';
+            
+            let filtered = serverOffices.filter(o => {
+                const isAvailable = o.status === 'Available';
+                const matchCategory = currentSelectedCategory === 'ALL' || (o.category && o.category.toLowerCase() === currentSelectedCategory.toLowerCase());
+                const matchSearch = o.name.toLowerCase().includes(searchVal) || o.location.toLowerCase().includes(searchVal) || (o.category && o.category.toLowerCase().includes(searchVal));
+                return isAvailable && matchCategory && matchSearch;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="col-12 text-center py-5">
+                        <h5 class="text-muted fw-bold">No commercial offices currently available under "${currentSelectedCategory}" category.</h5>
+                        <p class="text-secondary small">Please select another category or check back later.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            filtered.forEach(o => {
+                const statusBadge = 'bg-success';
+                const cardHtml = `
+                <div class="col-md-4">
+                    <div class="office-card">
+                        <div class="position-relative">
+                            <img src="${o.image}" class="office-image" alt="${o.name}" onerror="this.src='/static/images/image/officeimg/o1.jpg'">
+                            <span class="position-absolute top-0 start-0 m-3 badge bg-primary text-white fw-bold px-3 py-2 rounded-pill text-uppercase">
+                                ${o.category}
+                            </span>
+                            <span class="position-absolute top-0 end-0 m-3 badge ${statusBadge} text-white fw-bold px-3 py-2 rounded-pill">
+                                ${o.status}
+                            </span>
+                        </div>
+                        <div class="card-body p-4 d-flex flex-column justify-content-between">
+                            <div>
+                                <h5 class="card-title fw-bold text-dark">${o.name}</h5>
+                                <div class="office-price">₹${Number(o.price).toLocaleString()} <small class="fs-6 text-muted fw-normal">/ month</small></div>
+                                
+                                <ul class="office-features">
+                                    <li><i class="fas fa-users text-primary"></i> <strong>${o.workstations} Workstations</strong> (${o.conferenceRooms} Conf Rooms)</li>
+                                    <li><i class="fas fa-expand-arrows-alt text-info"></i> ${o.areaSqft}</li>
+                                    <li><i class="fas fa-snowflake text-warning"></i> ${o.acType}</li>
+                                    <li><i class="fas fa-parking text-success"></i> ${o.parking}</li>
+                                </ul>
+                                <p class="text-muted small mb-3">
+                                    <i class="fas fa-map-marker-alt text-danger me-1"></i> ${o.location}
+                                </p>
+                            </div>
+                            <button class="btn btn-inquiry w-100 fw-bold" onclick="openQuickOfficeInquiryModal(${o.id}, '${o.name.replace(/'/g, "\\'")}', '${o.price}')">
+                                Submit Inquiry <i class="fas fa-paper-plane ms-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>`;
+                container.insertAdjacentHTML('beforeend', cardHtml);
+            });
+        }
+    </script>
+</body>
+</html>

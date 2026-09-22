@@ -1,0 +1,879 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile & Dashboard - Rentify</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            --accent-gradient: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            --light-bg: #f8fafc;
+            --border-color: #e2e8f0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--light-bg);
+            color: #1e293b;
+            min-height: 100vh;
+        }
+
+        /* Hero Header Banner */
+        .profile-hero-banner {
+            background: var(--primary-gradient);
+            color: #ffffff;
+            padding: 45px 0 75px;
+            border-radius: 0 0 32px 32px;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(30, 60, 114, 0.15);
+        }
+
+        .dashboard-container {
+            margin-top: -45px;
+            margin-bottom: 60px;
+        }
+
+        /* Sticky Moving Profile Sidebar Card */
+        .sticky-profile-sidebar {
+            position: sticky;
+            top: 95px;
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+
+        /* Modern White Cards */
+        .white-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 28px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+            margin-bottom: 24px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .white-card:hover {
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+        }
+
+        .avatar-circle-large {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: var(--primary-gradient);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.6rem;
+            font-weight: 800;
+            box-shadow: 0 8px 25px rgba(30, 60, 114, 0.25);
+            border: 4px solid #ffffff;
+            margin: 0 auto 16px;
+        }
+
+        .info-box-light {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            transition: all 0.25s ease;
+        }
+
+        .info-box-light:hover {
+            background: #ffffff;
+            border-color: #1e3c72;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+            transform: translateY(-2px);
+        }
+
+        .info-box-light label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #64748b;
+            font-weight: 700;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .info-box-light p {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0;
+        }
+
+        /* Stat Counters */
+        .stat-card-light {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 18px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.03);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card-light:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.08);
+            border-color: #cbd5e1;
+        }
+
+        .stat-number-val {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #1e3c72;
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+
+        .stat-label-text {
+            font-size: 0.82rem;
+            color: #64748b;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Shortcut Cards */
+        .quick-shortcut-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 20px;
+            text-decoration: none;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: all 0.3s ease;
+            height: 100%;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+        }
+
+        .quick-shortcut-card:hover {
+            background: #ffffff;
+            border-color: #1e3c72;
+            color: #1e3c72;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 24px rgba(30, 60, 114, 0.12);
+        }
+
+        .quick-shortcut-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            flex-shrink: 0;
+        }
+
+        /* Clean Table */
+        .table-light-custom {
+            --bs-table-bg: transparent;
+            color: #1e293b;
+        }
+
+        .table-light-custom th {
+            background: #f1f5f9;
+            color: #475569;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            font-weight: 700;
+            padding: 12px 16px;
+        }
+
+        .table-light-custom td {
+            padding: 14px 16px;
+            vertical-align: middle;
+            font-size: 0.95rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .btn-edit-action {
+            background: var(--primary-gradient);
+            color: #ffffff;
+            border: none;
+            font-weight: 700;
+            border-radius: 12px;
+            padding: 11px 22px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .btn-edit-action:hover {
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(30, 60, 114, 0.3);
+        }
+
+        .btn-verify-action {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            color: #ffffff;
+            border: none;
+            font-weight: 700;
+            border-radius: 12px;
+            padding: 11px 22px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .btn-verify-action:hover {
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(5, 150, 105, 0.3);
+        }
+
+        .btn-logout-action {
+            background: #fee2e2;
+            color: #dc2626;
+            border: 1px solid #fca5a5;
+            font-weight: 700;
+            border-radius: 12px;
+            padding: 11px 24px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .btn-logout-action:hover {
+            background: #dc2626;
+            color: #ffffff;
+            border-color: #dc2626;
+            box-shadow: 0 6px 18px rgba(220, 38, 38, 0.3);
+        }
+
+        .modal-content-light {
+            background: #ffffff;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Shared Top Navbar -->
+    {% include 'core/navbar.html' %}
+
+    <!-- Hero Header Banner -->
+    <div class="profile-hero-banner text-center">
+        <div class="container">
+            <h2 class="fw-extrabold mb-2">
+                <i class="fas fa-user-circle text-warning me-2"></i>User Account Dashboard
+            </h2>
+            <p class="text-white-50 mb-0 fs-6">Welcome back, <strong>{{ request.user.first_name|default:request.user.username }}</strong>! Manage your profile, verify your identity document, and track real-time bookings.</p>
+        </div>
+    </div>
+
+    <!-- Main Dashboard Container -->
+    <div class="container dashboard-container">
+        
+        <!-- Alerts Block -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show shadow-sm border-0 rounded-3 mb-4" role="alert">
+                    <i class="fas fa-info-circle me-2"></i> {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div id="profile-update-alert" style="display:none;" class="alert alert-success alert-dismissible fade show shadow-sm border-0 rounded-3 mb-4" role="alert">
+            <i class="fas fa-check-circle me-2"></i> <span id="profile-alert-text"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <div class="row g-4">
+            
+            <!-- Left Column: Sticky Moving Profile Sidebar Card -->
+            <div class="col-lg-4">
+                <div class="sticky-profile-sidebar">
+                    <div class="white-card text-center">
+                        <div class="avatar-circle-large">
+                            {{ avatar_initials }}
+                        </div>
+                        <h3 class="fw-extrabold text-dark mb-1" id="display-fullname">{{ request.user.first_name|default:request.user.username }}</h3>
+                        <p class="text-muted small mb-2">@{{ request.user.username }}</p>
+
+                        <!-- Verification Status Badge -->
+                        <div class="mb-3" id="display-verification-badge">
+                            {% if user_profile.verification_status == 'Verified' %}
+                                <span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill fw-bold border border-success-subtle d-inline-flex align-items-center gap-1">
+                                    <i class="fas fa-check-circle"></i> Profile Verified
+                                </span>
+                            {% elif user_profile.verification_status == 'Pending' %}
+                                <span class="badge bg-warning-subtle text-warning-emphasis px-3 py-2 rounded-pill fw-bold border border-warning-subtle d-inline-flex align-items-center gap-1">
+                                    <i class="fas fa-clock"></i> Verification Pending
+                                </span>
+                            {% elif user_profile.verification_status == 'Rejected' %}
+                                <span class="badge bg-danger-subtle text-danger px-3 py-2 rounded-pill fw-bold border border-danger-subtle d-inline-flex align-items-center gap-1">
+                                    <i class="fas fa-times-circle"></i> Verification Rejected
+                                </span>
+                            {% else %}
+                                <span class="badge bg-secondary-subtle text-secondary px-3 py-2 rounded-pill fw-bold border border-secondary-subtle d-inline-flex align-items-center gap-1">
+                                    <i class="fas fa-exclamation-triangle"></i> Unverified Profile
+                                </span>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-4">
+                            <span class="badge bg-primary-subtle text-primary px-3 py-1.5 rounded-pill fw-bold border border-primary-subtle">
+                                <i class="fas fa-shield-alt me-1"></i> {{ user_profile.role|title }} Account
+                            </span>
+                            <div class="text-muted small mt-2">
+                                <i class="fas fa-calendar-alt me-1 text-primary"></i> Member since {{ request.user.date_joined|date:"M Y" }}
+                            </div>
+                        </div>
+
+                        <!-- Profile Quick Actions -->
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-verify-action" data-bs-toggle="modal" data-bs-target="#verifyDocModal">
+                                <i class="fas fa-id-card me-2"></i> Document Verification
+                            </button>
+                            <button class="btn btn-edit-action" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                                <i class="fas fa-user-edit me-2"></i> Edit Profile Details
+                            </button>
+                            <a href="/accounts/logout/" class="btn btn-logout-action text-center">
+                                <i class="fas fa-sign-out-alt me-2"></i> Logout Account
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Details & Real-Time Stats -->
+            <div class="col-lg-8">
+                
+                <!-- Stat Counters Row -->
+                <div class="row g-3 mb-4">
+                    <div class="col-6 col-md-3">
+                        <div class="stat-card-light">
+                            <div class="stat-number-val">{{ total_inquiries }}</div>
+                            <div class="stat-label-text">Total Inquiries</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="stat-card-light">
+                            <div class="stat-number-val text-success">{{ approved_inquiries }}</div>
+                            <div class="stat-label-text">Approved</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="stat-card-light">
+                            <div class="stat-number-val text-warning">{{ pending_inquiries }}</div>
+                            <div class="stat-label-text">Pending</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="stat-card-light">
+                            <div class="stat-number-val text-danger">{{ rejected_inquiries }}</div>
+                            <div class="stat-label-text">Cancelled</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Document Verification Status Card -->
+                <div class="white-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="fw-bold text-dark mb-0">
+                            <i class="fas fa-id-card text-success me-2"></i>Document Verification Status
+                        </h4>
+                        {% if user_profile.verification_status == 'Verified' %}
+                            <button class="btn btn-sm btn-success rounded-pill px-3 fw-bold" data-bs-toggle="modal" data-bs-target="#verifyDocModal">
+                                <i class="fas fa-lock me-1"></i> View Verified Document
+                            </button>
+                        {% else %}
+                            <button class="btn btn-sm btn-outline-success rounded-pill px-3 fw-bold" data-bs-toggle="modal" data-bs-target="#verifyDocModal">
+                                <i class="fas fa-upload me-1"></i> Submit / Update Document
+                            </button>
+                        {% endif %}
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="info-box-light">
+                                <label><i class="fas fa-file-alt text-primary me-2"></i> ID Document Type</label>
+                                <p id="info-doc-type">{{ user_profile.id_document_type|default:"Driving License" }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-box-light">
+                                <label><i class="fas fa-hashtag text-info me-2"></i> Document / ID Number</label>
+                                <p id="info-doc-num">{{ user_profile.id_number|default:"Not Submitted Yet" }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-box-light">
+                                <label><i class="fas fa-shield-alt text-warning me-2"></i> Verification State</label>
+                                <p id="info-verification-state">
+                                    {% if user_profile.verification_status == 'Verified' %}
+                                        <span class="text-success fw-bold"><i class="fas fa-check-circle"></i> Verified & Approved</span>
+                                    {% elif user_profile.verification_status == 'Pending' %}
+                                        <span class="text-warning fw-bold"><i class="fas fa-clock"></i> Under Admin Verification</span>
+                                    {% elif user_profile.verification_status == 'Rejected' %}
+                                        <span class="text-danger fw-bold"><i class="fas fa-times-circle"></i> Rejected ({{ user_profile.rejection_reason|default:"Invalid Document" }})</span>
+                                    {% else %}
+                                        <span class="text-muted fw-bold"><i class="fas fa-exclamation-triangle"></i> Unverified (Submit Document)</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-box-light">
+                                <label><i class="fas fa-file-image text-success me-2"></i> Uploaded Proof</label>
+                                <p>
+                                    {% if user_profile.document_file %}
+                                        <a href="{{ user_profile.document_file }}" target="_blank" class="text-primary fw-bold text-decoration-none">
+                                            <i class="fas fa-external-link-alt me-1"></i> View Document File
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">No document file attached</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Showroom Notice -->
+                    <div class="alert alert-info border-0 rounded-4 d-flex align-items-center gap-3 mt-3 mb-0" style="background: rgba(13, 202, 240, 0.08); border-left: 4px solid #0dcaf2 !important;">
+                        <i class="fas fa-info-circle text-info fa-lg flex-shrink-0"></i>
+                        <div class="small text-dark">
+                            <strong>Showroom Collection Notice:</strong> Please remember to carry your <strong>original physical document</strong> (e.g. original Driving License or Aadhaar Card) when picking up your vehicle at the showroom store.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Account Information Card -->
+                <div class="white-card">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="fw-bold text-dark mb-0"><i class="fas fa-user-shield text-primary me-2"></i>Account Information</h4>
+                        <button class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                            <i class="fas fa-pen me-1"></i> Edit Profile
+                        </button>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="info-box-light">
+                                <label><i class="fas fa-user text-primary me-2"></i> Full Name</label>
+                                <p id="info-fullname">{{ request.user.first_name|default:"Not Provided" }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-box-light">
+                                <label><i class="fas fa-envelope text-info me-2"></i> Email Address</label>
+                                <p id="info-email">{{ request.user.email }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-box-light">
+                                <label><i class="fas fa-phone-alt text-success me-2"></i> Phone Number</label>
+                                <p id="info-phone">{{ user_profile.phone_number|default:"Not Provided" }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-box-light">
+                                <label><i class="fas fa-user-tag text-warning me-2"></i> Account Type</label>
+                                <p>{{ user_profile.role|title }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Real-Time Vehicle Bookings Card -->
+                <div class="white-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="fw-bold text-dark mb-0"><i class="fas fa-car-side text-primary me-2"></i>My Vehicle Bookings & History (Cars & Bikes)</h4>
+                        <a href="/bookings/my-bookings/" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold">View All &rarr;</a>
+                    </div>
+
+                    {% if user_inquiries %}
+                        <div class="table-responsive">
+                            <table class="table table-light-custom align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Category</th>
+                                        <th>Vehicle Title</th>
+                                        <th>Booking Date</th>
+                                        <th>Extra Charges</th>
+                                        <th>Status</th>
+                                        <th>Action / Payment</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in user_inquiries %}
+                                        <tr>
+                                            <td>
+                                                {% if item.category_type == 'car' %}
+                                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle fw-bold"><i class="fas fa-car me-1"></i> Car</span>
+                                                {% else %}
+                                                    <span class="badge bg-success-subtle text-success border border-success-subtle fw-bold"><i class="fas fa-motorcycle me-1"></i> Bike</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="fw-bold text-dark">{{ item.item_title }}</td>
+                                            <td>{{ item.booking_date|default:"Flexible Date" }}</td>
+                                            <td>
+                                                {% if item.extra_km_fee > 0 %}
+                                                    <div class="fw-bold text-danger">₹{{ item.extra_km_fee }}</div>
+                                                    {% if item.extra_fee_status == 'Paid Online' %}
+                                                        <span class="badge bg-success"><i class="fas fa-check-circle me-1"></i> Paid via Razorpay</span>
+                                                    {% elif item.extra_fee_status == 'Paid at Showroom' %}
+                                                        <span class="badge bg-info text-dark"><i class="fas fa-store me-1"></i> Paid at Showroom</span>
+                                                    {% elif item.extra_fee_status == 'Settlement Confirmed' %}
+                                                        <span class="badge bg-primary"><i class="fas fa-handshake me-1"></i> Settlement Confirmed</span>
+                                                    {% else %}
+                                                        <span class="badge bg-warning text-dark"><i class="fas fa-clock me-1"></i> Pending Payment</span>
+                                                    {% endif %}
+                                                {% else %}
+                                                    <span class="text-muted small">No Extra Charge</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if item.status == 'Approved' or item.status == 'Confirmed' %}
+                                                    <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1 fw-bold"><i class="fas fa-check-circle me-1"></i> Approved</span>
+                                                {% elif item.status == 'Completed' %}
+                                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1 fw-bold"><i class="fas fa-flag-checkered me-1"></i> Completed</span>
+                                                {% elif item.status == 'Pending' %}
+                                                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3 py-1 fw-bold"><i class="fas fa-clock me-1"></i> Pending</span>
+                                                {% else %}
+                                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-1 fw-bold"><i class="fas fa-times-circle me-1"></i> {{ item.status }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if item.extra_km_fee > 0 and item.extra_fee_status != 'Paid Online' and item.extra_fee_status != 'Paid at Showroom' and item.extra_fee_status != 'Settlement Confirmed' %}
+                                                    <div class="btn-group btn-group-sm">
+                                                        <button class="btn btn-outline-info rounded-start-pill fw-bold" onclick="payExtraFee({{ item.id }}, 'Showroom')">
+                                                            <i class="fas fa-store me-1"></i> Pay at Showroom
+                                                        </button>
+                                                        <button class="btn btn-success rounded-end-pill fw-bold" onclick="payExtraFee({{ item.id }}, 'Razorpay')">
+                                                            <i class="fas fa-credit-card me-1"></i> Pay via Razorpay
+                                                        </button>
+                                                    </div>
+                                                {% else %}
+                                                    <a href="/bookings/confirmation/?id={{ item.id }}" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold">View Voucher</a>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4 text-muted">
+                            <i class="fas fa-inbox fa-3x mb-3 text-secondary opacity-50"></i>
+                            <p class="mb-3 text-secondary fw-semibold">No active vehicle bookings found.</p>
+                            <a href="/vehicles/cars/" class="btn btn-sm btn-primary rounded-pill px-4 me-2 fw-bold">Explore Cars</a>
+                            <a href="/vehicles/bikes/" class="btn btn-sm btn-outline-success rounded-pill px-4 fw-bold">Explore Bikes</a>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Shortcuts Grid -->
+                <h5 class="fw-bold text-dark mb-3"><i class="fas fa-th-large text-primary me-2"></i>My Vehicle Bookings Shortcuts</h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <a href="/vehicles/cars/" class="quick-shortcut-card">
+                            <div class="quick-shortcut-icon bg-primary-subtle text-primary border border-primary-subtle">
+                                <i class="fas fa-car"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-1 text-dark">Explore Rental Cars</h6>
+                                <p class="text-muted small mb-0">Browse and book premium cars instantly.</p>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-6">
+                        <a href="/vehicles/bikes/" class="quick-shortcut-card">
+                            <div class="quick-shortcut-icon bg-success-subtle text-success border border-success-subtle">
+                                <i class="fas fa-motorcycle"></i>
+                            </div>
+                            <div>
+                                <h6 class="fw-bold mb-1 text-dark">Explore Rental Bikes</h6>
+                                <p class="text-muted small mb-0">Browse and book bikes & scooters.</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div class="modal fade" id="editProfileModal" tabindex="-1" aria-labelledby="editProfileModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-content-light">
+                <div class="modal-header border-bottom">
+                    <h5 class="modal-title fw-bold text-dark" id="editProfileModalLabel">
+                        <i class="fas fa-user-edit text-primary me-2"></i>Edit Profile Information
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="edit-profile-form" method="POST" action="/accounts/user-panel/">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="edit_fullname" class="form-label text-secondary fw-bold small text-uppercase">Full Name</label>
+                            <input type="text" class="form-control" id="edit_fullname" name="fullname" value="{{ request.user.first_name }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_email" class="form-label text-secondary fw-bold small text-uppercase">Email Address</label>
+                            <input type="email" class="form-control" id="edit_email" name="email" value="{{ request.user.email }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit_phone" class="form-label text-secondary fw-bold small text-uppercase">Phone Number</label>
+                            <input type="tel" class="form-control" id="edit_phone" name="phone" value="{{ user_profile.phone_number|default:'' }}" placeholder="10-digit mobile number" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-top">
+                        <button type="button" class="btn btn-outline-secondary rounded-pill px-4 fw-bold" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold" style="background: var(--primary-gradient); border: none;">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Document Verification Modal -->
+    <div class="modal fade" id="verifyDocModal" tabindex="-1" aria-labelledby="verifyDocModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-content-light">
+                {% if user_profile.verification_status == 'Verified' %}
+                    <div class="modal-header border-bottom">
+                        <h5 class="modal-title fw-bold text-dark" id="verifyDocModalLabel">
+                            <i class="fas fa-user-check text-success me-2"></i>Verified Document Details
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-success border-0 rounded-3 mb-3 d-flex align-items-center gap-2">
+                            <i class="fas fa-lock text-success fa-lg me-1"></i>
+                            <div>
+                                <strong>Status: Document Verified & Approved ✓</strong><br>
+                                <span class="small text-secondary">Your document verification is locked. Verified documents cannot be altered.</span>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-secondary fw-bold small text-uppercase">ID Document Type</label>
+                            <input type="text" class="form-control bg-light text-dark fw-semibold" value="{{ user_profile.id_document_type|default:'Driving License' }}" readonly disabled>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-secondary fw-bold small text-uppercase">Document / ID Number</label>
+                            <input type="text" class="form-control bg-light text-dark fw-semibold" value="{{ user_profile.id_number|default:'N/A' }}" readonly disabled>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-secondary fw-bold small text-uppercase">Uploaded Proof File</label>
+                            {% if user_profile.document_file %}
+                                <div class="p-3 bg-light rounded-3 border d-flex justify-content-between align-items-center">
+                                    <span class="fw-semibold text-dark small"><i class="fas fa-file-alt text-primary me-2"></i> {{ user_profile.id_document_type }} Proof</span>
+                                    <a href="{{ user_profile.document_file }}" target="_blank" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold">
+                                        <i class="fas fa-external-link-alt me-1"></i> View Document
+                                    </a>
+                                </div>
+                            {% else %}
+                                <p class="text-muted small mb-0">No document file attached.</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Showroom Notice -->
+                        <div class="alert alert-info border-0 rounded-3 d-flex align-items-center gap-2 mt-3 mb-0" style="background: rgba(13, 202, 240, 0.08); border-left: 4px solid #0dcaf2 !important;">
+                            <i class="fas fa-info-circle text-info me-1"></i>
+                            <div class="small text-dark">
+                                <strong>Showroom Collection Notice:</strong> Please remember to carry your <strong>original physical document</strong> when collecting your vehicle at the showroom store.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-top">
+                        <button type="button" class="btn btn-secondary rounded-pill px-4 fw-bold" data-bs-dismiss="modal">Close</button>
+                    </div>
+                {% else %}
+                    <div class="modal-header border-bottom">
+                        <h5 class="modal-title fw-bold text-dark" id="verifyDocModalLabel">
+                            <i class="fas fa-id-card text-success me-2"></i>Submit Identity Verification Document
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form id="verify-doc-form" method="POST" action="/accounts/user-panel/" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="submit_verification">
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="id_document_type" class="form-label text-secondary fw-bold small text-uppercase">Select Document Type</label>
+                                <select class="form-select" id="id_document_type" name="id_document_type" required>
+                                    <option value="Driving License" {% if user_profile.id_document_type == 'Driving License' %}selected{% endif %}>Driving License (Recommended for Vehicle Rentals)</option>
+                                    <option value="Aadhaar Card" {% if user_profile.id_document_type == 'Aadhaar Card' %}selected{% endif %}>Aadhaar Card</option>
+                                    <option value="Passport" {% if user_profile.id_document_type == 'Passport' %}selected{% endif %}>Passport</option>
+                                    <option value="Voter ID" {% if user_profile.id_document_type == 'Voter ID' %}selected{% endif %}>Voter ID</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="id_number" class="form-label text-secondary fw-bold small text-uppercase">Document / License Number</label>
+                                <input type="text" class="form-control" id="id_number" name="id_number" value="{{ user_profile.id_number|default:'' }}" placeholder="e.g. GJ-06-2023-1234567" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="document_upload" class="form-label text-secondary fw-bold small text-uppercase">Upload Photo / PDF Proof</label>
+                                <input type="file" class="form-control" id="document_upload" name="document_upload" accept="image/*,application/pdf">
+                                <small class="text-muted mt-1 d-block">Supports JPG, PNG, or PDF file formats up to 5MB.</small>
+                            </div>
+
+                            <!-- Showroom Notice -->
+                            <div class="alert alert-info border-0 rounded-3 d-flex align-items-center gap-2 mt-3 mb-0" style="background: rgba(13, 202, 240, 0.08); border-left: 4px solid #0dcaf2 !important;">
+                                <i class="fas fa-info-circle text-info me-1"></i>
+                                <div class="small text-dark">
+                                    <strong>Showroom Collection Notice:</strong> Please remember to carry your <strong>original physical document</strong> when collecting your vehicle at the showroom store.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-top">
+                            <button type="button" class="btn btn-outline-secondary rounded-pill px-4 fw-bold" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold">Submit for Admin Review</button>
+                        </div>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    {% include 'core/footer.html' %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Profile Edit Form Handler
+        document.getElementById('edit-profile-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+
+            fetch('/accounts/user-panel/', {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    document.getElementById('display-fullname').textContent = data.fullname;
+                    document.getElementById('info-fullname').textContent = data.fullname;
+                    document.getElementById('info-email').textContent = data.email;
+                    document.getElementById('info-phone').textContent = data.phone || 'Not Provided';
+
+                    const alertBox = document.getElementById('profile-update-alert');
+                    document.getElementById('profile-alert-text').textContent = data.message;
+                    alertBox.style.display = 'block';
+
+                    const modalElem = document.getElementById('editProfileModal');
+                    const modal = bootstrap.Modal.getInstance(modalElem);
+                    if (modal) modal.hide();
+                } else {
+                    alert(data.message || 'Error updating profile.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while updating profile.');
+            });
+        });
+
+        // Verification Form Handler
+        document.getElementById('verify-doc-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+
+            fetch('/accounts/user-panel/', {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    document.getElementById('info-doc-type').textContent = data.id_document_type;
+                    document.getElementById('info-doc-num').textContent = data.id_number;
+                    document.getElementById('info-verification-state').innerHTML = '<span class="text-warning fw-bold"><i class="fas fa-clock"></i> Under Admin Verification</span>';
+                    document.getElementById('display-verification-badge').innerHTML = '<span class="badge bg-warning-subtle text-warning-emphasis px-3 py-2 rounded-pill fw-bold border border-warning-subtle d-inline-flex align-items-center gap-1"><i class="fas fa-clock"></i> Verification Pending</span>';
+
+                    const alertBox = document.getElementById('profile-update-alert');
+                    document.getElementById('profile-alert-text').textContent = data.message;
+                    alertBox.style.display = 'block';
+
+                    const modalElem = document.getElementById('verifyDocModal');
+                    const modal = bootstrap.Modal.getInstance(modalElem);
+                    if (modal) modal.hide();
+                } else {
+                    alert(data.message || 'Error submitting document verification.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while submitting document verification.');
+            });
+        });
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function payExtraFee(inquiryId, method) {
+            if (method === 'Razorpay') {
+                if (confirm('Proceed to pay extra charges online via Razorpay?')) {
+                    sendPayExtraFee(inquiryId, 'Razorpay', 'RZP-ONLINE-PAID-' + Date.now());
+                }
+            } else {
+                if (confirm('Mark extra charges to be paid in cash/card at showroom pickup?')) {
+                    sendPayExtraFee(inquiryId, 'Showroom', 'SHOWROOM-PAY-CONFIRMED');
+                }
+            }
+        }
+
+        function sendPayExtraFee(inquiryId, method, txnId) {
+            fetch('/bookings/api/pay-extra-fee/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken') || '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    inquiry_id: inquiryId,
+                    payment_method: method,
+                    transaction_id: txnId
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert(data.message || 'Extra charge payment updated successfully!');
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(err => alert('Network error processing payment.'));
+        }
+    </script>
+</body>
+</html>

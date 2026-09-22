@@ -1,0 +1,236 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> - Bike Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root {
+            --primary-color: #1a237e;
+            --secondary-color: #ff3d00;
+            --text-color: #333;
+            --light-bg: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--light-bg);
+            color: var(--text-color);
+            min-height: 100vh;
+            padding-top: 2rem;
+        }
+
+        .bike-details-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .bike-gallery {
+            position: relative;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .bike-gallery img {
+            width: 100%;
+            height: 500px;
+            object-fit: cover;
+            border-radius: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .bike-info {
+            padding: 2rem;
+            background: var(--light-bg);
+            border-radius: 15px;
+        }
+
+        .bike-title {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .price-tag {
+            background: var(--secondary-color);
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            display: inline-block;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 2rem;
+        }
+
+        .feature-item {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+        }
+
+        .feature-item i {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            margin-right: 1rem;
+            width: 30px;
+        }
+
+        .rental-form {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control {
+            border: 2px solid #eee;
+            border-radius: 8px;
+            padding: 0.8rem;
+            margin-bottom: 1rem;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: none;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            border: none;
+            padding: 12px 30px;
+            font-weight: 600;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            background: #283593;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <a href="/vehicles/bikes/" class="btn btn-outline-dark mb-4">
+            <i class="fas fa-arrow-left"></i> Back to Bikes
+        </a>
+    </div>
+    <div class="bike-details-container">
+        <div class="row">
+            <div class="col-lg-7">
+                <div class="bike-gallery">
+                    <img src="{% static 'images/image/bikeimg/bullet1.jpg' %}" alt="" class="img-fluid">
+                </div>
+                <div class="bike-info">
+                    <h1 class="bike-title"></h1>
+                    <div class="price-tag">₹ per day</div>
+                    <ul class="feature-list">
+                        <li class="feature-item">
+                            <i class="fas fa-motorcycle"></i>
+                            <span> Engine</span>
+                        </li>
+                        <li class="feature-item">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span> Power</span>
+                        </li>
+                        <li class="feature-item">
+                            <i class="fas fa-gas-pump"></i>
+                            <span> Mileage</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="rental-form">
+                    <h3 class="mb-4">Book Now</h3>
+                    <form method="POST" action="/bookings/payment/" class="booking-form" id="bookingForm">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="full_name" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="full_name" name="full_name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="phone" name="phone" required pattern="[0-9]{10}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="pickup_date" class="form-label">Pickup Date</label>
+                            <input type="date" class="form-control" id="pickup_date" name="pickup_date" required min="">
+                        </div>
+                        <div class="mb-3">
+                            <label for="return_date" class="form-label">Return Date</label>
+                            <input type="date" class="form-control" id="return_date" name="return_date" required min="">
+                        </div>
+                        <div class="mb-3">
+                            <label for="pickup_location" class="form-label">Pickup Location</label>
+                            <select class="form-control" id="pickup_location" name="pickup_location" required>
+                                <option value="">Select Location</option>
+                                <option value="Mumbai">Mumbai</option>
+                                <option value="Ahmedabad">Ahmedabad</option>
+                                <option value="Delhi">Delhi</option>
+                                <option value="Bhavnagar">Bhavnagar</option>
+                                <option value="Bangalore">Bangalore</option>
+                                <option value="Chennai">Chennai</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Book Now</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('bookingForm').addEventListener('submit', function(e) {
+            const pickupDate = new Date(document.getElementById('pickup_date').value);
+            const returnDate = new Date(document.getElementById('return_date').value);
+            
+            if (returnDate <= pickupDate) {
+                e.preventDefault();
+                Swal.fire({
+                    title: 'Invalid Dates',
+                    text: 'Return date must be after pickup date',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
+        });
+
+        // Format phone number as user types
+        document.getElementById('phone').addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '').substring(0, 10);
+        });
+    </script>
+    {% include 'core/footer.html' %}
+</body>
+</html>

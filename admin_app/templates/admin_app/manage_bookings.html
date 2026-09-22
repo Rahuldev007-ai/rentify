@@ -1,0 +1,1014 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Bookings Operations - Rentify Executive Admin</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/admin_sidebar.css' %}">
+    <style>
+        :root {
+            --admin-bg: #f8fafc;
+            --border-color: #e2e8f0;
+            --navy-primary: #1e3c72;
+        }
+
+        body {
+            background-color: var(--admin-bg);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: #0f172a;
+        }
+
+        .header-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px 24px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+            margin-bottom: 24px;
+        }
+
+        .table-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+        }
+
+        .filter-nav-btn {
+            font-weight: 700;
+            font-size: 0.88rem;
+            padding: 8px 18px;
+            border-radius: 10px;
+            border: 1px solid #cbd5e1;
+            background: #ffffff;
+            color: #475569;
+            transition: all 0.2s ease;
+        }
+
+        .filter-nav-btn.active {
+            background: #1e3c72;
+            color: #ffffff;
+            border-color: #1e3c72;
+            box-shadow: 0 4px 12px rgba(30, 60, 114, 0.25);
+        }
+
+        .badge-kyc-verified { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .badge-kyc-pending { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+        .badge-kyc-rejected { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+        .badge-kyc-unverified { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+
+        .single-row-table th {
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+            padding: 14px 16px;
+        }
+
+        .single-row-table td {
+            padding: 14px 16px;
+            vertical-align: middle;
+        }
+
+        .btn-action-sm {
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 5px 12px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-layout-wrapper">
+        <!-- Sidebar Navigation -->
+        {% include 'admin_app/admin_header.html' %}
+
+        <!-- Main Workspace -->
+        <main class="admin-main-content">
+            <!-- Header Bar -->
+            <div class="header-card d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div>
+                    <h2 class="fw-bold mb-1">Rentify Executive Operations Dashboard</h2>
+                    <p class="text-muted mb-0 small">Real-time database booking pipeline, customer KYC verification checks, odometer extra KM calculations, and remote engine immobilizer controls.</p>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-success-subtle text-success border border-success rounded-pill px-3 py-2 fw-bold">
+                        LIVE AUTO-SYNC ACTIVE
+                    </span>
+                    <input type="text" class="form-control rounded-3" id="bookingSearchInput" placeholder="Search customer, vehicle, or ID..." onkeyup="handleSearchInput()">
+                </div>
+            </div>
+
+            <!-- Vehicle Type Filters & Page Control -->
+            <div class="card border-0 shadow-sm rounded-4 p-3 mb-4 bg-white">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <div class="d-flex gap-2" role="group">
+                        <button type="button" class="filter-nav-btn active" id="btnFilterAll" onclick="setVehicleFilter('ALL')">
+                            All Fleet Bookings (<span id="countAllLabel">0</span>)
+                        </button>
+                        <button type="button" class="filter-nav-btn" id="btnFilterCars" onclick="setVehicleFilter('Car')">
+                            Car Fleet (<span id="countCarsLabel">0</span>)
+                        </button>
+                        <button type="button" class="filter-nav-btn" id="btnFilterBikes" onclick="setVehicleFilter('Bike')">
+                            Bike Fleet (<span id="countBikesLabel">0</span>)
+                        </button>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="text-muted small fw-bold">Rows per page:</span>
+                        <select class="form-select form-select-sm rounded-3 w-auto" id="pageSizeSelect" onchange="changePageSize()">
+                            <option value="5" selected>5 Rows</option>
+                            <option value="10">10 Rows</option>
+                            <option value="25">25 Rows</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Single-Row Bookings Operations Table Card -->
+            <div class="table-card p-3 mb-4">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 single-row-table">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Booking ID & KYC</th>
+                                <th>Customer Details</th>
+                                <th>Vehicle & Fleet</th>
+                                <th>Rental Period & Status</th>
+                                <th>Odometer (KM)</th>
+                                <th>Billing & Extra KM</th>
+                                <th class="text-end">Engine & GPS Operations</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bookingsTableBody">
+                            <!-- Rendered dynamically via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Pagination Bar -->
+            <div class="d-flex flex-wrap justify-content-between align-items-center bg-white p-3 rounded-4 shadow-sm border">
+                <div class="text-muted small fw-bold" id="paginationInfoText">
+                    Showing 0 entries
+                </div>
+                <nav aria-label="Bookings Pagination">
+                    <ul class="pagination pagination-sm mb-0" id="paginationControls">
+                        <!-- Rendered via JS -->
+                    </ul>
+                </nav>
+            </div>
+        </main>
+    </div>
+
+    <!-- REAL-TIME VEHICLE INSPECTION, ODOMETER KM & BILLING POPUP MODAL -->
+    <div class="modal fade" id="inspectionModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-dark text-white rounded-top-4 px-4 py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="modal-title fw-bold" id="inspectionModalTitle">Vehicle Condition, Odometer KM & Real-Time Billing</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <input type="hidden" id="modalBookingDbId">
+                    <input type="hidden" id="modalUserId">
+                    <input type="hidden" id="modalVehicleType">
+                    <input type="hidden" id="modalVehicleId">
+                    
+                    <!-- Real-Time Price per Day & KM Odometer Billing Calculator -->
+                    <div class="card border-0 bg-light rounded-3 p-3 mb-4 border shadow-sm">
+                        <h6 class="fw-bold text-dark mb-3 border-bottom pb-2">Real-Time Rental & Odometer Billing Calculation</h6>
+                        <div class="row g-3">
+                            <div class="col-md-3 col-6">
+                                <label class="form-label text-muted small fw-bold text-uppercase mb-1">Booked Days</label>
+                                <input type="number" class="form-control text-center fw-bold rounded-3" id="calcDays" min="1" value="1" oninput="recalculateModalBilling()" onchange="recalculateModalBilling()">
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <label class="form-label text-muted small fw-bold text-uppercase mb-1">Price per Day (₹)</label>
+                                <input type="number" class="form-control text-center fw-bold rounded-3" id="calcDailyPrice" min="0" value="1500" oninput="recalculateModalBilling()" onchange="recalculateModalBilling()">
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <label class="form-label text-muted small fw-bold text-uppercase mb-1">Pickup KM (Start)</label>
+                                <input type="number" class="form-control text-center fw-bold rounded-3" id="calcStartKm" value="10000" oninput="recalculateModalBilling()" onchange="recalculateModalBilling()">
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <label class="form-label text-muted small fw-bold text-uppercase mb-1">Return KM (Current)</label>
+                                <input type="number" class="form-control text-center fw-bold rounded-3 text-success" id="calcEndKm" value="10200" oninput="recalculateModalBilling()" onchange="recalculateModalBilling()">
+                            </div>
+                        </div>
+                        
+                        <div class="row g-3 mt-1 pt-2 border-top">
+                            <div class="col-md-3 col-6">
+                                <label class="form-label text-muted small fw-bold text-uppercase mb-1">Limit (KM/Day)</label>
+                                <input type="number" class="form-control text-center fw-bold rounded-3" id="calcLimitPerDay" value="120" oninput="recalculateModalBilling()" onchange="recalculateModalBilling()">
+                            </div>
+                            <div class="col-md-3 col-6">
+                                <label class="form-label text-muted small fw-bold text-uppercase mb-1">Extra KM Rate (₹/KM)</label>
+                                <input type="number" class="form-control text-center fw-bold rounded-3" id="calcExtraRate" value="5" oninput="recalculateModalBilling()" onchange="recalculateModalBilling()">
+                            </div>
+                            <div class="col-md-6 col-12">
+                                <div class="p-2 bg-white rounded-3 border text-center">
+                                    <span class="text-muted small fw-bold text-uppercase d-block">Allowed Limit vs Driven</span>
+                                    <div class="fw-bold text-dark fs-6" id="calcLimitText">240 KM Allowed | Driven: 200 KM</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Computed Real-Time Summary Row with High Contrast Vibrant Containers -->
+                        <div class="row g-3 mt-2 pt-2 rounded-4 p-3 border shadow-sm" style="background: #0f172a; border-color: #334155 !important;">
+                            <div class="col-md-4 text-center">
+                                <div class="p-3 rounded-3" style="background: rgba(30, 58, 138, 0.45); border: 1px solid rgba(96, 165, 250, 0.5);">
+                                    <small class="text-uppercase d-block fw-bold mb-1" style="color: #93c5fd; font-size: 0.72rem; letter-spacing: 0.5px;">Base Rental Fee</small>
+                                    <span class="fs-4 fw-bold text-white" id="outBaseRentalFee">₹0</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <div class="p-3 rounded-3" style="background: rgba(120, 53, 15, 0.45); border: 1px solid rgba(251, 191, 36, 0.5);">
+                                    <small class="text-uppercase d-block fw-bold mb-1" style="color: #fde047; font-size: 0.72rem; letter-spacing: 0.5px;">Extra KM Fee</small>
+                                    <span class="fs-4 fw-bold" style="color: #fef08a;" id="outExtraKmFee">₹0</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4 text-center">
+                                <div class="p-3 rounded-3" style="background: rgba(6, 78, 59, 0.55); border: 1px solid rgba(52, 211, 153, 0.6);">
+                                    <small class="text-uppercase d-block fw-bold mb-1" style="color: #6ee7b7; font-size: 0.72rem; letter-spacing: 0.5px;">Grand Total Payable</small>
+                                    <span class="fs-3 fw-bold text-white" id="outGrandTotal">₹0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic DB Matching Vehicle Specs Card -->
+                    <div class="card border-0 bg-white p-3 rounded-3 shadow-sm mb-4 border">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="fw-bold mb-0 text-dark" id="modalVehicleSpecsTitle">Vehicle Specs (DB Match)</h6>
+                            <span class="badge bg-primary text-white rounded-pill px-3" id="modalVehicleCategoryBadge">Fleet Listing</span>
+                        </div>
+                        <div class="row g-2 text-center" id="modalSpecsGrid">
+                            <div class="col-md-4 col-6">
+                                <div class="bg-light p-2 rounded-2 border">
+                                    <small class="text-muted text-uppercase d-block" style="font-size:0.7rem;">Fuel / Type</small>
+                                    <span class="fw-bold small text-dark" id="specFuel">Petrol</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4 col-6">
+                                <div class="bg-light p-2 rounded-2 border">
+                                    <small class="text-muted text-uppercase d-block" style="font-size:0.7rem;">Transmission / Power</small>
+                                    <span class="fw-bold small text-dark" id="specTransmission">Automatic</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4 col-12">
+                                <div class="bg-light p-2 rounded-2 border">
+                                    <small class="text-muted text-uppercase d-block" style="font-size:0.7rem;">Capacity / CC</small>
+                                    <span class="fw-bold small text-dark" id="specSeats">5 Seater</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Vehicle Condition & Return Photo Upload Record -->
+                    <h6 class="fw-bold mb-2 text-dark">Vehicle Condition & Return Inspection Photos</h6>
+                    <div class="card border p-3 bg-light rounded-3 mb-3">
+                        <label class="form-label text-dark fw-bold small text-uppercase mb-2">Upload / Change Return Vehicle Inspection Photo</label>
+                        <div class="row g-2 align-items-center">
+                            <div class="col-md-6 col-12">
+                                <label class="form-label text-muted small fw-bold mb-1">Option 1: Choose File from Computer</label>
+                                <input type="file" class="form-control form-control-sm rounded-3" id="modalReturnFileInput" accept="image/*" onchange="handleReturnFileUpload(this)">
+                            </div>
+                            <div class="col-md-6 col-12">
+                                <label class="form-label text-muted small fw-bold mb-1">Option 2: Image URL / Path</label>
+                                <div class="input-group input-group-sm">
+                                    <input type="text" class="form-control rounded-start-3" id="modalReturnImgInput" placeholder="e.g. /static/images/image/carimgs/thar1.jpg" onchange="previewReturnImg(this.value)">
+                                    <button class="btn btn-outline-dark fw-bold rounded-end-3" type="button" onclick="previewReturnImg(document.getElementById('modalReturnImgInput').value)">Preview</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="card border p-2 text-center bg-white shadow-sm">
+                                <div class="fw-bold text-secondary small mb-2">Pickup Inspection Photo</div>
+                                <img id="inspectPrevImg" src="" alt="Pickup Photo" class="rounded" style="height: 180px; object-fit: cover;">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card border p-2 text-center bg-white shadow-sm">
+                                <div class="fw-bold text-primary small mb-2">Return Inspection Photo</div>
+                                <img id="inspectReturnImg" src="" alt="Return Photo" class="rounded" style="height: 180px; object-fit: cover;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light px-4 py-3 rounded-bottom-4">
+                    <button type="button" class="btn btn-outline-secondary rounded-3 px-4 fw-bold" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-success rounded-3 px-4 fw-bold" onclick="saveModalInspectionAndBilling()">Save Billing & Inspection</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADD / EDIT EXTRA CHARGE MODAL -->
+    <div class="modal fade" id="addExtraChargeModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-dark text-white rounded-top-4 px-4 py-3">
+                    <h5 class="modal-title fw-bold">Add or Edit Extra KM Charge</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="addExtraChargeForm" onsubmit="submitExtraChargeForm(event)">
+                    <input type="hidden" id="extraChargeInquiryId" name="id">
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-secondary small text-uppercase">Extra Fee Amount (₹)</label>
+                            <input type="number" class="form-control rounded-3" id="extraFeeInput" placeholder="e.g. 500" required step="1" min="0">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold text-secondary small text-uppercase">Extra KM Driven (Over Limit)</label>
+                            <input type="number" class="form-control rounded-3" id="extraKmInput" placeholder="e.g. 50" min="0">
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light px-4 py-3 rounded-bottom-4">
+                        <button type="button" class="btn btn-secondary rounded-3 px-4 fw-bold" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary rounded-3 px-4 fw-bold">Save Extra Charge</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- LIVE GPS ANTI-THEFT TRACKING & IMMOBILIZER MODAL -->
+    <div class="modal fade" id="gpsTrackingModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-dark text-white rounded-top-4 px-4 py-3">
+                    <h5 class="modal-title fw-bold" id="gpsModalTitle">Live GPS Anti-Theft Tracker & Engine Lock</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="card bg-dark text-white border-0 rounded-4 p-4 mb-3 position-relative overflow-hidden">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <span class="badge bg-danger rounded-pill px-3 py-1 mb-2">GPS SATELLITE ACTIVE</span>
+                                <h4 class="fw-bold text-white mb-0" id="gpsVehicleTitle">Vehicle Title</h4>
+                                <small class="text-white-50" id="gpsCustomerInfo">Customer Info</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge bg-secondary text-white fs-6 px-3 py-2 rounded-pill" id="gpsIgnitionBadge">Ignition: OFF</span>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 bg-secondary bg-opacity-25 rounded-3 p-3 border border-secondary border-opacity-25 mb-3">
+                            <div class="col-md-6">
+                                <div class="text-white-50 small">Current GPS Address Location:</div>
+                                <div class="fw-bold text-warning fs-6" id="gpsLocationText">Bhavnagar Central Hub</div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="text-white-50 small">Coordinates (Lat, Lng):</div>
+                                <div class="fw-bold text-info font-monospace fs-6" id="gpsCoordsText">21.7645 N, 72.1519 E</div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center bg-secondary bg-opacity-25 border border-secondary p-3 rounded-3">
+                            <div>
+                                <div class="fw-bold text-white mb-1">Anti-Theft Remote Engine Lock</div>
+                                <small class="text-white-50">Disable engine ignition remotely if theft or unauthorized zone movement is detected.</small>
+                            </div>
+                            <div>
+                                <button type="button" class="btn btn-danger fw-bold rounded-pill px-4" id="btnToggleEngineLock" onclick="toggleEngineLockFromModal()">
+                                    Disable Engine
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 justify-content-end">
+                        <a id="btnOpenGmaps" href="#" target="_blank" class="btn btn-outline-primary fw-bold rounded-3">
+                            Open Google Maps Live Location
+                        </a>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light px-4 py-3 rounded-bottom-4">
+                    <button type="button" class="btn btn-secondary rounded-3 px-4 fw-bold" data-bs-dismiss="modal">Close Tracker</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script id="initial-bookings-data" type="application/json">
+        {{ bookings_json|safe }}
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let bookingsData = [];
+        try {
+            const rawElem = document.getElementById('initial-bookings-data');
+            if (rawElem && rawElem.textContent.trim()) {
+                bookingsData = JSON.parse(rawElem.textContent);
+            }
+        } catch (e) {
+            console.error('Error parsing initial bookings JSON:', e);
+            bookingsData = [];
+        }
+
+        let currentFilter = 'ALL';
+        let currentPage = 1;
+        let pageSize = 5;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCategoryCounts();
+            renderBookings();
+            fetchLiveBookings();
+            setInterval(fetchLiveBookings, 5000);
+        });
+
+        function fetchLiveBookings() {
+            fetch('/admin-portal/api/bookings/live-list/')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success' && data.bookings) {
+                        bookingsData = data.bookings;
+                        updateCategoryCounts();
+                        renderBookings();
+                    }
+                })
+                .catch(err => console.error('Error fetching live bookings:', err));
+        }
+
+        function updateCategoryCounts() {
+            document.getElementById('countAllLabel').textContent = bookingsData.length;
+            document.getElementById('countCarsLabel').textContent = bookingsData.filter(b => b.type === 'Car').length;
+            document.getElementById('countBikesLabel').textContent = bookingsData.filter(b => b.type === 'Bike').length;
+        }
+
+        function setVehicleFilter(filterType) {
+            currentFilter = filterType;
+            currentPage = 1;
+
+            document.getElementById('btnFilterAll').classList.remove('active');
+            document.getElementById('btnFilterCars').classList.remove('active');
+            document.getElementById('btnFilterBikes').classList.remove('active');
+
+            if (filterType === 'ALL') document.getElementById('btnFilterAll').classList.add('active');
+            if (filterType === 'Car') document.getElementById('btnFilterCars').classList.add('active');
+            if (filterType === 'Bike') document.getElementById('btnFilterBikes').classList.add('active');
+
+            renderBookings();
+        }
+
+        function handleSearchInput() {
+            currentPage = 1;
+            renderBookings();
+        }
+
+        function changePageSize() {
+            pageSize = Number(document.getElementById('pageSizeSelect').value);
+            currentPage = 1;
+            renderBookings();
+        }
+
+        function calculateDaysBetween(startStr, endStr) {
+            if (!startStr || !endStr) return 1;
+            try {
+                const s = new Date(startStr);
+                const e = new Date(endStr);
+                if (!isNaN(s.getTime()) && !isNaN(e.getTime())) {
+                    const diffTime = e.getTime() - s.getTime();
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    if (diffDays > 0) return diffDays;
+                }
+            } catch (err) {}
+            return 1;
+        }
+
+        function renderBookings() {
+            const tbody = document.getElementById('bookingsTableBody');
+            const searchVal = document.getElementById('bookingSearchInput').value.toLowerCase();
+            tbody.innerHTML = '';
+
+            let filtered = bookingsData.filter(b => {
+                const matchType = currentFilter === 'ALL' || b.type === currentFilter;
+                const matchSearch = b.user.toLowerCase().includes(searchVal) || b.vehicle.toLowerCase().includes(searchVal) || b.id.toLowerCase().includes(searchVal);
+                return matchType && matchSearch;
+            });
+
+            const totalEntries = filtered.length;
+            const totalPages = Math.ceil(totalEntries / pageSize) || 1;
+            if (currentPage > totalPages) currentPage = totalPages;
+
+            const startIndex = (currentPage - 1) * pageSize;
+            const endIndex = Math.min(startIndex + pageSize, totalEntries);
+            const pageData = filtered.slice(startIndex, endIndex);
+
+            if (pageData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">No vehicle booking inquiries found.</td></tr>';
+            } else {
+                pageData.forEach(b => {
+                    let kycBadge = '';
+                    if (b.verificationStatus === 'Verified') {
+                        kycBadge = '<span class="badge badge-kyc-verified rounded-pill px-2 py-1">KYC Verified</span>';
+                    } else if (b.verificationStatus === 'Pending') {
+                        kycBadge = '<span class="badge badge-kyc-pending rounded-pill px-2 py-1">KYC Pending</span>';
+                    } else if (b.verificationStatus === 'Rejected') {
+                        kycBadge = '<span class="badge badge-kyc-rejected rounded-pill px-2 py-1">KYC Rejected</span>';
+                    } else {
+                        kycBadge = '<span class="badge badge-kyc-unverified rounded-pill px-2 py-1">Unverified</span>';
+                    }
+
+                    let statusBadge = '';
+                    if (b.status === 'Approved' || b.status === 'Confirmed') {
+                        statusBadge = '<span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-1 fw-bold">Approved</span>';
+                    } else if (b.status === 'Completed') {
+                        statusBadge = '<span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2 py-1 fw-bold">Completed</span>';
+                    } else if (b.status === 'Cancelled' || b.status === 'Rejected') {
+                        statusBadge = '<span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2 py-1 fw-bold">' + b.status + '</span>';
+                    } else {
+                        statusBadge = '<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-2 py-1 fw-bold">Pending</span>';
+                    }
+
+                    const computedDays = Math.max(1, calculateDaysBetween(b.startDate, b.endDate) || b.days || 1);
+                    const dailyPrice = Math.max(0, b.dailyPrice || 1500);
+                    const baseRentalVal = Math.max(0, dailyPrice * computedDays);
+                    const extraKmVal = Math.max(0, b.extraKmFee || 0);
+                    const totalPayableVal = Math.max(0, baseRentalVal + extraKmVal);
+
+                    let extraKmBadge = '';
+                    if (extraKmVal > 0) {
+                        if (b.extraFeeStatus === 'Paid Online') {
+                            extraKmBadge = `<div class="mt-1"><span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill" style="font-size:0.7rem;">+₹${extraKmVal.toLocaleString('en-IN')} Extra KM (Paid Online)</span></div>`;
+                        } else if (b.extraFeeStatus === 'Paid at Showroom' || b.extraFeeStatus === 'Settlement Confirmed') {
+                            extraKmBadge = `<div class="mt-1"><span class="badge bg-success text-white rounded-pill" style="font-size:0.7rem;">+₹${extraKmVal.toLocaleString('en-IN')} Extra KM (Paid at Showroom)</span></div>`;
+                        } else {
+                            extraKmBadge = `<div class="mt-1"><span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill" style="font-size:0.7rem;">+₹${extraKmVal.toLocaleString('en-IN')} Extra KM</span></div>`;
+                        }
+                    } else {
+                        extraKmBadge = `<div class="mt-1"><span class="badge bg-light text-muted border rounded-pill" style="font-size:0.7rem;">Base Tariff</span></div>`;
+                    }
+
+                    let rowHtml = `
+                        <tr>
+                            <td>
+                                <div class="fw-bold text-primary">#${b.id}</div>
+                                <div class="mt-1">${kycBadge}</div>
+                            </td>
+                            <td>
+                                <div class="fw-bold text-dark">${b.user}</div>
+                                <div class="text-muted small">${b.email}</div>
+                                <div class="text-muted small">${b.phone}</div>
+                            </td>
+                            <td>
+                                <div class="fw-bold text-dark">${b.vehicle}</div>
+                                <span class="badge ${b.type === 'Car' ? 'bg-primary' : 'bg-success'} rounded-pill mt-1">${b.type} Fleet</span>
+                            </td>
+                            <td>
+                                <div class="fw-semibold mb-1 small">${b.startDate} to ${b.endDate}</div>
+                                <div class="d-flex align-items-center gap-1 mb-1">
+                                    <span class="badge bg-dark text-white rounded-pill px-2 py-1">${computedDays} Days</span>
+                                    ${statusBadge}
+                                </div>
+                                <select class="form-select form-select-sm rounded-3 py-0 px-2 font-monospace" style="font-size:0.75rem;" onchange="updateBookingStatus(${b.db_id}, this.value)">
+                                    <option value="Pending" ${b.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                                    <option value="Approved" ${b.status === 'Approved' || b.status === 'Confirmed' ? 'selected' : ''}>Approved</option>
+                                    <option value="Completed" ${b.status === 'Completed' ? 'selected' : ''}>Completed</option>
+                                    <option value="Cancelled" ${b.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+                                </select>
+                            </td>
+                            <td>
+                                <button class="btn btn-outline-dark btn-action-sm fw-bold w-100 py-2 shadow-sm" onclick="openInspectionModal('${b.id}')">
+                                    KM & GPS Inspection
+                                </button>
+                            </td>
+                            <td>
+                                <div class="fw-bold text-dark fs-6">₹${totalPayableVal.toLocaleString('en-IN')}</div>
+                                <small class="text-muted d-block" style="font-size:0.75rem;">₹${(b.dailyPrice || 1500).toLocaleString('en-IN')}/day × ${computedDays} Days</small>
+                                ${extraKmBadge}
+                            </td>
+                            <td class="text-end">
+                                <div class="d-flex justify-content-end gap-1">
+                                    <button class="btn ${b.engineStatus === 'LOCKED' ? 'btn-success' : 'btn-outline-danger'} btn-action-sm fw-bold" onclick="toggleEngineLockDirect('${b.type}', ${b.vehicle_id || b.db_id}, '${b.engineStatus || 'UNLOCKED'}', '${b.vehicle}')">
+                                        ${b.engineStatus === 'LOCKED' ? 'Restore Engine' : 'Lock Engine'}
+                                    </button>
+                                    <button class="btn btn-outline-primary btn-action-sm fw-bold" onclick="openGpsModal('${b.id}')">
+                                        Live Location (GPS)
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.insertAdjacentHTML('beforeend', rowHtml);
+                });
+            }
+
+            const infoText = totalEntries > 0 ? `Showing ${startIndex + 1} to ${endIndex} of ${totalEntries} entries` : 'Showing 0 entries';
+            document.getElementById('paginationInfoText').textContent = infoText;
+
+            renderPaginationControls(totalPages);
+        }
+
+        function renderPaginationControls(totalPages) {
+            const paginationUl = document.getElementById('paginationControls');
+            paginationUl.innerHTML = '';
+
+            let prevLi = `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                <button class="page-link" onclick="goToPage(${currentPage - 1})">Prev</button>
+            </li>`;
+            paginationUl.insertAdjacentHTML('beforeend', prevLi);
+
+            for (let i = 1; i <= totalPages; i++) {
+                let pageLi = `<li class="page-item ${i === currentPage ? 'active' : ''}">
+                    <button class="page-link" onclick="goToPage(${i})">${i}</button>
+                </li>`;
+                paginationUl.insertAdjacentHTML('beforeend', pageLi);
+            }
+
+            let nextLi = `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                <button class="page-link" onclick="goToPage(${currentPage + 1})">Next</button>
+            </li>`;
+            paginationUl.insertAdjacentHTML('beforeend', nextLi);
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            renderBookings();
+        }
+
+        let activeInspectionBooking = null;
+
+        function openInspectionModal(id) {
+            const b = bookingsData.find(item => item.id === id);
+            if (!b) return;
+            activeInspectionBooking = b;
+
+            const computedDays = calculateDaysBetween(b.startDate, b.endDate) || b.days || 1;
+
+            document.getElementById('modalBookingDbId').value = b.db_id;
+            document.getElementById('modalUserId').value = b.user_id || '';
+            document.getElementById('modalVehicleType').value = (b.type || 'Car').toLowerCase();
+            document.getElementById('modalVehicleId').value = b.vehicle_id || b.db_id;
+
+            document.getElementById('inspectionModalTitle').textContent = `Inspection & Real-Time Billing: ${b.vehicle} (#${b.id})`;
+            
+            document.getElementById('calcDays').value = computedDays;
+            document.getElementById('calcDailyPrice').value = b.dailyPrice || 1500;
+            document.getElementById('calcStartKm').value = b.startKm || 10000;
+            document.getElementById('calcEndKm').value = b.endKm || 10200;
+            document.getElementById('calcLimitPerDay').value = b.allowedKmPerDay || 120;
+            document.getElementById('calcExtraRate').value = b.extraKmRate || 5;
+
+            // Render dynamic specs matching vehicle DB record
+            const specs = b.specs || {};
+            document.getElementById('modalVehicleSpecsTitle').textContent = `${b.vehicle} Specs (Database Match)`;
+            document.getElementById('modalVehicleCategoryBadge').textContent = `${b.type} - ${specs.category || 'Standard'}`;
+            document.getElementById('specFuel').textContent = specs.fuel_type || 'Petrol';
+            document.getElementById('specTransmission').textContent = specs.transmission || 'Automatic';
+            document.getElementById('specSeats').textContent = b.type === 'Bike' ? (specs.engine_cc || '350cc') : `${specs.seats || 5} Seater`;
+
+            document.getElementById('modalReturnImgInput').value = b.returnImg || '';
+            document.getElementById('inspectPrevImg').src = b.prevImg || '/static/images/image/carimgs/thar1.jpg';
+            document.getElementById('inspectReturnImg').src = b.returnImg || '/static/images/image/carimgs/thar1.jpg';
+
+            recalculateModalBilling();
+            new bootstrap.Modal(document.getElementById('inspectionModal')).show();
+        }
+
+        function previewReturnImg(url) {
+            if (url) {
+                document.getElementById('inspectReturnImg').src = url;
+            }
+        }
+
+        function handleReturnFileUpload(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const base64Data = e.target.result;
+                    document.getElementById('modalReturnImgInput').value = base64Data;
+                    document.getElementById('inspectReturnImg').src = base64Data;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function recalculateModalBilling() {
+            const days = Math.max(1, Number(document.getElementById('calcDays').value) || 1);
+            const dailyPrice = Math.max(0, Number(document.getElementById('calcDailyPrice').value) || 0);
+            const startKm = Math.max(0, Number(document.getElementById('calcStartKm').value) || 0);
+            const rawEndKm = Number(document.getElementById('calcEndKm').value) || 0;
+            const endKm = rawEndKm >= startKm ? rawEndKm : startKm;
+            const limitPerDay = Math.max(0, Number(document.getElementById('calcLimitPerDay').value) || 120);
+            const extraRate = Math.max(0, Number(document.getElementById('calcExtraRate').value) || 0);
+
+            const baseRentalFee = days * dailyPrice;
+            const drivenKm = Math.max(0, endKm - startKm);
+            const totalAllowedLimit = limitPerDay * days;
+            const extraDrivenKm = Math.max(0, drivenKm - totalAllowedLimit);
+            const extraKmFee = extraDrivenKm * extraRate;
+            const grandTotal = baseRentalFee + extraKmFee;
+
+            const limitTextElem = document.getElementById('calcLimitText');
+            if (extraDrivenKm > 0) {
+                limitTextElem.innerHTML = `<span class="text-danger fw-bold">${totalAllowedLimit} KM Allowed (${days} Days × ${limitPerDay} KM/day) | Driven: ${drivenKm} KM (+${extraDrivenKm} Extra KM @ ₹${extraRate}/KM)</span>`;
+            } else {
+                limitTextElem.innerHTML = `<span class="text-success fw-bold">${totalAllowedLimit} KM Allowed (${days} Days × ${limitPerDay} KM/day) | Driven: ${drivenKm} KM (Within limit)</span>`;
+            }
+
+            document.getElementById('outBaseRentalFee').textContent = `₹${baseRentalFee.toLocaleString('en-IN')}`;
+            document.getElementById('outExtraKmFee').textContent = `₹${extraKmFee.toLocaleString('en-IN')}`;
+            document.getElementById('outGrandTotal').textContent = `₹${grandTotal.toLocaleString('en-IN')}`;
+        }
+
+        let activeGpsBooking = null;
+
+        function openGpsModal(id) {
+            const b = bookingsData.find(item => item.id === id);
+            if (!b) return;
+            activeGpsBooking = b;
+
+            document.getElementById('gpsModalTitle').textContent = `Live GPS Tracker: ${b.vehicle} (#${b.id})`;
+            document.getElementById('gpsVehicleTitle').textContent = b.vehicle;
+            document.getElementById('gpsCustomerInfo').textContent = `Booked by ${b.user} (${b.phone})`;
+            document.getElementById('gpsIgnitionBadge').textContent = `Ignition: ${b.ignitionStatus || 'OFF'}`;
+            document.getElementById('gpsLocationText').textContent = b.locationName || 'Bhavnagar Central Hub';
+            
+            const lat = b.gpsLat || '21.7645';
+            const lng = b.gpsLng || '72.1519';
+            document.getElementById('gpsCoordsText').textContent = `${lat} N, ${lng} E`;
+
+            const gmapsUrl = `https://maps.google.com/?q=${encodeURIComponent(b.locationName || 'Bhavnagar Central Hub')}&ll=${lat},${lng}&z=15`;
+            document.getElementById('btnOpenGmaps').href = gmapsUrl;
+
+            const engBtn = document.getElementById('btnToggleEngineLock');
+            if (engBtn) {
+                if (b.engineStatus === 'LOCKED') {
+                    engBtn.className = 'btn btn-success fw-bold rounded-pill px-4';
+                    engBtn.textContent = 'Restore Engine';
+                } else {
+                    engBtn.className = 'btn btn-danger fw-bold rounded-pill px-4';
+                    engBtn.textContent = 'Disable Engine';
+                }
+            }
+
+            new bootstrap.Modal(document.getElementById('gpsTrackingModal')).show();
+        }
+
+        function toggleEngineLockFromModal() {
+            if (!activeGpsBooking) return;
+            toggleEngineLockDirect(activeGpsBooking.type, activeGpsBooking.vehicle_id || activeGpsBooking.db_id, activeGpsBooking.engineStatus, activeGpsBooking.vehicle);
+        }
+
+        function saveModalInspectionAndBilling() {
+            const inquiryId = document.getElementById('modalBookingDbId').value;
+            const days = Number(document.getElementById('calcDays').value) || 1;
+            const startKm = Number(document.getElementById('calcStartKm').value) || 0;
+            const endKm = Number(document.getElementById('calcEndKm').value) || 0;
+            const limitPerDay = Number(document.getElementById('calcLimitPerDay').value) || 120;
+            const extraRate = Number(document.getElementById('calcExtraRate').value) || 5;
+            const returnImg = document.getElementById('modalReturnImgInput').value || '';
+
+            const drivenKm = Math.max(0, endKm - startKm);
+            const totalAllowed = limitPerDay * days;
+            const extraKm = Math.max(0, drivenKm - totalAllowed);
+            const extraFee = extraKm * extraRate;
+
+            fetch('/admin-portal/api/bookings/add-extra-charge/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken') || '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    id: inquiryId,
+                    extra_fee: extraFee,
+                    extra_km: extraKm,
+                    start_km: startKm,
+                    end_km: endKm,
+                    return_image: returnImg
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('✅ Odometer KM, Real-Time Extra Billing & Return Image saved successfully!');
+                    const modalElem = document.getElementById('inspectionModal');
+                    const modal = bootstrap.Modal.getInstance(modalElem);
+                    if (modal) modal.hide();
+                    fetchLiveBookings();
+                } else {
+                    alert('Error saving inspection: ' + data.message);
+                }
+            })
+            .catch(err => alert('Network error saving inspection and billing.'));
+        }
+
+        function toggleEngineLockFromInspectionModal() {
+            if (!activeInspectionBooking) return;
+
+            fetch('/admin-portal/api/vehicles/toggle-engine-lock/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken') || '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    type: (activeInspectionBooking.type || 'Car').toLowerCase(),
+                    id: activeInspectionBooking.vehicle_id || activeInspectionBooking.db_id || 1
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    activeInspectionBooking.engineStatus = data.engineStatus;
+                    document.getElementById('modalEngineStatusLabel').textContent = `Engine Status: ${data.engineStatus}`;
+                    const engBtn = document.getElementById('modalToggleEngineBtn');
+                    if (data.engineStatus === 'LOCKED') {
+                        if (engBtn) {
+                            engBtn.className = 'btn btn-success btn-sm fw-bold rounded-pill px-3';
+                            engBtn.textContent = 'Restore Engine';
+                        }
+                        alert('🚨 Engine Locked! Ignition disabled remotely.');
+                    } else {
+                        if (engBtn) {
+                            engBtn.className = 'btn btn-danger btn-sm fw-bold rounded-pill px-3';
+                            engBtn.textContent = 'Lock Engine';
+                        }
+                        alert('✅ Engine Unlocked! Normal drive restored.');
+                    }
+                    fetchLiveBookings();
+                } else {
+                    alert('Error toggling engine: ' + data.message);
+                }
+            })
+            .catch(err => alert('Network error toggling engine lock.'));
+        }
+
+        function updateKycStatus(userId, action) {
+            if (!userId) return;
+            if (action === 'approve' && !confirm('Approve customer KYC verification?')) return;
+
+            fetch('/admin-portal/api/update-verification/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken') || '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    user_id: userId,
+                    action: action,
+                    auto_approve_bookings: true
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert(data.message || 'KYC Status updated successfully!');
+                    fetchLiveBookings();
+                } else {
+                    alert('Error updating KYC: ' + data.message);
+                }
+            })
+            .catch(err => alert('Network error updating KYC status.'));
+        }
+
+        function approveKycFromModal() {
+            const userId = document.getElementById('modalUserId').value;
+            if (!userId) {
+                alert('No registered customer profile attached to this booking.');
+                return;
+            }
+            updateKycStatus(userId, 'approve');
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function updateBookingStatus(inquiryId, newStatus) {
+            fetch('/admin-portal/api/bookings/update-status/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken') || '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ id: inquiryId, status: newStatus })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    fetchLiveBookings();
+                } else {
+                    alert('Error updating status: ' + data.message);
+                }
+            })
+            .catch(err => alert('Network error updating status.'));
+        }
+
+        function toggleEngineLockDirect(type, vehicleId, currentStatus, vehicleTitle) {
+            fetch('/admin-portal/api/vehicles/toggle-engine-lock/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken') || '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    type: (type || 'Car').toLowerCase(),
+                    id: vehicleId,
+                    title: vehicleTitle || ''
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    if (data.engineStatus === 'LOCKED') {
+                        alert(`ENGINE SHUT DOWN SUCCESSFUL!\nVehicle ignition disabled remotely.`);
+                    } else {
+                        alert(`ENGINE RESTORED SUCCESSFUL!\nVehicle power re-enabled.`);
+                    }
+                    fetchLiveBookings();
+                } else {
+                    alert('Error toggling engine: ' + data.message);
+                }
+            })
+            .catch(err => alert('Network error while toggling engine status.'));
+        }
+
+        function openAddExtraFeeModal(inquiryId, currentFee, currentKm) {
+            document.getElementById('extraChargeInquiryId').value = inquiryId;
+            document.getElementById('extraFeeInput').value = currentFee || 0;
+            document.getElementById('extraKmInput').value = currentKm || 0;
+            new bootstrap.Modal(document.getElementById('addExtraChargeModal')).show();
+        }
+
+        function submitExtraChargeForm(e) {
+            e.preventDefault();
+            const inquiryId = document.getElementById('extraChargeInquiryId').value;
+            const extraFee = document.getElementById('extraFeeInput').value;
+            const extraKm = document.getElementById('extraKmInput').value;
+
+            fetch('/admin-portal/api/bookings/add-extra-charge/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken') || '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    id: inquiryId,
+                    extra_fee: extraFee,
+                    extra_km: extraKm
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('Extra charge saved successfully! Customer can view and pay in history.');
+                    const modalElem = document.getElementById('addExtraChargeModal');
+                    const modal = bootstrap.Modal.getInstance(modalElem);
+                    if (modal) modal.hide();
+                    fetchLiveBookings();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(err => alert('Network error saving extra charge.'));
+        }
+
+        function confirmExtraFeeSettlement(inquiryId) {
+            if (!confirm('Confirm extra fee settlement for Booking #' + inquiryId + '?')) return;
+
+            fetch('/admin-portal/api/bookings/confirm-extra-fee/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken') || '{{ csrf_token }}'
+                },
+                body: JSON.stringify({ id: inquiryId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('Extra fee settlement confirmed by Admin!');
+                    fetchLiveBookings();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(err => {
+                alert('Network error while confirming settlement.');
+            });
+        }
+    </script>
+</body>
+</html>

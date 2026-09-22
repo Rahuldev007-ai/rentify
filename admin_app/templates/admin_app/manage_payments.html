@@ -1,0 +1,649 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Management & Financial Ledger - Rentify Executive Admin</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/admin_sidebar.css' %}">
+    <style>
+        :root {
+            --admin-bg: #f8fafc;
+            --border-color: #e2e8f0;
+            --navy-primary: #1e3c72;
+        }
+
+        body {
+            background-color: var(--admin-bg);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: #0f172a;
+        }
+
+        .page-header-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px 24px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+            margin-bottom: 24px;
+        }
+
+        .table-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+        }
+
+        .stat-badge-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 18px 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+
+        .stat-val-text {
+            font-size: 1.7rem;
+            font-weight: 800;
+            color: #1e3c72;
+            line-height: 1.1;
+        }
+
+        .filter-nav-btn {
+            font-weight: 700;
+            font-size: 0.88rem;
+            padding: 8px 18px;
+            border-radius: 10px;
+            border: 1px solid #cbd5e1;
+            background: #ffffff;
+            color: #475569;
+            transition: all 0.2s ease;
+        }
+
+        .filter-nav-btn.active {
+            background: #1e3c72;
+            color: #ffffff;
+            border-color: #1e3c72;
+            box-shadow: 0 4px 12px rgba(30, 60, 114, 0.25);
+        }
+
+        .payments-table th {
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+            padding: 14px 16px;
+        }
+
+        .payments-table td {
+            padding: 14px 16px;
+            vertical-align: middle;
+        }
+
+        .progress-bar-custom {
+            height: 10px;
+            border-radius: 6px;
+            background-color: #e2e8f0;
+            overflow: hidden;
+        }
+
+        .progress-fill-car {
+            background: linear-gradient(90deg, #1e3c72 0%, #2a5298 100%);
+            height: 100%;
+        }
+
+        .progress-fill-bike {
+            background: linear-gradient(90deg, #16a34a 0%, #22c55e 100%);
+            height: 100%;
+        }
+
+        .progress-fill-razorpay {
+            background: linear-gradient(90deg, #0284c7 0%, #38bdf8 100%);
+            height: 100%;
+        }
+
+        .progress-fill-cash {
+            background: linear-gradient(90deg, #d97706 0%, #f59e0b 100%);
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-layout-wrapper">
+        <!-- Sidebar Navigation -->
+        {% include 'admin_app/admin_header.html' %}
+
+        <!-- Main Workspace -->
+        <main class="admin-main-content">
+            
+            <!-- Page Header -->
+            <div class="page-header-card d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div>
+                    <h2 class="fw-bold mb-1">Vehicle Rental Payments & Financial Ledger</h2>
+                    <p class="text-muted mb-0 small">Track real-time rental fees, extra KM billing settlements, Razorpay online payments, and showroom cash OTP verification collections.</p>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-success-subtle text-success border border-success rounded-pill px-3 py-2 fw-bold">
+                        LIVE PAYMENT SYNC
+                    </span>
+                    <input type="text" class="form-control rounded-3" id="paymentSearchInput" placeholder="Search user, vehicle, ID, OTP..." onkeyup="handleSearchInput()">
+                </div>
+            </div>
+
+            <!-- Category & Revenue Stat Cards Row -->
+            <div class="row g-3 mb-4">
+                <div class="col-6 col-md-3">
+                    <div class="stat-badge-card">
+                        <small class="text-muted text-uppercase fw-bold d-block mb-1">Car Fleet Revenue</small>
+                        <div class="stat-val-text text-primary" id="valCarRevenue">₹0</div>
+                        <small class="text-muted" style="font-size:0.75rem;" id="subCarBookings">0 Car Bookings</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-badge-card">
+                        <small class="text-muted text-uppercase fw-bold d-block mb-1">Bike Fleet Revenue</small>
+                        <div class="stat-val-text text-success" id="valBikeRevenue">₹0</div>
+                        <small class="text-muted" style="font-size:0.75rem;" id="subBikeBookings">0 Bike Bookings</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-badge-card">
+                        <small class="text-muted text-uppercase fw-bold d-block mb-1">Extra KM Fee Revenue</small>
+                        <div class="stat-val-text text-warning" id="valExtraKmRevenue">₹0</div>
+                        <small class="text-muted" style="font-size:0.75rem;" id="subExtraKmSettled">0 Settled Extra Fees</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="stat-badge-card">
+                        <small class="text-muted text-uppercase fw-bold d-block mb-1">Pending Showroom Cash</small>
+                        <div class="stat-val-text text-danger" id="valPendingShowroomCash">₹0</div>
+                        <small class="text-muted" style="font-size:0.75rem;" id="subPendingOtpCount">0 Pending OTP Verifications</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Category Payment Chart & Visual Breakdown -->
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white">
+                <h6 class="fw-bold text-dark mb-3">Vehicle Fleet & Payment Method Breakdown Chart</h6>
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3 border">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="fw-bold small text-dark">Car Fleet vs Bike Fleet Revenue</span>
+                                <span class="small fw-bold text-muted" id="textFleetRatio">Car 0% | Bike 0%</span>
+                            </div>
+                            <div class="progress-bar-custom d-flex mb-2">
+                                <div class="progress-fill-car" id="barCarRatio" style="width: 50%;"></div>
+                                <div class="progress-fill-bike" id="barBikeRatio" style="width: 50%;"></div>
+                            </div>
+                            <div class="d-flex justify-content-between small text-muted">
+                                <span>Car Fleet: <strong class="text-primary" id="chartCarVal">₹0</strong></span>
+                                <span>Bike Fleet: <strong class="text-success" id="chartBikeVal">₹0</strong></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3 border">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="fw-bold small text-dark">Razorpay Online vs Showroom Cash Payment Methods</span>
+                                <span class="small fw-bold text-muted" id="textMethodRatio">Online 0% | Cash 0%</span>
+                            </div>
+                            <div class="progress-bar-custom d-flex mb-2">
+                                <div class="progress-fill-razorpay" id="barOnlineRatio" style="width: 50%;"></div>
+                                <div class="progress-fill-cash" id="barCashRatio" style="width: 50%;"></div>
+                            </div>
+                            <div class="d-flex justify-content-between small text-muted">
+                                <span>Razorpay Online: <strong class="text-info" id="chartOnlineVal">₹0</strong></span>
+                                <span>Showroom Cash: <strong class="text-warning" id="chartCashVal">₹0</strong></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search & Filter Bar -->
+            <div class="card border-0 shadow-sm rounded-4 p-3 mb-4 bg-white">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <div class="d-flex flex-wrap gap-2" role="group">
+                        <button type="button" class="filter-nav-btn active" id="btnFilterAll" onclick="setFilter('ALL')">All Payments</button>
+                        <button type="button" class="filter-nav-btn" id="btnFilterCars" onclick="setFilter('Car')">Cars Only</button>
+                        <button type="button" class="filter-nav-btn" id="btnFilterBikes" onclick="setFilter('Bike')">Bikes Only</button>
+                        <button type="button" class="filter-nav-btn" id="btnFilterOnline" onclick="setFilter('Online')">Razorpay Online</button>
+                        <button type="button" class="filter-nav-btn" id="btnFilterCash" onclick="setFilter('Cash')">Showroom Cash</button>
+                        <button type="button" class="filter-nav-btn" id="btnFilterPendingOtp" onclick="setFilter('PendingOtp')">Pending OTP</button>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="text-muted small fw-bold">Rows per page:</span>
+                        <select class="form-select form-select-sm rounded-3 w-auto" id="pageSizeSelect" onchange="changePageSize()">
+                            <option value="5" selected>5 Rows</option>
+                            <option value="10">10 Rows</option>
+                            <option value="25">25 Rows</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payments Table Card -->
+            <div class="table-card p-3 mb-4">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0 payments-table">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Booking ID</th>
+                                <th>Customer Details</th>
+                                <th>Vehicle & Fleet</th>
+                                <th>Base Rental Fee</th>
+                                <th>Extra KM Charge & Status</th>
+                                <th>Total Amount & Method</th>
+                                <th class="text-end">Showroom OTP & Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="paymentsTableBody">
+                            <!-- Populated dynamically via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Pagination Bar -->
+            <div class="d-flex flex-wrap justify-content-between align-items-center bg-white p-3 rounded-4 shadow-sm border">
+                <div class="text-muted small fw-bold" id="paginationInfoText">
+                    Showing 0 entries
+                </div>
+                <nav aria-label="Payments Pagination">
+                    <ul class="pagination pagination-sm mb-0" id="paginationControls">
+                        <!-- Rendered via JS -->
+                    </ul>
+                </nav>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- SHOWROOM CASH OTP VERIFICATION MODAL -->
+    <div class="modal fade" id="verifyOtpModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow-lg">
+                <div class="modal-header bg-dark text-white rounded-top-4 px-4 py-3">
+                    <h5 class="modal-title fw-bold">Confirm Showroom Cash Collection (OTP)</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="verifyOtpForm" onsubmit="submitOtpVerification(event)">
+                    <input type="hidden" id="otpBookingDbId">
+                    <div class="modal-body p-4 text-center">
+                        <div class="p-3 bg-light rounded-3 border mb-3">
+                            <span class="text-muted small text-uppercase fw-bold d-block mb-1">Vehicle Booking Inquiry</span>
+                            <h5 class="fw-bold text-dark mb-1" id="otpVehicleName">Vehicle Title</h5>
+                            <span class="badge bg-primary rounded-pill px-3 py-1" id="otpCustomerName">Customer Name</span>
+                        </div>
+
+                        <div class="p-3 bg-warning-subtle border border-warning rounded-3 mb-3 text-start">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="fw-bold text-dark">Extra KM Amount Payable:</span>
+                                <strong class="fs-5 text-danger" id="otpExtraFeeText">₹0</strong>
+                            </div>
+                            <small class="text-muted d-block">Admin generated OTP code: <strong class="text-dark font-monospace fs-6" id="otpDisplayCode">849201</strong></small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label text-dark fw-bold small text-uppercase">Enter 6-Digit OTP Provided by Client at Showroom</label>
+                            <input type="text" class="form-control form-control-lg text-center font-monospace fw-bold rounded-3 tracking-widest" id="inputShowroomOtp" placeholder="6-digit OTP code" maxlength="6" required style="letter-spacing: 4px; font-size: 1.5rem;">
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light px-4 py-3 rounded-bottom-4 justify-content-between">
+                        <button type="button" class="btn btn-outline-secondary rounded-3 px-4 fw-bold" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-success rounded-3 px-4 fw-bold">Verify & Collect Cash</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script id="initial-payments-data" type="application/json">
+        {{ bookings_json|safe }}
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let bookingsData = [];
+        try {
+            const rawElem = document.getElementById('initial-payments-data');
+            if (rawElem && rawElem.textContent.trim()) {
+                bookingsData = JSON.parse(rawElem.textContent);
+            }
+        } catch (e) {
+            console.error('Error parsing initial payments JSON:', e);
+            bookingsData = [];
+        }
+
+        let currentFilter = 'ALL';
+        let currentPage = 1;
+        let pageSize = 5;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStatsAndCharts();
+            renderPayments();
+            fetchLivePayments();
+            setInterval(fetchLivePayments, 5000);
+        });
+
+        function fetchLivePayments() {
+            fetch('/admin-portal/api/payments/live-list/')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success' && data.payments) {
+                        bookingsData = data.payments;
+                        updateStatsAndCharts();
+                        renderPayments();
+                    }
+                })
+                .catch(err => console.error('Error fetching live payments:', err));
+        }
+
+        function calculateDaysBetween(startStr, endStr) {
+            if (!startStr || !endStr) return 1;
+            try {
+                const s = new Date(startStr);
+                const e = new Date(endStr);
+                if (!isNaN(s.getTime()) && !isNaN(e.getTime())) {
+                    const diffTime = e.getTime() - s.getTime();
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    if (diffDays > 0) return diffDays;
+                }
+            } catch (err) {}
+            return 1;
+        }
+
+        function updateStatsAndCharts() {
+            let carRev = 0, bikeRev = 0, extraKmRev = 0, pendingCash = 0;
+            let carCount = 0, bikeCount = 0, extraSettledCount = 0, pendingOtpCount = 0;
+            let onlineRev = 0, cashRev = 0;
+
+            bookingsData.forEach(b => {
+                const days = Math.max(1, calculateDaysBetween(b.startDate, b.endDate) || b.days || 1);
+                const dailyPrice = Math.max(0, b.dailyPrice || 1500);
+                const baseRental = Math.max(0, dailyPrice * days);
+                const extraKm = Math.max(0, b.extraKmFee || 0);
+                const total = Math.max(0, baseRental + extraKm);
+
+                if (b.type === 'Car') {
+                    carRev += total;
+                    carCount++;
+                } else {
+                    bikeRev += total;
+                    bikeCount++;
+                }
+
+                if (extraKm > 0) {
+                    if (b.extraFeeStatus === 'Paid Online' || b.extraFeeStatus === 'Paid at Showroom' || b.extraFeeStatus === 'Settlement Confirmed') {
+                        extraKmRev += extraKm;
+                        extraSettledCount++;
+                    } else {
+                        pendingCash += extraKm;
+                        pendingOtpCount++;
+                    }
+                }
+
+                if (b.extraFeePaymentMode === 'Cash at Showroom' || b.extraFeeStatus === 'Paid at Showroom' || b.extraFeeStatus === 'Pending Showroom Verification') {
+                    cashRev += extraKm;
+                } else {
+                    onlineRev += (baseRental + extraKm);
+                }
+            });
+
+            document.getElementById('valCarRevenue').textContent = `₹${carRev.toLocaleString('en-IN')}`;
+            document.getElementById('subCarBookings').textContent = `${carCount} Car Bookings`;
+
+            document.getElementById('valBikeRevenue').textContent = `₹${bikeRev.toLocaleString('en-IN')}`;
+            document.getElementById('subBikeBookings').textContent = `${bikeCount} Bike Bookings`;
+
+            document.getElementById('valExtraKmRevenue').textContent = `₹${extraKmRev.toLocaleString('en-IN')}`;
+            document.getElementById('subExtraKmSettled').textContent = `${extraSettledCount} Settled Extra Fees`;
+
+            document.getElementById('valPendingShowroomCash').textContent = `₹${pendingCash.toLocaleString('en-IN')}`;
+            document.getElementById('subPendingOtpCount').textContent = `${pendingOtpCount} Pending OTP Verifications`;
+
+            // Chart ratios
+            const totalFleetRev = (carRev + bikeRev) || 1;
+            const carPct = Math.round((carRev / totalFleetRev) * 100);
+            const bikePct = 100 - carPct;
+
+            document.getElementById('textFleetRatio').textContent = `Car ${carPct}% | Bike ${bikePct}%`;
+            document.getElementById('barCarRatio').style.width = `${carPct}%`;
+            document.getElementById('barBikeRatio').style.width = `${bikePct}%`;
+            document.getElementById('chartCarVal').textContent = `₹${carRev.toLocaleString('en-IN')}`;
+            document.getElementById('chartBikeVal').textContent = `₹${bikeRev.toLocaleString('en-IN')}`;
+
+            const totalMethodRev = (onlineRev + cashRev) || 1;
+            const onlinePct = Math.round((onlineRev / totalMethodRev) * 100);
+            const cashPct = 100 - onlinePct;
+
+            document.getElementById('textMethodRatio').textContent = `Online ${onlinePct}% | Cash ${cashPct}%`;
+            document.getElementById('barOnlineRatio').style.width = `${onlinePct}%`;
+            document.getElementById('barCashRatio').style.width = `${cashPct}%`;
+            document.getElementById('chartOnlineVal').textContent = `₹${onlineRev.toLocaleString('en-IN')}`;
+            document.getElementById('chartCashVal').textContent = `₹${cashRev.toLocaleString('en-IN')}`;
+        }
+
+        function setFilter(filterVal) {
+            currentFilter = filterVal;
+            currentPage = 1;
+
+            ['All', 'Cars', 'Bikes', 'Online', 'Cash', 'PendingOtp'].forEach(f => {
+                const btn = document.getElementById('btnFilter' + f);
+                if (btn) btn.classList.remove('active');
+            });
+
+            const activeBtn = document.getElementById('btnFilter' + (filterVal === 'ALL' ? 'All' : filterVal === 'Car' ? 'Cars' : filterVal === 'Bike' ? 'Bikes' : filterVal));
+            if (activeBtn) activeBtn.classList.add('active');
+
+            renderPayments();
+        }
+
+        function handleSearchInput() {
+            currentPage = 1;
+            renderPayments();
+        }
+
+        function changePageSize() {
+            pageSize = Number(document.getElementById('pageSizeSelect').value);
+            currentPage = 1;
+            renderPayments();
+        }
+
+        function renderPayments() {
+            const tbody = document.getElementById('paymentsTableBody');
+            const searchVal = document.getElementById('paymentSearchInput').value.toLowerCase().trim();
+            tbody.innerHTML = '';
+
+            let filtered = bookingsData.filter(b => {
+                let matchFilter = true;
+                if (currentFilter === 'Car') matchFilter = b.type === 'Car';
+                else if (currentFilter === 'Bike') matchFilter = b.type === 'Bike';
+                else if (currentFilter === 'Online') matchFilter = b.extraFeePaymentMode === 'Razorpay' || b.extraFeeStatus === 'Paid Online';
+                else if (currentFilter === 'Cash') matchFilter = b.extraFeePaymentMode === 'Cash at Showroom' || b.extraFeeStatus === 'Paid at Showroom';
+                else if (currentFilter === 'PendingOtp') matchFilter = b.extraFeeStatus === 'Pending Showroom Verification' || (b.extraKmFee > 0 && b.extraFeeStatus !== 'Paid Online' && b.extraFeeStatus !== 'Paid at Showroom');
+
+                let otpStr = b.showroomOtp || '';
+                let matchSearch = b.user.toLowerCase().includes(searchVal) ||
+                                  b.vehicle.toLowerCase().includes(searchVal) ||
+                                  b.id.toLowerCase().includes(searchVal) ||
+                                  b.phone.toLowerCase().includes(searchVal) ||
+                                  otpStr.includes(searchVal);
+
+                return matchFilter && matchSearch;
+            });
+
+            const totalEntries = filtered.length;
+            const totalPages = Math.ceil(totalEntries / pageSize) || 1;
+            if (currentPage > totalPages) currentPage = totalPages;
+
+            const startIndex = (currentPage - 1) * pageSize;
+            const endIndex = Math.min(startIndex + pageSize, totalEntries);
+            const pageData = filtered.slice(startIndex, endIndex);
+
+            if (pageData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted">No matching payment ledger records found.</td></tr>';
+            } else {
+                pageData.forEach(b => {
+                    const days = Math.max(1, calculateDaysBetween(b.startDate, b.endDate) || b.days || 1);
+                    const dailyPrice = Math.max(0, b.dailyPrice || 1500);
+                    const baseRental = Math.max(0, dailyPrice * days);
+                    const extraKm = Math.max(0, b.extraKmFee || 0);
+                    const totalPayable = Math.max(0, baseRental + extraKm);
+
+                    let badgeTypeClass = b.type === 'Car' ? 'bg-primary text-white' : 'bg-success text-white';
+
+                    let extraStatusBadge = '';
+                    if (extraKm > 0) {
+                        if (b.extraFeeStatus === 'Paid Online') {
+                            extraStatusBadge = `<span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2.5 py-1 fw-bold">+₹${extraKm.toLocaleString('en-IN')} (Paid Online)</span>`;
+                        } else if (b.extraFeeStatus === 'Paid at Showroom' || b.extraFeeStatus === 'Settlement Confirmed') {
+                            extraStatusBadge = `<span class="badge bg-success text-white rounded-pill px-2.5 py-1 fw-bold">+₹${extraKm.toLocaleString('en-IN')} (Paid at Showroom)</span>`;
+                        } else if (b.extraFeeStatus === 'Pending Showroom Verification') {
+                            extraStatusBadge = `<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-2.5 py-1 fw-bold">+₹${extraKm.toLocaleString('en-IN')} (Showroom Cash Pending)</span>`;
+                        } else {
+                            extraStatusBadge = `<span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle rounded-pill px-2.5 py-1 fw-bold">+₹${extraKm.toLocaleString('en-IN')} (Unpaid Extra)</span>`;
+                        }
+                    } else {
+                        extraStatusBadge = `<span class="badge bg-light text-muted border rounded-pill px-2.5 py-1">No Extra Fee</span>`;
+                    }
+
+                    let otpCode = b.showroomOtp || (100000 + (b.db_id * 73) % 899999);
+
+                    let actionHtml = '';
+                    if (b.extraFeeStatus === 'Paid at Showroom' || b.extraFeeStatus === 'Paid Online' || b.extraFeeStatus === 'Settlement Confirmed') {
+                        actionHtml = `<span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1.5 fw-bold">Settled & Verified</span>`;
+                    } else {
+                        actionHtml = `
+                            <button class="btn btn-sm btn-success rounded-pill fw-bold px-3 shadow-sm" onclick="openVerifyOtpModal(${b.db_id}, '${b.vehicle.replace(/'/g, "\\'")}', '${b.user.replace(/'/g, "\\'")}', ${extraKm}, '${otpCode}')">
+                                Verify Cash (OTP: ${otpCode})
+                            </button>
+                        `;
+                    }
+
+                    let rowHtml = `
+                        <tr>
+                            <td class="fw-bold text-primary">#${b.id}</td>
+                            <td>
+                                <div class="fw-bold text-dark">${b.user}</div>
+                                <div class="text-muted small">${b.email} • ${b.phone}</div>
+                            </td>
+                            <td>
+                                <div class="fw-bold text-dark">${b.vehicle}</div>
+                                <span class="badge ${badgeTypeClass} rounded-pill mt-1" style="font-size:0.7rem;">${b.type} Fleet</span>
+                            </td>
+                            <td>
+                                <div class="fw-bold text-dark">₹${baseRental.toLocaleString('en-IN')}</div>
+                                <small class="text-muted d-block" style="font-size:0.75rem;">₹${dailyPrice.toLocaleString('en-IN')}/day × ${days} Days</small>
+                            </td>
+                            <td>${extraStatusBadge}</td>
+                            <td>
+                                <div class="fw-bold text-dark fs-6">₹${totalPayable.toLocaleString('en-IN')}</div>
+                                <small class="text-muted d-block" style="font-size:0.75rem;">${b.extraFeePaymentMode || 'Razorpay Online'}</small>
+                            </td>
+                            <td class="text-end">
+                                ${actionHtml}
+                            </td>
+                        </tr>
+                    `;
+                    tbody.insertAdjacentHTML('beforeend', rowHtml);
+                });
+            }
+
+            const infoText = totalEntries > 0 ? `Showing ${startIndex + 1} to ${endIndex} of ${totalEntries} entries` : 'Showing 0 entries';
+            document.getElementById('paginationInfoText').textContent = infoText;
+
+            renderPaginationControls(totalPages);
+        }
+
+        function renderPaginationControls(totalPages) {
+            const paginationUl = document.getElementById('paginationControls');
+            paginationUl.innerHTML = '';
+
+            let prevLi = `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                <button class="page-link" onclick="goToPage(${currentPage - 1})">Prev</button>
+            </li>`;
+            paginationUl.insertAdjacentHTML('beforeend', prevLi);
+
+            for (let i = 1; i <= totalPages; i++) {
+                let pageLi = `<li class="page-item ${i === currentPage ? 'active' : ''}">
+                    <button class="page-link" onclick="goToPage(${i})">${i}</button>
+                </li>`;
+                paginationUl.insertAdjacentHTML('beforeend', pageLi);
+            }
+
+            let nextLi = `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                <button class="page-link" onclick="goToPage(${currentPage + 1})">Next</button>
+            </li>`;
+            paginationUl.insertAdjacentHTML('beforeend', nextLi);
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            renderPayments();
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function openVerifyOtpModal(dbId, vehicle, customer, extraKm, otpCode) {
+            document.getElementById('otpBookingDbId').value = dbId;
+            document.getElementById('otpVehicleName').textContent = vehicle;
+            document.getElementById('otpCustomerName').textContent = customer;
+            document.getElementById('otpExtraFeeText').textContent = `₹${extraKm.toLocaleString('en-IN')}`;
+            document.getElementById('otpDisplayCode').textContent = otpCode;
+            document.getElementById('inputShowroomOtp').value = otpCode;
+
+            new bootstrap.Modal(document.getElementById('verifyOtpModal')).show();
+        }
+
+        function submitOtpVerification(e) {
+            e.preventDefault();
+            const dbId = document.getElementById('otpBookingDbId').value;
+            const otpVal = document.getElementById('inputShowroomOtp').value.trim();
+
+            fetch('/admin-portal/api/verify-showroom-otp/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken') || '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    id: dbId,
+                    otp: otpVal
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('✅ ' + data.message);
+                    const modalElem = document.getElementById('verifyOtpModal');
+                    const modal = bootstrap.Modal.getInstance(modalElem);
+                    if (modal) modal.hide();
+                    fetchLivePayments();
+                } else {
+                    alert('Error verifying OTP: ' + data.message);
+                }
+            })
+            .catch(err => alert('Network error verifying showroom cash OTP.'));
+        }
+    </script>
+</body>
+</html>

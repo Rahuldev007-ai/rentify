@@ -1,0 +1,623 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Details - Rentify Vehicle Rentals</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        .flatpickr-day.flatpickr-disabled, .flatpickr-day.flatpickr-disabled:hover {
+            background-color: #fee2e2 !important;
+            color: #dc2626 !important;
+            text-decoration: line-through;
+            cursor: not-allowed !important;
+            border-color: #fca5a5 !important;
+        }
+        .booked-date-badge {
+            font-size: 0.65rem;
+            position: absolute;
+            bottom: 1px;
+            right: 2px;
+            color: #b91c1c;
+        }
+        :root {
+            --primary-color: #1e3c72;
+            --secondary-color: #ff3d00;
+            --accent-color: #00d2ff;
+            --light-bg: #f4f6f9;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--light-bg);
+            color: #333;
+            min-height: 100vh;
+            padding-bottom: 3rem;
+        }
+
+        .top-navbar {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 1rem 0;
+            margin-bottom: 2rem;
+        }
+
+        .car-details-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2.5rem;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        .car-gallery {
+            position: relative;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .car-gallery img {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+            border-radius: 15px;
+            transition: transform 0.4s ease;
+        }
+
+        .car-gallery img:hover {
+            transform: scale(1.02);
+        }
+
+        .car-title {
+            font-size: 2.1rem;
+            color: var(--primary-color);
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .price-tag {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 0.6rem 1.8rem;
+            border-radius: 50px;
+            display: inline-block;
+            font-size: 1.3rem;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(30, 60, 114, 0.3);
+        }
+
+        .spec-badge {
+            background: #eef2f7;
+            color: #1e3c72;
+            font-weight: 600;
+            padding: 0.4rem 0.9rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .feature-card {
+            padding: 1rem;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .feature-card i {
+            color: var(--primary-color);
+            font-size: 1.4rem;
+        }
+
+        .rental-form-card {
+            background: #ffffff;
+            padding: 2rem;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 0.9rem;
+        }
+
+        .form-control, .form-select {
+            border: 1.5px solid #cbd5e0;
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            font-size: 0.95rem;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(30, 60, 114, 0.15);
+        }
+
+        .price-summary-box {
+            background: #f1f5f9;
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-checkout {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            border: none;
+            padding: 0.9rem 1.5rem;
+            font-weight: 700;
+            font-size: 1.05rem;
+            border-radius: 12px;
+            width: 100%;
+            box-shadow: 0 4px 15px rgba(30, 60, 114, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .btn-checkout:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(30, 60, 114, 0.4);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header class="top-navbar">
+        <div class="container d-flex justify-content-between align-items-center">
+            <a href="/vehicles/cars/" class="btn btn-outline-dark btn-sm rounded-pill px-3">
+                <i class="fas fa-arrow-left me-1"></i> Back to Cars Catalog
+            </a>
+            <h5 class="mb-0 text-primary fw-bold"><i class="fas fa-car me-2"></i>Rentify Vehicle Rentals</h5>
+            <a href="/bookings/my-bookings/" class="btn btn-primary btn-sm rounded-pill px-3">
+                <i class="fas fa-bookmark me-1"></i> My Bookings
+            </a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="car-details-container">
+            <div class="row g-4">
+                <!-- Vehicle Showcase & Specs Column -->
+                <div class="col-lg-7">
+                    <div class="car-gallery mb-3">
+                        <img id="carImg" src="{% if car %}{{ car.image }}{% else %}{% static 'images/image/carimgs/thar1.jpg' %}{% endif %}" alt="{% if car %}{{ car.name }}{% else %}Car Showcase{% endif %}" class="img-fluid" onerror="this.src='{% static 'images/image/carimgs/thar1.jpg' %}'">
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2 mb-3" id="badgesContainer">
+                        <span class="spec-badge"><i class="fas fa-tag"></i> {% if car %}{{ car.category }}{% else %}SUV{% endif %}</span>
+                        <span class="spec-badge"><i class="fas fa-cogs"></i> {% if car %}{{ car.transmission }}{% else %}Automatic{% endif %}</span>
+                        <span class="spec-badge"><i class="fas fa-gas-pump"></i> {% if car %}{{ car.fuel_type }}{% else %}Petrol{% endif %}</span>
+                        <span class="spec-badge"><i class="fas fa-users"></i> {% if car %}{{ car.seats }}{% else %}5{% endif %} Seats</span>
+                        <span class="spec-badge"><i class="fas fa-tachometer-alt"></i> {% if car %}{{ car.start_km }}{% else %}10000{% endif %} KM</span>
+                        <span class="spec-badge"><i class="fas fa-star text-warning"></i> {% if car %}{{ car.rating }}{% else %}4.9{% endif %} Rating</span>
+                        <span class="spec-badge"><i class="fas fa-check-circle text-success"></i> {% if car %}{{ car.status }}{% else %}Available{% endif %}</span>
+                    </div>
+
+                    <div class="car-info">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h1 class="car-title" id="carTitle">{% if car %}{{ car.name }}{% else %}Mahindra Thar 4x4 LX{% endif %}</h1>
+                            <div class="price-tag" id="priceDisplay">₹{% if car %}{{ car.price_per_day }}{% else %}2,499{% endif %} <small class="fw-normal" style="font-size: 0.85rem;">/ day</small></div>
+                        </div>
+
+                        <p class="text-secondary mb-4" id="carDescription">
+                            {% if car %}{{ car.description }}{% else %}Experience ultimate off-road freedom with the iconic Mahindra Thar 4x4. Outfitted with automatic transmission, touch-screen infotainment, all-terrain tires, and convertible hardtop.{% endif %}
+                        </p>
+
+                        <h5 class="fw-bold mb-3"><i class="fas fa-shield-alt text-primary me-2"></i>Vehicle Features & Amenities</h5>
+                        <div class="feature-grid">
+                            {% if features_list %}
+                                {% for feat in features_list %}
+                                    <div class="feature-card">
+                                        {% if "ac" in feat|lower or "air" in feat|lower or "climate" in feat|lower %}
+                                            <i class="fas fa-snowflake text-info"></i>
+                                        {% elif "abs" in feat|lower or "airbag" in feat|lower or "safety" in feat|lower %}
+                                            <i class="fas fa-shield-alt text-primary"></i>
+                                        {% elif "screen" in feat|lower or "infotainment" in feat|lower or "apple" in feat|lower or "music" in feat|lower %}
+                                            <i class="fas fa-compact-disc text-danger"></i>
+                                        {% elif "cruise" in feat|lower or "drive" in feat|lower or "mode" in feat|lower %}
+                                            <i class="fas fa-road text-success"></i>
+                                        {% elif "camera" in feat|lower or "sensor" in feat|lower %}
+                                            <i class="fas fa-video text-warning"></i>
+                                        {% else %}
+                                            <i class="fas fa-check-circle text-success"></i>
+                                        {% endif %}
+                                        <div>
+                                            <strong class="d-block text-dark">{{ feat }}</strong>
+                                            <small class="text-muted">Admin Verified Specification</small>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="feature-card">
+                                    <i class="fas fa-snowflake text-info"></i>
+                                    <div>
+                                        <strong class="d-block text-dark">Climate Control AC</strong>
+                                        <small class="text-muted">High capacity cooling</small>
+                                    </div>
+                                </div>
+                                <div class="feature-card">
+                                    <i class="fas fa-compact-disc text-danger"></i>
+                                    <div>
+                                        <strong class="d-block text-dark">Smart Infotainment</strong>
+                                        <small class="text-muted">Apple CarPlay & Android Auto</small>
+                                    </div>
+                                </div>
+                                <div class="feature-card">
+                                    <i class="fas fa-shield-alt text-primary"></i>
+                                    <div>
+                                        <strong class="d-block text-dark">Dual Airbags & ABS</strong>
+                                        <small class="text-muted">ESP with Roll-over mitigation</small>
+                                    </div>
+                                </div>
+                                <div class="feature-card">
+                                    <i class="fas fa-road text-success"></i>
+                                    <div>
+                                        <strong class="d-block text-dark">Cruise Control</strong>
+                                        <small class="text-muted">Smooth highway drive</small>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Customer Reviews & Feedback Ratings Section -->
+                        <div class="mt-4 pt-4 border-top">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h5 class="fw-bold mb-0 text-dark"><i class="fas fa-star text-warning me-2"></i>Customer Reviews & Ratings</h5>
+                                    <small class="text-muted">Real feedback submitted by verified customers who booked this vehicle.</small>
+                                </div>
+                                <div class="text-end">
+                                    <span class="fs-4 fw-extrabold text-dark">{{ avg_rating|default:"4.9" }}</span>
+                                    <span class="text-warning fs-5">★</span>
+                                    <small class="text-muted d-block">({{ reviews_count|default:"1" }} Verified Reviews)</small>
+                                </div>
+                            </div>
+
+                            <div class="row g-3" id="customerReviewsContainer">
+                                {% for rev in reviews %}
+                                <div class="col-12">
+                                    <div class="p-3 bg-white rounded-3 border shadow-sm">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 36px; height: 36px;">
+                                                    {{ rev.user_name|slice:":1"|upper }}
+                                                </div>
+                                                <div>
+                                                    <h6 class="fw-bold text-dark mb-0">{{ rev.user_name }}</h6>
+                                                    <small class="text-muted">{{ rev.date }}</small>
+                                                </div>
+                                            </div>
+                                            <div class="text-warning fw-bold">
+                                                {{ rev.rating }} <i class="fas fa-star ms-1"></i>
+                                            </div>
+                                        </div>
+                                        <p class="text-secondary small mb-0">{{ rev.comment }}</p>
+                                    </div>
+                                </div>
+                                {% empty %}
+                                <div class="col-12 text-center py-4 bg-light rounded-3 border">
+                                    <i class="fas fa-comment-alt text-muted fs-3 mb-2"></i>
+                                    <h6 class="fw-bold text-dark mb-1">Customer Rating Score: {{ avg_rating|default:"4.9" }} ★</h6>
+                                    <p class="text-secondary small mb-0">"Excellent vehicle condition, smooth driving performance, and hassle-free pickup process!"</p>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Booking Details Form Column -->
+                <div class="col-lg-5">
+                    <div class="rental-form-card">
+                        <h4 class="fw-bold text-dark mb-1"><i class="fas fa-calendar-check text-primary me-2"></i>Rental Booking Form</h4>
+                        <p class="text-muted small mb-3">Enter your details and select dates for instant availability.</p>
+
+                        {% if not request.user.is_authenticated %}
+                        <div class="alert alert-warning border-0 shadow-sm rounded-3 mb-4 d-flex align-items-center gap-3">
+                            <i class="fas fa-lock text-warning fs-3"></i>
+                            <div>
+                                <strong class="d-block text-dark">Login Required to Book</strong>
+                                <span class="small text-muted">Please log in to submit your rental inquiry. <a href="/accounts/login/?next=/vehicles/car-details/?id={{ car.id }}" class="fw-bold text-primary">Login Here &rarr;</a></span>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <form method="POST" action="" id="carBookingForm">
+                            {% csrf_token %}
+                            <input type="hidden" name="vehicle_name" id="vehicle_name" value="{{ car.name }}">
+                            <input type="hidden" name="daily_rate" id="daily_rate" value="{{ car.price_per_day }}">
+
+                            <div class="mb-3">
+                                <label for="full_name" class="form-label d-flex justify-content-between align-items-center">
+                                    <span>Full Name</span>
+                                    {% if request.user.is_authenticated %}
+                                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle small font-monospace"><i class="fas fa-lock me-1"></i>Locked to Profile</span>
+                                    {% endif %}
+                                </label>
+                                <input type="text" class="form-control {% if request.user.is_authenticated %}bg-light text-muted{% endif %}" id="full_name" name="full_name" placeholder="John Doe" value="{% if request.user.is_authenticated %}{% if request.user.get_full_name %}{{ request.user.get_full_name }}{% else %}{{ request.user.username }}{% endif %}{% endif %}" {% if request.user.is_authenticated %}readonly{% else %}required{% endif %}>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="email" class="form-label d-flex justify-content-between align-items-center">
+                                    <span>Email Address</span>
+                                    {% if request.user.is_authenticated %}
+                                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle small font-monospace"><i class="fas fa-lock me-1"></i>Locked to Profile</span>
+                                    {% endif %}
+                                </label>
+                                <input type="email" class="form-control {% if request.user.is_authenticated %}bg-light text-muted{% endif %}" id="email" name="email" placeholder="john@example.com" value="{% if request.user.is_authenticated %}{{ request.user.email }}{% endif %}" {% if request.user.is_authenticated %}readonly{% else %}required{% endif %}>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="phone" class="form-label d-flex justify-content-between align-items-center">
+                                    <span>Phone Number</span>
+                                    {% if request.user.is_authenticated %}
+                                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle small font-monospace"><i class="fas fa-lock me-1"></i>Locked to Profile</span>
+                                    {% endif %}
+                                </label>
+                                <input type="tel" class="form-control {% if request.user.is_authenticated %}bg-light text-muted{% endif %}" id="phone" name="phone" placeholder="+91 98765 43210" value="{% if request.user.is_authenticated and request.user.profile %}{{ request.user.profile.phone_number }}{% endif %}" {% if request.user.is_authenticated %}readonly{% else %}required{% endif %}>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="pickup_location" class="form-label">Pickup City / Hub</label>
+                                <select class="form-select" id="pickup_location" name="pickup_location" required>
+                                    <option value="Bhavnagar Central Hub" {% if location|lower == 'bhavnagar' or not location %}selected{% endif %}>Bhavnagar Central Hub</option>
+                                    <option value="Mumbai Central Hub" {% if location|lower == 'mumbai' %}selected{% endif %}>Mumbai Central Hub</option>
+                                    <option value="Delhi Airport Terminal 3" {% if location|lower == 'delhi' %}selected{% endif %}>Delhi Airport Terminal 3</option>
+                                    <option value="Bhavnagar Station Road">Bhavnagar Station Road</option>
+                                    <option value="Bangalore Indiranagar Hub" {% if location|lower == 'bangalore' %}selected{% endif %}>Bangalore Indiranagar Hub</option>
+                                    <option value="Ahmedabad SG Highway" {% if location|lower == 'ahmedabad' %}selected{% endif %}>Ahmedabad SG Highway</option>
+                                </select>
+                            </div>
+
+                            <div class="row g-2 mb-2">
+                                <div class="col-6">
+                                    <label for="pickup_date" class="form-label">Start Date (Pickup)</label>
+                                    <input type="date" class="form-control" id="pickup_date" name="pickup_date" required>
+                                </div>
+                                <div class="col-6">
+                                    <label for="return_date" class="form-label">End Date (Return)</label>
+                                    <input type="date" class="form-control" id="return_date" name="return_date" disabled required>
+                                </div>
+                            </div>
+
+                            <!-- Real-time Overlap Error Message Container -->
+                            <div id="dateOverlapError" class="alert alert-danger p-2 small fw-bold d-none mb-3 border-danger rounded-3">
+                                <i class="fas fa-exclamation-triangle me-1"></i> <span id="dateOverlapErrorText">Selected dates are already booked!</span>
+                            </div>
+
+                            <!-- Mileage Allowance Notice Box (150 KM/day) -->
+                            <div class="p-3 bg-light border border-info-subtle rounded-3 mb-3">
+                                <div class="d-flex align-items-center gap-2 text-primary mb-1">
+                                    <i class="fas fa-tachometer-alt fs-5"></i>
+                                    <strong class="fs-6 text-dark">Driving Limit: 150 KM / Day Included</strong>
+                                </div>
+                                <small class="text-secondary d-block">
+                                    You can drive up to <strong>150 KM/day</strong> included in the base rate. Any extra mileage driven beyond the limit will incur a nominal extra fee (₹12/KM) payable upon vehicle return.
+                                </small>
+                            </div>
+
+                            <!-- Real-time Price Calculation Summary -->
+                            <div class="price-summary-box">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-secondary">Rental Duration:</span>
+                                    <strong class="text-dark" id="summary_days">1 Day</strong>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-secondary">Daily Rate:</span>
+                                    <span class="text-dark" id="summary_rate">₹{{ car.price_per_day }} / day</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-secondary">Included Mileage Limit:</span>
+                                    <span class="text-dark font-monospace fw-bold" id="summary_km">150 KM</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-secondary">Base Amount:</span>
+                                    <span class="text-dark" id="summary_base">₹{{ car.price_per_day }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-secondary">GST & Insurance (18%):</span>
+                                    <span class="text-dark" id="summary_tax">--</span>
+                                </div>
+                                <hr class="my-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <strong class="text-dark fs-5">Total Payable:</strong>
+                                    <strong class="text-primary fs-4" id="summary_total">₹{{ car.price_per_day }}</strong>
+                                </div>
+                                <input type="hidden" name="total_amount" id="total_amount" value="{{ car.price_per_day }}">
+                            </div>
+
+                            {% if request.user.is_authenticated %}
+                            <button type="submit" class="btn btn-checkout" id="submitBookingBtn">
+                                <i class="fas fa-credit-card me-2"></i> Proceed to Select Payment &rarr;
+                            </button>
+                            {% else %}
+                            <a href="/accounts/login/?next=/vehicles/car-details/?id={{ car.id }}" class="btn btn-checkout" style="background: linear-gradient(135deg, #374151 0%, #111827 100%);">
+                                <i class="fas fa-lock me-2"></i> Log In to Confirm Booking &rarr;
+                            </a>
+                            {% endif %}
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const pickupInput = document.getElementById('pickup_date');
+            const returnInput = document.getElementById('return_date');
+            const locationSelect = document.getElementById('pickup_location');
+            const submitBtn = document.getElementById('submitBookingBtn');
+            const dateErrorDiv = document.getElementById('dateOverlapError');
+            const dateErrorText = document.getElementById('dateOverlapErrorText');
+
+            const bookedDatesArray = JSON.parse('{{ booked_dates_json|escapejs }}');
+            const bookedDatesSet = new Set(bookedDatesArray);
+
+            // Initialize Flatpickr Interactive Calendar Widget with Blocked Date Renderer
+            const fpPickup = flatpickr("#pickup_date", {
+                dateFormat: "Y-m-d",
+                minDate: "today",
+                disable: bookedDatesArray,
+                onChange: function(selectedDates, dateStr) {
+                    if (selectedDates.length > 0) {
+                        returnInput.disabled = false;
+                        const nextDay = new Date(selectedDates[0]);
+                        nextDay.setDate(nextDay.getDate() + 1);
+                        fpReturn.set("minDate", nextDay);
+                        if (!returnInput.value || returnInput.value <= dateStr) {
+                            fpReturn.setDate(nextDay);
+                        }
+                    }
+                    calculateRealtimePrice();
+                },
+                onDayCreate: function(dObj, dStr, fp, dayElem) {
+                    const dateFormatted = flatpickr.formatDate(dayElem.dateObj, "Y-m-d");
+                    if (bookedDatesSet.has(dateFormatted)) {
+                        dayElem.classList.add("flatpickr-disabled", "booked-date-blocked");
+                        dayElem.title = "Booked by another customer (Blocked)";
+                    }
+                }
+            });
+
+            const fpReturn = flatpickr("#return_date", {
+                dateFormat: "Y-m-d",
+                minDate: "today",
+                disable: bookedDatesArray,
+                onChange: function(selectedDates, dateStr) {
+                    calculateRealtimePrice();
+                },
+                onDayCreate: function(dObj, dStr, fp, dayElem) {
+                    const dateFormatted = flatpickr.formatDate(dayElem.dateObj, "Y-m-d");
+                    if (bookedDatesSet.has(dateFormatted)) {
+                        dayElem.classList.add("flatpickr-disabled", "booked-date-blocked");
+                        dayElem.title = "Booked by another customer (Blocked)";
+                    }
+                }
+            });
+
+            const contextStartDate = "{{ start_date }}";
+            const contextEndDate = "{{ end_date }}";
+            const contextLocation = "{{ location|lower }}";
+
+            // Extract from URL parameters or context
+            const urlParams = new URLSearchParams(window.location.search);
+            const paramStartDate = urlParams.get('start_date') || contextStartDate;
+            const paramEndDate = urlParams.get('end_date') || contextEndDate;
+            const paramLocation = (urlParams.get('location') || contextLocation).toLowerCase();
+
+            if (paramLocation && locationSelect) {
+                for (let i = 0; i < locationSelect.options.length; i++) {
+                    if (locationSelect.options[i].value.toLowerCase().includes(paramLocation)) {
+                        locationSelect.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+
+            if (paramStartDate && !bookedDatesSet.has(paramStartDate)) {
+                fpPickup.setDate(paramStartDate);
+                returnInput.disabled = false;
+                if (paramEndDate && paramEndDate > paramStartDate && !bookedDatesSet.has(paramEndDate)) {
+                    fpReturn.setDate(paramEndDate);
+                }
+            }
+
+            function checkDateAvailability() {
+                if (!pickupInput.value || !returnInput.value) return true;
+
+                const start = new Date(pickupInput.value);
+                const end = new Date(returnInput.value);
+                const conflicts = [];
+
+                let curr = new Date(start);
+                while (curr <= end) {
+                    const dateStr = curr.toISOString().split('T')[0];
+                    if (bookedDatesSet.has(dateStr)) {
+                        conflicts.push(dateStr);
+                    }
+                    curr.setDate(curr.getDate() + 1);
+                }
+
+                if (conflicts.length > 0) {
+                    dateErrorText.textContent = `🚫 Booked by another user on: ${conflicts.join(', ')}. Please select available dates!`;
+                    dateErrorDiv.classList.remove('d-none');
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.classList.add('bg-secondary');
+                    }
+                    return false;
+                } else {
+                    dateErrorDiv.classList.add('d-none');
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.classList.remove('bg-secondary');
+                    }
+                    return true;
+                }
+            }
+
+            function calculateRealtimePrice() {
+                const currentDailyRate = Number(document.getElementById('daily_rate')?.value || 2499);
+                if (!pickupInput.value || !returnInput.value) return;
+
+                const start = new Date(pickupInput.value);
+                const end = new Date(returnInput.value);
+
+                if (start && end && end > start) {
+                    const timeDiff = end.getTime() - start.getTime();
+                    const days = Math.max(1, Math.ceil(timeDiff / (1000 * 3600 * 24)));
+                    const baseAmount = days * currentDailyRate;
+                    const taxAmount = Math.round(baseAmount * 0.18);
+                    const totalAmount = baseAmount + taxAmount;
+
+                    document.getElementById('summary_days').textContent = days + (days === 1 ? ' Day' : ' Days');
+                    document.getElementById('summary_rate').textContent = `₹${currentDailyRate.toLocaleString('en-IN')} / day`;
+                    document.getElementById('summary_km').textContent = `${(days * 150).toLocaleString('en-IN')} KM Total (${days}x 150 KM/day)`;
+                    document.getElementById('summary_base').textContent = '₹' + baseAmount.toLocaleString('en-IN');
+                    document.getElementById('summary_tax').textContent = '₹' + taxAmount.toLocaleString('en-IN');
+                    document.getElementById('summary_total').textContent = '₹' + totalAmount.toLocaleString('en-IN');
+                    document.getElementById('total_amount').value = totalAmount;
+                }
+                checkDateAvailability();
+            }
+
+            const form = document.getElementById('carBookingForm');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    if (!checkDateAvailability()) {
+                        e.preventDefault();
+                        alert('Cannot submit booking: Selected dates are already booked by another user. Please pick non-booked dates.');
+                    }
+                });
+            }
+
+            calculateRealtimePrice();
+        });
+    </script>
+    {% include 'core/footer.html' %}
+</body>
+</html>

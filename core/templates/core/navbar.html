@@ -1,0 +1,326 @@
+{% load static %}
+<nav class="navbar navbar-expand-lg sticky-top main-site-navbar">
+    <div class="container position-relative">
+        <!-- BRAND LOGO (LEFT) -->
+        <a class="navbar-brand d-flex align-items-center gap-2 me-lg-4" href="/home/">
+            <span class="brand-text">Rentify</span>
+        </a>
+
+        <!-- Mobile Toggle Button -->
+        <button class="navbar-toggler border-0 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbarContent" aria-controls="mainNavbarContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon-custom">☰</span>
+        </button>
+
+        <!-- MAIN NAVBAR CONTENT -->
+        <div class="collapse navbar-collapse justify-content-between" id="mainNavbarContent">
+            
+            <!-- MIDDLE NAVIGATION LINKS (PERFECTLY CENTERED ON DESKTOP) -->
+            <ul class="navbar-nav nav-center-links mx-auto mb-2 mb-lg-0 gap-2 text-center justify-content-center">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.path == '/home/' %}active{% endif %}" href="/home/">
+                        Home
+                    </a>
+                </li>
+
+                <!-- Vehicles Dropdown -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle {% if '/vehicles/' in request.path %}active{% endif %}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Vehicles
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow-lg border-0 rounded-3">
+                        <li><a class="dropdown-menu-item" href="/vehicles/cars/">Cars</a></li>
+                        <li><a class="dropdown-menu-item" href="/vehicles/bikes/">Bikes</a></li>
+                    </ul>
+                </li>
+
+                <!-- Properties Dropdown -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle {% if '/properties/' in request.path %}active{% endif %}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        Properties
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow-lg border-0 rounded-3">
+                        <li><a class="dropdown-menu-item" href="/properties/halls/">Halls</a></li>
+                        <li><a class="dropdown-menu-item" href="/properties/offices/">Offices</a></li>
+                        <li><a class="dropdown-menu-item" href="/properties/houses/">Houses</a></li>
+                    </ul>
+                </li>
+
+                <!-- My Bookings Dropdown -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle {% if '/bookings/' in request.path %}active{% endif %}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        My Bookings
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark shadow-lg border-0 rounded-3">
+                        <li><a class="dropdown-menu-item" href="/bookings/my-bookings/">Vehicles</a></li>
+                        <li><hr class="dropdown-divider border-secondary"></li>
+                        <li><a class="dropdown-menu-item" href="/bookings/my-hall-inquiries/">Halls</a></li>
+                        <li><a class="dropdown-menu-item" href="/bookings/my-office-inquiries/">Offices</a></li>
+                        <li><a class="dropdown-menu-item" href="/bookings/my-house-inquiries/">Houses</a></li>
+                    </ul>
+                </li>
+            </ul>
+
+            <!-- RIGHT SECTION: REAL-TIME SEARCH + USER AVATAR -->
+            <div class="d-flex align-items-center gap-3 ms-auto mt-2 mt-lg-0">
+                
+                <!-- Navbar Real-Time Search Input Bar with Reload Spinner -->
+                <div class="position-relative" style="min-width: 210px; max-width: 260px;">
+                    <input type="text" class="form-control form-control-sm rounded-pill pe-4 ps-3 py-2 bg-white text-dark shadow-sm" id="navSearchInput" placeholder="Search cars, bikes, halls..." oninput="handleNavSearchInput(this.value)" autocomplete="off">
+                    <span class="spinner-border spinner-border-sm text-primary position-absolute end-0 top-50 translate-middle-y me-3" id="navSearchSpinner" style="display: none; width: 0.9rem; height: 0.9rem;"></span>
+                    
+                    <!-- Suggestions Dropdown Menu -->
+                    <div class="dropdown-menu shadow-lg border-0 rounded-4 w-100 mt-2 p-2 position-absolute bg-white" id="navSearchDropdown" style="display: none; max-height: 320px; overflow-y: auto; z-index: 2000;">
+                        <div class="d-flex justify-content-between align-items-center text-muted small px-2 py-1 fw-bold border-bottom mb-1">
+                            <span>Live Suggestions</span>
+                            <span class="spinner-border spinner-border-sm text-primary" id="navDropdownSpinner" style="display: none; width: 0.75rem; height: 0.75rem;"></span>
+                        </div>
+                        <div id="navSearchList"></div>
+                    </div>
+                </div>
+
+                <!-- USER AVATAR CIRCLE PROFILE ICON (RIGHTMOST) -->
+                {% if request.user.is_authenticated %}
+                    <div class="dropdown">
+                        <div class="user-avatar-circle" id="userAvatarBtn" data-bs-toggle="dropdown" aria-expanded="false" title="{{ request.user.get_full_name|default:request.user.username }}">
+                            {{ request.user.first_name|default:request.user.username|slice:":1"|upper }}
+                        </div>
+
+                        <!-- USER POPUP DROPDOWN MENU -->
+                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-4 p-3 mt-2" aria-labelledby="userAvatarBtn" style="min-width: 230px; background: #ffffff;">
+                            <li class="px-2 py-1 mb-1">
+                                <div class="fw-extrabold text-dark text-truncate" style="font-size: 0.95rem;">
+                                    {{ request.user.get_full_name|default:request.user.username }}
+                                </div>
+                                <div class="text-muted small text-truncate">{{ request.user.email|default:"Registered Customer" }}</div>
+                            </li>
+                            <li><hr class="dropdown-divider my-2"></li>
+                            <li><a class="dropdown-item rounded-3 py-2 px-3 fw-bold small text-dark" href="/accounts/user-panel/">My Profile</a></li>
+                            <li><a class="dropdown-item rounded-3 py-2 px-3 fw-bold small text-dark" href="/bookings/my-bookings/">My Vehicle Bookings</a></li>
+                            
+                            {% if request.user.is_staff or request.user.profile.role == 'admin' %}
+                                <li><a class="dropdown-item rounded-3 py-2 px-3 fw-bold small text-primary" href="/admin-portal/dashboard/">Admin Control Center</a></li>
+                            {% endif %}
+                            
+                            <li><hr class="dropdown-divider my-2"></li>
+                            <li>
+                                <a href="/accounts/logout/" class="btn btn-danger btn-sm w-100 rounded-3 fw-bold py-2">
+                                    Logout
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                {% else %}
+                    <div class="d-flex align-items-center gap-2">
+                        <a href="/accounts/login/" class="btn btn-outline-light btn-sm rounded-pill px-3 py-1 fw-semibold">
+                            Login
+                        </a>
+                        <a href="/accounts/signup/" class="btn btn-warning btn-sm rounded-pill px-3 py-1 fw-bold text-dark">
+                            Sign Up
+                        </a>
+                    </div>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+</nav>
+
+<style>
+    .main-site-navbar {
+        background: linear-gradient(135deg, #111827 0%, #1e3c72 100%);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        padding: 0.7rem 0;
+        z-index: 1050;
+    }
+
+    .brand-text {
+        font-size: 1.4rem;
+        font-weight: 800;
+        letter-spacing: 0.5px;
+        color: #ffffff;
+    }
+
+    .navbar-toggler-icon-custom {
+        color: white;
+        font-size: 1.4rem;
+        font-weight: bold;
+    }
+
+    .main-site-navbar .nav-link {
+        color: rgba(255, 255, 255, 0.85);
+        font-size: 0.92rem;
+        font-weight: 600;
+        padding: 0.5rem 0.9rem;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .main-site-navbar .nav-link:hover,
+    .main-site-navbar .nav-link.active {
+        color: #ffffff;
+        background: rgba(255, 255, 255, 0.12);
+    }
+
+    @media (min-width: 992px) {
+        .navbar-nav.nav-center-links {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+    }
+
+    .dropdown-menu-dark {
+        background-color: #1f2937;
+        padding: 8px;
+    }
+
+    .dropdown-menu-item {
+        display: block;
+        padding: 8px 14px;
+        color: #e5e7eb;
+        text-decoration: none;
+        font-size: 0.88rem;
+        font-weight: 500;
+        border-radius: 6px;
+        transition: all 0.25s ease;
+    }
+
+    .dropdown-menu-item:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: #ffffff;
+        transform: translateX(4px);
+    }
+
+    .user-avatar-circle {
+        width: 38px;
+        height: 38px;
+        background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        color: #1e293b;
+        font-weight: 800;
+        font-size: 1.1rem;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border: 2px solid #ffffff;
+        box-shadow: 0 4px 12px rgba(243, 156, 18, 0.4);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        user-select: none;
+    }
+
+    .user-avatar-circle:hover {
+        transform: scale(1.08);
+        box-shadow: 0 6px 16px rgba(243, 156, 18, 0.6);
+    }
+
+    #navSearchInput {
+        background-color: #ffffff !important;
+        color: #0f172a !important;
+        border: 1.5px solid rgba(255, 255, 255, 0.9) !important;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12) !important;
+        font-size: 0.88rem;
+        font-weight: 500;
+    }
+
+    #navSearchInput::placeholder {
+        color: #64748b !important;
+        font-weight: 500;
+    }
+
+    #navSearchInput:focus {
+        background-color: #ffffff !important;
+        color: #0f172a !important;
+        border-color: #38bdf8 !important;
+        box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.3) !important;
+    }
+
+    .nav-search-suggestion-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 10px;
+        border-radius: 8px;
+        text-decoration: none;
+        color: #1e293b;
+        transition: background 0.2s ease;
+    }
+
+    .nav-search-suggestion-item:hover {
+        background: #f1f5f9;
+        color: #2563eb;
+    }
+
+    #navSearchInput:focus {
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.4);
+        outline: none;
+    }
+</style>
+
+<script>
+    let navSearchTimer = null;
+
+    function handleNavSearchInput(val) {
+        clearTimeout(navSearchTimer);
+        const dropdown = document.getElementById('navSearchDropdown');
+        const list = document.getElementById('navSearchList');
+        const spinner = document.getElementById('navSearchSpinner');
+        const dropdownSpinner = document.getElementById('navDropdownSpinner');
+
+        const query = val.trim();
+        if (query.length === 0) {
+            dropdown.style.display = 'none';
+            if (spinner) spinner.style.display = 'none';
+            return;
+        }
+
+        if (spinner) spinner.style.display = 'inline-block';
+        if (dropdownSpinner) dropdownSpinner.style.display = 'inline-block';
+
+        navSearchTimer = setTimeout(() => {
+            fetch('/api/search-suggestions/?q=' + encodeURIComponent(query))
+                .then(res => res.json())
+                .then(data => {
+                    if (spinner) spinner.style.display = 'none';
+                    if (dropdownSpinner) dropdownSpinner.style.display = 'none';
+
+                    if (data.status === 'success' && data.results.length > 0) {
+                        list.innerHTML = '';
+                        data.results.forEach(item => {
+                            let badgeBg = item.status === 'Available' ? 'bg-success' : 'bg-warning text-dark';
+                            const el = `
+                                <a href="${item.url}" class="nav-search-suggestion-item">
+                                    <div>
+                                        <div class="fw-bold small text-dark mb-0">${item.title}</div>
+                                        <span class="badge bg-light text-primary border me-1" style="font-size: 0.7rem;">${item.category}</span>
+                                        <span class="text-muted" style="font-size: 0.72rem;">${item.price}</span>
+                                    </div>
+                                    <span class="badge ${badgeBg} rounded-pill" style="font-size: 0.68rem;">${item.status || 'Available'}</span>
+                                </a>
+                            `;
+                            list.insertAdjacentHTML('beforeend', el);
+                        });
+                        dropdown.style.display = 'block';
+                    } else {
+                        list.innerHTML = '<div class="text-muted small p-2 text-center">No matching rentals found</div>';
+                        dropdown.style.display = 'block';
+                    }
+                })
+                .catch(err => {
+                    if (spinner) spinner.style.display = 'none';
+                    if (dropdownSpinner) dropdownSpinner.style.display = 'none';
+                    console.error(err);
+                    dropdown.style.display = 'none';
+                });
+        }, 150);
+    }
+
+    // Close dropdown on clicking outside
+    document.addEventListener('click', function(e) {
+        const dropdown = document.getElementById('navSearchDropdown');
+        const input = document.getElementById('navSearchInput');
+        if (dropdown && input && !dropdown.contains(e.target) && !input.contains(e.target)) {
+            dropdown.style.display = 'none';
+        }
+    });
+</script>

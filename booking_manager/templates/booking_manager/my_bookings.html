@@ -1,0 +1,736 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Vehicle Bookings - Rentify</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            --light-bg: #f4f6f9;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            color: #333;
+            min-height: 100vh;
+            padding-bottom: 4rem;
+        }
+
+        .navbar-custom {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 1rem 0;
+            margin-bottom: 2rem;
+        }
+
+        .booking-card {
+            border-radius: 16px;
+            overflow: hidden;
+            background: white;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 18px rgba(0,0,0,0.06);
+            margin-bottom: 24px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .booking-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        }
+
+        .vehicle-image {
+            width: 100%;
+            height: 210px;
+            object-fit: cover;
+        }
+
+        .booking-status {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .status-confirmed { background-color: #10b981; color: #fff; }
+        .status-completed { background-color: #3b82f6; color: #fff; }
+        .status-cancelled { background-color: #ef4444; color: #fff; }
+
+        .vehicle-type-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            background-color: rgba(0, 0, 0, 0.75);
+            color: white;
+            backdrop-filter: blur(4px);
+        }
+
+        .nav-tabs .nav-link {
+            border: none;
+            color: #64748b;
+            font-weight: 700;
+            padding: 0.85rem 1.75rem;
+            border-radius: 12px 12px 0 0;
+            font-size: 1rem;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: #1e3c72;
+            border-bottom: 3px solid #1e3c72;
+            background: white;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navbar -->
+    <nav class="navbar-custom">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-2">
+                <a href="/core/" class="btn btn-outline-secondary btn-sm rounded-pill px-3" onclick="if(document.referrer){history.back(); return false;} else {window.location.href='/core/'; return false;}">
+                    <i class="fas fa-arrow-left me-1"></i> Back
+                </a>
+                <a href="/core/" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                    <i class="fas fa-home me-1"></i> Home
+                </a>
+                <a href="/vehicles/cars/" class="btn btn-outline-dark btn-sm rounded-pill px-3">
+                    <i class="fas fa-car me-1"></i> Cars
+                </a>
+                <a href="/vehicles/bikes/" class="btn btn-outline-dark btn-sm rounded-pill px-3">
+                    <i class="fas fa-motorcycle me-1"></i> Bikes
+                </a>
+            </div>
+            <h4 class="mb-0 text-primary fw-bold"><i class="fas fa-bookmark me-2"></i>My Bookings Dashboard</h4>
+            <span class="badge bg-primary px-3 py-2 fs-6">{% if request.user.get_full_name %}{{ request.user.get_full_name }}{% else %}{{ request.user.username }}{% endif %}</span>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Category Navigation Tabs -->
+        <ul class="nav nav-tabs mb-4 border-bottom-0" id="bookingTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab">
+                    <i class="fas fa-list me-2"></i>All Bookings ({{ all_count }})
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="cars-tab" data-bs-toggle="tab" data-bs-target="#cars" type="button" role="tab">
+                    <i class="fas fa-car me-2"></i>Car Rentals ({{ car_count }})
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="bikes-tab" data-bs-toggle="tab" data-bs-target="#bikes" type="button" role="tab">
+                    <i class="fas fa-motorcycle me-2"></i>Bike Rentals ({{ bike_count }})
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="bookingTabsContent">
+            <!-- ALL BOOKINGS TAB -->
+            <div class="tab-pane fade show active" id="all" role="tabpanel">
+                <div class="row">
+                    {% for booking in all_bookings %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="booking-card position-relative">
+                            <div class="position-relative">
+                                <img src="{{ booking.image_url }}" alt="{{ booking.item_title }}" class="vehicle-image" onerror="this.src='/static/images/image/carimgs/thar1.jpg'">
+                                
+                                {% if booking.status|lower == 'approved' or booking.status|lower == 'confirmed' %}
+                                    <span class="booking-status status-confirmed"><i class="fas fa-check-circle me-1"></i> Approved</span>
+                                {% elif booking.status|lower == 'completed' %}
+                                    <span class="booking-status status-completed"><i class="fas fa-check-double me-1"></i> Completed</span>
+                                {% elif booking.status|lower == 'cancelled' %}
+                                    <span class="booking-status status-cancelled"><i class="fas fa-times-circle me-1"></i> Cancelled</span>
+                                {% else %}
+                                    <span class="booking-status bg-warning text-dark"><i class="fas fa-clock me-1"></i> {{ booking.status }}</span>
+                                {% endif %}
+
+                                {% if booking.category_type == 'car' %}
+                                    <span class="vehicle-type-badge"><i class="fas fa-car me-1"></i> CAR RENTAL</span>
+                                {% else %}
+                                    <span class="vehicle-type-badge"><i class="fas fa-motorcycle me-1"></i> BIKE RENTAL</span>
+                                {% endif %}
+                            </div>
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <h5 class="fw-bold mb-0 text-dark">{{ booking.item_title }}</h5>
+                                    <span class="text-primary fw-bold">{{ booking.guests_or_km|default:"₹1,499" }}</span>
+                                </div>
+                                <div class="mb-2 d-flex flex-wrap gap-1">
+                                    {% if booking.category_type == 'car' %}
+                                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle fw-bold"><i class="fas fa-car me-1"></i> {{ booking.item_category_display }}</span>
+                                    {% else %}
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle fw-bold"><i class="fas fa-motorcycle me-1"></i> {{ booking.item_category_display }}</span>
+                                    {% endif %}
+
+                                    {% if booking.engine_status == 'LOCKED' %}
+                                        <span class="badge bg-danger text-white fw-bold"><i class="fas fa-lock me-1"></i> Engine Remote Locked</span>
+                                    {% else %}
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle fw-bold"><i class="fas fa-key me-1"></i> Engine Active</span>
+                                    {% endif %}
+                                </div>
+                                <small class="text-muted d-block mb-2">Booking ID: <strong>#VG-2026-{{ booking.id }}</strong></small>
+
+                                <!-- Category-Specific Specs Details -->
+                                <div class="p-2 mb-2 bg-light rounded-3 text-secondary small border">
+                                    {{ booking.specs_html|safe }}
+                                </div>
+
+                                <div class="mb-2 text-secondary small">
+                                    <i class="fas fa-calendar-alt text-primary me-2"></i><strong>Dates:</strong> {{ booking.booking_date|default:"Flexible Date" }}
+                                </div>
+                                <div class="mb-2 text-secondary small">
+                                    <i class="fas fa-map-marker-alt text-danger me-2"></i><strong>Location:</strong> {{ booking.appointment_time|default:"Bhavnagar Central Hub" }}
+                                </div>
+                                <div class="mb-3 text-secondary small">
+                                    <i class="fas fa-credit-card text-success me-2"></i><strong>Payment:</strong> {{ booking.payment_method }} ({% if booking.payment_status|lower == 'paid' %}Paid Online{% else %}{{ booking.payment_status }}{% endif %})
+                                </div>
+
+                                {% if booking.extra_km_driven > 0 or booking.extra_km_fee > 0 %}
+                                <div class="p-2 mb-3 bg-warning-subtle border border-warning rounded-3 small">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="fw-bold text-dark"><i class="fas fa-tachometer-alt me-1 text-warning"></i> Extra KM Fee:</span>
+                                        <strong class="text-danger fs-6">₹{{ booking.extra_km_fee }}</strong>
+                                    </div>
+                                    <div class="text-muted text-truncate mb-2">Driven: +{{ booking.extra_km_driven }} KM over limit</div>
+                                    {% if booking.extra_fee_status == 'Paid Online' or booking.extra_fee_status == 'Paid at Showroom' or booking.extra_fee_status == 'Settlement Confirmed' %}
+                                        <span class="badge bg-success w-100 py-2"><i class="fas fa-check-circle me-1"></i> Paid ({{ booking.extra_fee_status }})</span>
+                                    {% else %}
+                                        <div class="d-flex gap-1">
+                                            <button class="btn btn-sm btn-warning flex-grow-1 fw-bold shadow-sm" onclick="triggerExtraFeePayment({{ booking.id }}, {{ booking.extra_km_fee }}, '{{ booking.item_title|escapejs }}', 'razorpay')">
+                                                <i class="fas fa-credit-card me-1"></i> Pay Online
+                                            </button>
+                                            <button class="btn btn-sm btn-outline-dark fw-bold shadow-sm" onclick="triggerExtraFeePayment({{ booking.id }}, {{ booking.extra_km_fee }}, '{{ booking.item_title|escapejs }}', 'showroom')">
+                                                <i class="fas fa-store me-1"></i> Showroom Cash
+                                            </button>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+
+                                <div class="d-flex gap-2">
+                                    <a href="/bookings/confirmation/?id={{ booking.id }}" class="btn btn-sm btn-outline-primary flex-grow-1 fw-bold">
+                                        <i class="fas fa-file-invoice me-1"></i> View Receipt
+                                    </a>
+                                    {% if booking.status|lower != 'cancelled' %}
+                                    <button class="btn btn-sm btn-outline-danger" onclick="triggerCancelModal({{ booking.id }}, '#VG-2026-{{ booking.id }}', '{{ booking.item_title|escapejs }}')">
+                                        Cancel
+                                    </button>
+                                    {% endif %}
+                                </div>
+                                <div class="mt-2 pt-2 border-top">
+                                    {% if booking.feedback_submitted %}
+                                        <button class="btn btn-sm btn-success w-100 fw-bold shadow-sm" onclick="openFeedbackModal({{ booking.id }}, '{{ booking.item_title|escapejs }}', {{ booking.user_rating|default:5.0 }}, '{{ booking.user_feedback_text|escapejs }}')">
+                                            <i class="fas fa-star me-1 text-warning"></i> Feedback Submitted ({{ booking.user_rating }}★) - Edit Review
+                                        </button>
+                                    {% else %}
+                                        <button class="btn btn-sm btn-warning w-100 fw-bold text-dark shadow-sm" onclick="openFeedbackModal({{ booking.id }}, '{{ booking.item_title|escapejs }}', 5.0, '')">
+                                            <i class="fas fa-star me-1"></i> Give Feedback & Rating
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12 text-center py-5">
+                        <div class="p-5 bg-white rounded-4 shadow-sm border">
+                            <i class="fas fa-bookmark text-muted fs-1 mb-3"></i>
+                            <h4 class="fw-bold text-dark mb-2">No Active Vehicle Bookings Found</h4>
+                            <p class="text-muted mb-4">You haven't placed any car or bike rental reservations yet.</p>
+                            <div class="d-flex justify-content-center gap-3">
+                                <a href="/vehicles/cars/" class="btn btn-primary px-4 py-2 fw-bold rounded-pill">
+                                    <i class="fas fa-car me-2"></i> Explore Cars
+                                </a>
+                                <a href="/vehicles/bikes/" class="btn btn-outline-primary px-4 py-2 fw-bold rounded-pill">
+                                    <i class="fas fa-motorcycle me-2"></i> Explore Bikes
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- CAR BOOKINGS TAB -->
+            <div class="tab-pane fade" id="cars" role="tabpanel">
+                <div class="row">
+                    {% for booking in car_bookings %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="booking-card position-relative">
+                            <div class="position-relative">
+                                <img src="{{ booking.image_url }}" alt="{{ booking.item_title }}" class="vehicle-image" onerror="this.src='/static/images/image/carimgs/thar1.jpg'">
+                                {% if booking.status|lower == 'approved' or booking.status|lower == 'confirmed' %}
+                                    <span class="booking-status status-confirmed"><i class="fas fa-check-circle me-1"></i> Approved</span>
+                                {% elif booking.status|lower == 'completed' %}
+                                    <span class="booking-status status-completed"><i class="fas fa-check-double me-1"></i> Completed</span>
+                                {% elif booking.status|lower == 'cancelled' %}
+                                    <span class="booking-status status-cancelled"><i class="fas fa-times-circle me-1"></i> Cancelled</span>
+                                {% else %}
+                                    <span class="booking-status bg-warning text-dark"><i class="fas fa-clock me-1"></i> {{ booking.status }}</span>
+                                {% endif %}
+                                <span class="vehicle-type-badge"><i class="fas fa-car me-1"></i> CAR RENTAL</span>
+                            </div>
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <h5 class="fw-bold mb-0 text-dark">{{ booking.item_title }}</h5>
+                                    <span class="text-primary fw-bold">{{ booking.guests_or_km|default:"₹1,499" }}</span>
+                                </div>
+                                <div class="mb-2">
+                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle fw-bold"><i class="fas fa-car me-1"></i> {{ booking.item_category_display }}</span>
+                                </div>
+                                <small class="text-muted d-block mb-2">Booking ID: <strong>#VG-2026-{{ booking.id }}</strong></small>
+                                
+                                <div class="p-2 mb-2 bg-light rounded-3 text-secondary small border">
+                                    {{ booking.specs_html|safe }}
+                                </div>
+
+                                <div class="mb-2 text-secondary small"><i class="fas fa-calendar-alt text-primary me-2"></i><strong>Dates:</strong> {{ booking.booking_date|default:"Flexible Date" }}</div>
+                                <div class="mb-2 text-secondary small"><i class="fas fa-map-marker-alt text-danger me-2"></i><strong>Location:</strong> {{ booking.appointment_time|default:"Bhavnagar Central Hub" }}</div>
+                                <div class="mb-3 text-secondary small"><i class="fas fa-credit-card text-success me-2"></i><strong>Payment:</strong> {{ booking.payment_method }}</div>
+
+                                <div class="d-flex gap-2">
+                                    <a href="/bookings/confirmation/?id={{ booking.id }}" class="btn btn-sm btn-outline-primary flex-grow-1 fw-bold"><i class="fas fa-file-invoice me-1"></i> View Receipt</a>
+                                    {% if booking.status|lower != 'cancelled' %}
+                                    <button class="btn btn-sm btn-outline-danger" onclick="triggerCancelModal({{ booking.id }}, '#VG-2026-{{ booking.id }}', '{{ booking.item_title|escapejs }}')">Cancel</button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12 text-center py-5">
+                        <div class="p-4 bg-white rounded-4 shadow-sm border">
+                            <p class="text-muted fw-bold mb-3">No car rental bookings found.</p>
+                            <a href="/vehicles/cars/" class="btn btn-primary btn-sm rounded-pill px-4 fw-bold">Browse Available Cars</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- BIKE BOOKINGS TAB -->
+            <div class="tab-pane fade" id="bikes" role="tabpanel">
+                <div class="row">
+                    {% for booking in bike_bookings %}
+                    <div class="col-md-6 col-lg-4">
+                        <div class="booking-card position-relative">
+                            <div class="position-relative">
+                                <img src="{{ booking.image_url }}" alt="{{ booking.item_title }}" class="vehicle-image" onerror="this.src='/static/images/image/bikeimg/bullet.jpg'">
+                                {% if booking.status|lower == 'approved' or booking.status|lower == 'confirmed' %}
+                                    <span class="booking-status status-confirmed"><i class="fas fa-check-circle me-1"></i> Approved</span>
+                                {% elif booking.status|lower == 'completed' %}
+                                    <span class="booking-status status-completed"><i class="fas fa-check-double me-1"></i> Completed</span>
+                                {% elif booking.status|lower == 'cancelled' %}
+                                    <span class="booking-status status-cancelled"><i class="fas fa-times-circle me-1"></i> Cancelled</span>
+                                {% else %}
+                                    <span class="booking-status bg-warning text-dark"><i class="fas fa-clock me-1"></i> {{ booking.status }}</span>
+                                {% endif %}
+                                <span class="vehicle-type-badge"><i class="fas fa-motorcycle me-1"></i> BIKE RENTAL</span>
+                            </div>
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <h5 class="fw-bold mb-0 text-dark">{{ booking.item_title }}</h5>
+                                    <span class="text-success fw-bold">{{ booking.guests_or_km|default:"₹499" }}</span>
+                                </div>
+                                <div class="mb-2">
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle fw-bold"><i class="fas fa-motorcycle me-1"></i> {{ booking.item_category_display }}</span>
+                                </div>
+                                <small class="text-muted d-block mb-2">Booking ID: <strong>#VG-2026-{{ booking.id }}</strong></small>
+
+                                <div class="p-2 mb-2 bg-light rounded-3 text-secondary small border">
+                                    {{ booking.specs_html|safe }}
+                                </div>
+
+                                <div class="mb-2 text-secondary small"><i class="fas fa-calendar-alt text-primary me-2"></i><strong>Dates:</strong> {{ booking.booking_date|default:"Flexible Date" }}</div>
+                                <div class="mb-2 text-secondary small"><i class="fas fa-map-marker-alt text-danger me-2"></i><strong>Location:</strong> {{ booking.appointment_time|default:"Bhavnagar Station Road" }}</div>
+                                <div class="mb-3 text-secondary small"><i class="fas fa-credit-card text-success me-2"></i><strong>Payment:</strong> {{ booking.payment_method }}</div>
+
+                                <div class="d-flex gap-2">
+                                    <a href="/bookings/confirmation/?id={{ booking.id }}" class="btn btn-sm btn-outline-primary flex-grow-1 fw-bold"><i class="fas fa-file-invoice me-1"></i> View Receipt</a>
+                                    {% if booking.status|lower != 'cancelled' %}
+                                    <button class="btn btn-sm btn-outline-danger" onclick="triggerCancelModal({{ booking.id }}, '#VG-2026-{{ booking.id }}', '{{ booking.item_title|escapejs }}')">Cancel</button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="col-12 text-center py-5">
+                        <div class="p-4 bg-white rounded-4 shadow-sm border">
+                            <p class="text-muted fw-bold mb-3">No bike rental bookings found.</p>
+                            <a href="/vehicles/bikes/" class="btn btn-success btn-sm rounded-pill px-4 fw-bold">Browse Available Bikes</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Showroom Cash OTP Verification -->
+    <div class="modal fade" id="clientShowroomOtpModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-dark text-white rounded-top-4 px-4 py-3">
+                    <h5 class="modal-title fw-bold"><i class="fas fa-store me-2 text-warning"></i>Showroom Cash OTP Confirmation</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4 text-center">
+                    <div class="p-3 bg-light rounded-3 border mb-3">
+                        <small class="text-muted text-uppercase fw-bold d-block mb-1">Extra Driven KM Fee</small>
+                        <h4 class="fw-bold text-danger mb-0" id="clientOtpAmount">₹400</h4>
+                        <span class="badge bg-primary rounded-pill mt-2" id="clientOtpVehicle">BE 6</span>
+                    </div>
+
+                    <div class="p-3 bg-warning-subtle border border-warning rounded-3 mb-3 text-start small">
+                        <i class="fas fa-info-circle me-1 text-warning"></i>
+                        <strong>How Showroom Cash Verification Works:</strong>
+                        <p class="mb-0 mt-1">A 6-digit verification OTP code is randomly generated on the Admin Portal for your booking. Collect the OTP from the showroom executive when paying cash and enter it below to mark settlement complete.</p>
+                    </div>
+
+                    <input type="hidden" id="clientOtpInquiryId">
+                    <div class="mb-3">
+                        <label class="form-label text-dark fw-bold small text-uppercase">Enter 6-Digit Showroom Verification OTP</label>
+                        <input type="text" class="form-control form-control-lg text-center font-monospace fw-bold rounded-3 tracking-widest" id="clientOtpInput" placeholder="Enter 6-digit OTP code" maxlength="6" style="letter-spacing: 4px; font-size: 1.4rem;">
+                    </div>
+                </div>
+                <div class="modal-footer bg-light px-4 py-3 rounded-bottom-4 justify-content-between">
+                    <button type="button" class="btn btn-outline-secondary rounded-3 px-4 fw-bold" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-success rounded-3 px-4 fw-bold" onclick="confirmClientShowroomOtp()">Verify OTP & Confirm Cash</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Razorpay Test Mode Payment Gateway -->
+    <div class="modal fade" id="razorpayTestModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header text-white rounded-top-4 px-4 py-3" style="background: #02042b;">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-primary px-3 py-1 rounded-pill font-monospace fw-bold">RAZORPAY TEST MODE</span>
+                        <h5 class="modal-title fw-bold mb-0">Online Payment Gateway</h5>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4 text-center">
+                    <div class="p-3 bg-light rounded-3 border mb-3">
+                        <small class="text-muted text-uppercase fw-bold d-block mb-1">Extra Fee Amount Payable</small>
+                        <h3 class="fw-bold text-primary mb-0" id="rzpTestAmount">₹400</h3>
+                        <small class="text-muted" id="rzpTestTitle">Rentify Extra Driven KM Fee</small>
+                    </div>
+
+                    <div class="p-3 bg-info-subtle border border-info rounded-3 mb-3 text-start small">
+                        <strong>Razorpay Test Payment Active:</strong>
+                        <p class="mb-0 mt-1">Select a test payment method below to simulate an instant successful online transaction.</p>
+                    </div>
+
+                    <input type="hidden" id="rzpTestInquiryId">
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-outline-primary py-2 fw-bold rounded-3 d-flex justify-content-between align-items-center" onclick="completeRazorpayTestPayment('UPI')">
+                            <span><i class="fas fa-mobile-alt me-2"></i>Test UPI / GPay / PhonePe</span>
+                            <span class="badge bg-success rounded-pill">Instant Test</span>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary py-2 fw-bold rounded-3 d-flex justify-content-between align-items-center" onclick="completeRazorpayTestPayment('Card')">
+                            <span><i class="fas fa-credit-card me-2"></i>Test Credit / Debit Card</span>
+                            <span class="badge bg-success rounded-pill">Instant Test</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light px-4 py-3 rounded-bottom-4">
+                    <button type="button" class="btn btn-secondary rounded-3 px-4 fw-bold" data-bs-dismiss="modal">Cancel Payment</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for Submitting Feedback & Rating -->
+    <div class="modal fade" id="addFeedbackModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-dark text-white rounded-top-4 px-4 py-3">
+                    <h5 class="modal-title fw-bold"><i class="fas fa-star text-warning me-2"></i>Give Vehicle Feedback & Rating</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="feedbackForm" onsubmit="submitVehicleFeedback(event)">
+                    <input type="hidden" id="feedbackBookingId">
+                    <input type="hidden" id="feedbackRatingVal" value="5">
+                    <div class="modal-body p-4 text-center">
+                        <h6 class="fw-bold text-dark mb-1" id="feedbackVehicleTitle">Vehicle Title</h6>
+                        <p class="text-muted small mb-3">Rate your overall rental & driving experience with this vehicle.</p>
+                        
+                        <!-- Interactive Star Rating Selector -->
+                        <div class="d-flex justify-content-center gap-2 mb-3 fs-2 text-warning" id="starRatingSelector" style="cursor: pointer;">
+                            <i class="fas fa-star star-btn" data-rating="1" onclick="setStarRating(1)"></i>
+                            <i class="fas fa-star star-btn" data-rating="2" onclick="setStarRating(2)"></i>
+                            <i class="fas fa-star star-btn" data-rating="3" onclick="setStarRating(3)"></i>
+                            <i class="fas fa-star star-btn" data-rating="4" onclick="setStarRating(4)"></i>
+                            <i class="fas fa-star star-btn" data-rating="5" onclick="setStarRating(5)"></i>
+                        </div>
+                        <div class="fw-bold text-primary mb-3" id="ratingScoreLabel">5.0 / 5.0 (Excellent)</div>
+
+                        <div class="text-start mb-2">
+                            <label class="form-label fw-bold small text-uppercase">Your Detailed Feedback / Review Comments</label>
+                            <textarea class="form-control rounded-3" id="feedbackCommentsText" rows="3" placeholder="Share your experience (driving comfort, engine performance, vehicle cleanliness, pickup process)..." required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light px-4 py-3 rounded-bottom-4 justify-content-between">
+                        <button type="button" class="btn btn-outline-secondary rounded-3 px-4 fw-bold" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-warning rounded-3 px-4 fw-bold text-dark" id="btnSubmitFeedback">Submit Rating & Review</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let feedbackModalInstance = null;
+
+        function openFeedbackModal(bookingId, vehicleTitle, existingRating = 5.0, existingText = '') {
+            document.getElementById('feedbackBookingId').value = bookingId;
+            document.getElementById('feedbackVehicleTitle').textContent = vehicleTitle;
+            document.getElementById('feedbackCommentsText').value = existingText;
+            setStarRating(Math.round(existingRating) || 5);
+            
+            feedbackModalInstance = new bootstrap.Modal(document.getElementById('addFeedbackModal'));
+            feedbackModalInstance.show();
+        }
+
+        function setStarRating(stars) {
+            document.getElementById('feedbackRatingVal').value = stars;
+            const starBtns = document.querySelectorAll('#starRatingSelector .star-btn');
+            starBtns.forEach((btn, index) => {
+                if (index < stars) {
+                    btn.className = 'fas fa-star text-warning star-btn';
+                } else {
+                    btn.className = 'far fa-star text-muted star-btn';
+                }
+            });
+            const labels = {
+                1: '1.0 / 5.0 (Poor)',
+                2: '2.0 / 5.0 (Fair)',
+                3: '3.0 / 5.0 (Good)',
+                4: '4.0 / 5.0 (Very Good)',
+                5: '5.0 / 5.0 (Excellent)'
+            };
+            document.getElementById('ratingScoreLabel').textContent = labels[stars] || `${stars}.0 / 5.0`;
+        }
+
+        function submitVehicleFeedback(e) {
+            e.preventDefault();
+            const bookingId = document.getElementById('feedbackBookingId').value;
+            const rating = document.getElementById('feedbackRatingVal').value;
+            const comments = document.getElementById('feedbackCommentsText').value.trim();
+
+            if (!comments) {
+                alert('Please enter your review comments before submitting.');
+                return;
+            }
+
+            const btn = document.getElementById('btnSubmitFeedback');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Submitting...';
+
+            fetch('/bookings/api/submit-feedback/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    booking_id: bookingId,
+                    rating: rating,
+                    comments: comments
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                btn.disabled = false;
+                btn.innerHTML = 'Submit Rating & Review';
+                if (data.status === 'success') {
+                    if (feedbackModalInstance) feedbackModalInstance.hide();
+                    alert(data.message || 'Thank you! Feedback submitted.');
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(err => {
+                btn.disabled = false;
+                btn.innerHTML = 'Submit Rating & Review';
+                alert('Network error submitting feedback.');
+            });
+        }
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function triggerCancelModal(id, code, title) {
+            document.getElementById('cancelInquiryId').value = id;
+            document.getElementById('cancelTitle').innerText = `Cancel Booking: ${title}`;
+            document.getElementById('cancelSubText').innerText = `Booking Reference: ${code}`;
+            const modal = new bootstrap.Modal(document.getElementById('cancelModal'));
+            modal.show();
+        }
+
+        function confirmCancelBooking() {
+            const id = document.getElementById('cancelInquiryId').value;
+            fetch('/bookings/api/cancel/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ inquiry_id: id })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    window.location.reload();
+                } else {
+                    alert('Error cancelling booking: ' + data.message);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Connection error while cancelling booking.');
+            });
+        }
+
+        let activeFeeBookingId = null;
+
+        function triggerExtraFeePayment(id, fee, title, method) {
+            activeFeeBookingId = id;
+            if (method === 'showroom') {
+                document.getElementById('clientOtpInquiryId').value = id;
+                document.getElementById('clientOtpAmount').textContent = `₹${Number(fee).toLocaleString('en-IN')}`;
+                document.getElementById('clientOtpVehicle').textContent = title;
+                document.getElementById('clientOtpInput').value = '';
+                
+                // Request/ensure OTP exists on backend
+                fetch('/bookings/api/pay-extra-fee/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({ inquiry_id: id, payment_method: 'showroom' })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    new bootstrap.Modal(document.getElementById('clientShowroomOtpModal')).show();
+                })
+                .catch(err => {
+                    new bootstrap.Modal(document.getElementById('clientShowroomOtpModal')).show();
+                });
+            } else {
+                document.getElementById('rzpTestInquiryId').value = id;
+                document.getElementById('rzpTestAmount').textContent = `₹${Number(fee).toLocaleString('en-IN')}`;
+                document.getElementById('rzpTestTitle').textContent = `Extra Driven KM Fee for ${title}`;
+
+                if (typeof Razorpay !== 'undefined') {
+                    const options = {
+                        "key": "rzp_test_AntigravityDemoKey",
+                        "amount": Math.round(Number(fee) * 100),
+                        "currency": "INR",
+                        "name": "Rentify Extra KM Settlement",
+                        "description": `Extra driven KM fee for ${title}`,
+                        "handler": function (response) {
+                            submitExtraFeeBackend(id, response.razorpay_payment_id || ('rzp_test_' + Date.now()), 'razorpay');
+                        },
+                        "modal": {
+                            "ondismiss": function() {
+                                console.log('Razorpay checkout dismissed');
+                            }
+                        }
+                    };
+                    try {
+                        const rzp = new Razorpay(options);
+                        rzp.open();
+                    } catch(e) {
+                        new bootstrap.Modal(document.getElementById('razorpayTestModal')).show();
+                    }
+                } else {
+                    new bootstrap.Modal(document.getElementById('razorpayTestModal')).show();
+                }
+            }
+        }
+
+        function confirmClientShowroomOtp() {
+            const id = document.getElementById('clientOtpInquiryId').value;
+            const otpVal = document.getElementById('clientOtpInput').value.trim();
+
+            if (!otpVal) {
+                alert('Please enter the 6-digit OTP code provided by the showroom admin.');
+                return;
+            }
+
+            submitExtraFeeBackend(id, 'PAY-SHOWROOM-OTP', 'showroom', otpVal);
+        }
+
+        function completeRazorpayTestPayment(methodType) {
+            const id = document.getElementById('rzpTestInquiryId').value;
+            const testTxId = `rzp_test_${methodType.toLowerCase()}_${Date.now()}`;
+            submitExtraFeeBackend(id, testTxId, 'razorpay');
+        }
+
+        function submitExtraFeeBackend(id, txId, method, otp) {
+            fetch('/bookings/api/pay-extra-fee/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    inquiry_id: id,
+                    transaction_id: txId,
+                    payment_method: method || 'Razorpay',
+                    otp: otp || ''
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert(data.message || 'Extra fee payment updated successfully!');
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Connection error submitting payment.');
+            });
+        }
+    </script>
+    {% include 'core/footer.html' %}
+</body>
+</html>

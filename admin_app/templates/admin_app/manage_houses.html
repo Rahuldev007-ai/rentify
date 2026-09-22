@@ -1,0 +1,1414 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Houses & Luxury Villas - Admin Portal</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Admin Sidebar Styles -->
+    <link rel="stylesheet" href="{% static 'css/admin_sidebar.css' %}">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #1e3c72;
+            --primary-hover: #162d55;
+            --dark: #0f172a;
+            --card-bg: #ffffff;
+            --border-color: #e2e8f0;
+            --accent-bg: #f8fafc;
+        }
+
+        /* STRICT ICON REMOVAL - HIDE ALL ICON TAGS */
+        i, .fa, .fas, .far, .fal, .fab, svg.feather {
+            display: none !important;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #f1f5f9;
+            color: #334155;
+            margin: 0;
+            padding: 0;
+        }
+
+        .admin-layout-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .admin-main-content {
+            flex-grow: 1;
+            padding: 28px;
+            background-color: #f8fafc;
+            min-height: 100vh;
+            overflow-y: auto;
+        }
+
+        .executive-page-header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            border-radius: 16px;
+            padding: 24px 30px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.25);
+        }
+
+        .crud-card {
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            transition: all 0.25s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .crud-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.1);
+            border-color: var(--primary);
+        }
+
+        .crud-img-wrapper {
+            position: relative;
+            height: 180px;
+            background-color: #cbd5e1;
+            overflow: hidden;
+        }
+        .crud-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        .crud-card:hover .crud-img {
+            transform: scale(1.04);
+        }
+
+        .badge-status {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+        .badge-available { background-color: #10b981; color: #ffffff; }
+        .badge-booked { background-color: #ef4444; color: #ffffff; }
+        .badge-category { background-color: rgba(15, 23, 42, 0.85); color: #ffffff; font-weight: 700; font-size: 0.72rem; }
+
+        .image-preview-box {
+            width: 100%;
+            height: 180px;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background-color: #f8fafc;
+        }
+        .image-preview-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .spec-icon-badge {
+            background-color: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        /* Small Real-Time Live Sync Toast Notification */
+        .live-sync-toast {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 10000;
+            background: #0f172a;
+            color: #38bdf8;
+            padding: 10px 18px;
+            border-radius: 30px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            box-shadow: 0 8px 20px rgba(15,23,42,0.3);
+            border: 1px solid rgba(56,189,248,0.3);
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+        .live-sync-toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Real-Time Form Validation Helper Text */
+        .field-error-text {
+            font-size: 0.78rem;
+            color: #dc2626;
+            font-weight: 600;
+            margin-top: 4px;
+            display: none;
+        }
+        .input-invalid {
+            border-color: #dc2626 !important;
+            background-color: #fef2f2 !important;
+        }
+        .input-valid {
+            border-color: #10b981 !important;
+        }
+
+        .feature-pill {
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s ease;
+        }
+        .feature-pill.active {
+            background-color: #1e3c72 !important;
+            color: #ffffff !important;
+            border-color: #1e3c72 !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Small Real-Time Sync Update Notification Badge -->
+    <div id="liveSyncToast" class="live-sync-toast">
+        Database Auto-Synced Live
+    </div>
+
+    <div class="admin-layout-wrapper">
+        <!-- Sidebar Navigation -->
+        {% include 'admin_app/admin_header.html' %}
+
+        <!-- Main Workspace -->
+        <main class="admin-main-content">
+            <!-- Executive Header Banner (100% Icon-Free Clean Design) -->
+            <div class="executive-page-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="badge bg-primary bg-opacity-20 text-white px-3 py-1 rounded-pill fw-bold border border-light border-opacity-25 small">
+                            Houses & Luxury Villas Management
+                        </span>
+                    </div>
+                    <h2 class="fw-bold mb-1 text-white">Manage Residential Houses & Real-Time Specifications</h2>
+                    <p class="text-white-50 small mb-0">Create house listings with manual entry, real-time input validation, and live database sync popups.</p>
+                </div>
+                <button class="btn btn-warning text-dark fw-extrabold rounded-3 px-4 py-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#addHouseModal">
+                    Add New House Listing
+                </button>
+            </div>
+
+            <!-- Executive 3-Tab Control Switcher -->
+            <ul class="nav nav-pills gap-2 mb-4 p-2 bg-white rounded-4 border shadow-sm" id="houseMgmtTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active rounded-3 px-4 py-2 fw-bold" id="tab-houses-btn" data-bs-toggle="tab" data-bs-target="#tab-houses" type="button" role="tab">
+                        1. All Houses Fleet ({{ houses.count }})
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link rounded-3 px-4 py-2 fw-bold" id="tab-categories-btn" data-bs-toggle="tab" data-bs-target="#tab-categories" type="button" role="tab">
+                        2. House Categories ({{ house_categories_list|length }})
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link rounded-3 px-4 py-2 fw-bold" id="tab-features-btn" data-bs-toggle="tab" data-bs-target="#tab-features" type="button" role="tab">
+                        3. House Features & Amenities ({{ house_features_list|length }})
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="houseMgmtTabContent">
+                <!-- TAB 1: ALL HOUSES FLEET -->
+                <div class="tab-pane fade show active" id="tab-houses" role="tabpanel">
+                    <!-- Filter & Search Bar -->
+                    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4 bg-white">
+                        <div class="row g-3 align-items-center">
+                            <div class="col-12 col-md-5">
+                                <input type="text" class="form-control bg-light rounded-3" id="houseSearchInput" placeholder="Search house title, location, or category..." onkeyup="renderHousesGrid()">
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4">
+                                <select class="form-select rounded-3" id="houseStatusFilter" onchange="filterHousesByStatus()">
+                                    <option value="ALL">All Statuses (Available, Rented)</option>
+                                    <option value="Available">Available Houses Only</option>
+                                    <option value="Rented">Rented Houses Only</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-3 d-flex align-items-center justify-content-sm-end gap-2">
+                                <span class="text-muted small fw-bold text-nowrap">Cards / Page:</span>
+                                <select class="form-select form-select-sm rounded-3 w-auto fw-bold" id="pageSizeSelect" onchange="changePageSize()">
+                                    <option value="4" selected>4 per page</option>
+                                    <option value="8">8 per page</option>
+                                    <option value="12">12 per page</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Houses Cards Grid -->
+                    <div class="row g-4 mb-4" id="housesGridContainer">
+                        <!-- Dynamically rendered via JS -->
+                    </div>
+
+                    <!-- Pagination Bar -->
+                    <div class="d-flex flex-wrap justify-content-between align-items-center bg-white p-3 rounded-4 shadow-sm border">
+                        <div class="text-muted small fw-bold" id="paginationInfoText">
+                            Showing entries
+                        </div>
+                        <nav aria-label="Houses Pagination">
+                            <ul class="pagination pagination-sm mb-0" id="paginationControls">
+                                <!-- Rendered via JS -->
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+
+                <!-- TAB 2: HOUSE CATEGORIES CRUD -->
+                <div class="tab-pane fade" id="tab-categories" role="tabpanel">
+                    <div class="row g-4 mb-4">
+                        <div class="col-lg-4">
+                            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                                <h5 class="fw-bold mb-3">Add New House Category</h5>
+                                <form id="addCategoryForm" onsubmit="handleCategorySubmit(event, 'house')">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold small text-uppercase">Category Name</label>
+                                        <input type="text" class="form-control rounded-3" id="newCategoryName" placeholder="e.g. Luxury Villa, Townhouse" required oninput="validateCategoryInput()">
+                                        <div class="field-error-text" id="newCatNameError">Category name must be at least 3 characters.</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold small text-uppercase">Description</label>
+                                        <textarea class="form-control rounded-3" id="newCategoryDesc" rows="3" placeholder="Category details & specs..."></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary w-100 rounded-3 fw-bold py-2 shadow-sm" id="btnSaveCategory">
+                                        Save House Category
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-8">
+                            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                                <h5 class="fw-bold mb-3">Active House Categories & Listing Counts</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Category Name</th>
+                                                <th>Description</th>
+                                                <th>Houses Assigned</th>
+                                                <th class="text-end">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="houseCategoriesTableBody">
+                                            {% for cat in house_categories_list %}
+                                                <tr id="house-cat-row-{{ cat.id }}">
+                                                    <td class="fw-bold text-dark">{{ cat.name }}</td>
+                                                    <td class="text-muted small">{{ cat.description|default:"Standard house category" }}</td>
+                                                    <td><span class="badge bg-primary bg-opacity-10 text-primary fw-bold px-3 py-1 rounded-pill">{{ cat.count }} Houses</span></td>
+                                                    <td class="text-end">
+                                                        <button class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="deleteCategory({{ cat.id }}, '{{ cat.name|escapejs }}')">
+                                                            Delete
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            {% empty %}
+                                                <tr>
+                                                    <td colspan="4" class="text-muted small text-center py-4">No custom house categories found in database. Default active: {{ categories|join:", " }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: HOUSE FEATURES CRUD -->
+                <div class="tab-pane fade" id="tab-features" role="tabpanel">
+                    <div class="row g-4 mb-4">
+                        <div class="col-lg-4">
+                            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                                <h5 class="fw-bold mb-3">Add Custom House Feature</h5>
+                                <form id="addFeatureForm" onsubmit="handleFeatureSubmit(event, 'house')">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold small text-uppercase">Feature / Amenity Name</label>
+                                        <input type="text" class="form-control rounded-3" id="newFeatureName" placeholder="e.g. Swimming Pool, Solar Power" required oninput="validateFeatureInput()">
+                                        <div class="field-error-text" id="newFeatNameError">Feature name must be at least 3 characters.</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold small text-uppercase">Description</label>
+                                        <textarea class="form-control rounded-3" id="newFeatureDesc" rows="3" placeholder="Feature details..."></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-success w-100 rounded-3 fw-bold py-2 shadow-sm" id="btnSaveFeature">
+                                        Save House Feature
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-8">
+                            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                                <h5 class="fw-bold mb-3">Active House Features & Amenities Library</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Feature Name</th>
+                                                <th>Description</th>
+                                                <th class="text-end">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="houseFeaturesTableBody">
+                                            {% for feat in house_features_list %}
+                                                <tr id="house-feat-row-{{ feat.id }}">
+                                                    <td class="fw-bold text-dark">{{ feat.name }}</td>
+                                                    <td class="text-muted small">{{ feat.description|default:"Standard house feature" }}</td>
+                                                    <td class="text-end">
+                                                        <button class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="deleteFeature({{ feat.id }}, '{{ feat.name|escapejs }}')">
+                                                            Delete
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            {% empty %}
+                                                <tr>
+                                                    <td colspan="3" class="text-muted small text-center py-4">No custom house features added yet.</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ================= ADD NEW HOUSE MODAL ================= -->
+    <div class="modal fade" id="addHouseModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-dark text-white rounded-top-4 px-4 py-3">
+                    <h5 class="modal-title fw-bold">Add New Residential House / Villa</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="addHouseForm" onsubmit="handleAddHouseSubmit(event)">
+                    <div class="modal-body p-4">
+                        <div class="row g-3">
+                            <div class="col-md-7">
+                                <div class="row g-3 mb-3">
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">House Title / Name *</label>
+                                        <input type="text" class="form-control rounded-3" id="addHouseName" placeholder="e.g. Sunrise Luxury 3BHK Villa" required oninput="validateAddForm()">
+                                        <div class="field-error-text" id="addNameError">House title must be at least 3 characters.</div>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">Category *</label>
+                                        <select class="form-select rounded-3" id="addHouseCategory">
+                                            {% for cat in categories %}
+                                                <option value="{{ cat }}">{{ cat }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">Monthly Rent (₹) *</label>
+                                        <input type="number" class="form-control rounded-3" id="addHousePrice" placeholder="35000" required oninput="validateAddForm()">
+                                        <div class="field-error-text" id="addPriceError">Monthly rent must be greater than ₹0.</div>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">Bedrooms (BHK) *</label>
+                                        <input type="number" class="form-control rounded-3" id="addHouseBedrooms" placeholder="3" required oninput="validateAddForm()">
+                                        <div class="field-error-text" id="addBedroomsError">Bedrooms count must be greater than 0.</div>
+                                    </div>
+                                </div>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">Bathrooms *</label>
+                                        <input type="number" class="form-control rounded-3" id="addHouseBathrooms" placeholder="3" required>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">Area (sq.ft) *</label>
+                                        <input type="text" class="form-control rounded-3" id="addHouseArea" placeholder="2400 sq.ft" required>
+                                    </div>
+                                </div>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">Furnishing Status *</label>
+                                        <select class="form-select rounded-3" id="addHouseFurnishing">
+                                            <option value="Fully Furnished">Fully Furnished</option>
+                                            <option value="Semi-Furnished">Semi-Furnished</option>
+                                            <option value="Unfurnished">Unfurnished</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">Parking Space *</label>
+                                        <input type="text" class="form-control rounded-3" id="addHouseParking" placeholder="2 Covered Car Slots" required>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small text-uppercase">Property Location / Address *</label>
+                                    <input type="text" class="form-control rounded-3" id="addHouseLocation" placeholder="Palace Road, Central Sector, Bhavnagar" required oninput="validateAddForm()">
+                                    <div class="field-error-text" id="addLocationError">Location address is required (min 3 chars).</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small text-uppercase">Select Included Amenities & Features</label>
+                                    <div class="d-flex flex-wrap gap-2" id="addFeaturePills">
+                                        {% for feat in house_features_list %}
+                                            <span class="badge border bg-light text-dark px-3 py-2 rounded-pill feature-pill" onclick="toggleFeaturePill(this, '{{ feat.name|escapejs }}')">
+                                                {{ feat.name }}
+                                            </span>
+                                        {% empty %}
+                                            <span class="text-muted small">No custom features added yet.</span>
+                                        {% endfor %}
+                                    </div>
+                                    <input type="hidden" id="addHouseAmenities" value="">
+                                </div>
+                            </div>
+
+                            <div class="col-md-5">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small text-uppercase">House Image URL</label>
+                                    <input type="text" class="form-control rounded-3 mb-2" id="addHouseImageUrl" placeholder="/static/images/image/houseimg/i1.jpg" oninput="previewAddImage()">
+                                    <label class="form-label fw-bold small text-uppercase">Or Upload Image File</label>
+                                    <input type="file" class="form-control rounded-3 mb-3" id="addHouseFileInput" accept="image/*" onchange="handleAddImageUpload(event)">
+                                    
+                                    <div class="image-preview-box" id="addImgPreviewBox">
+                                        <span class="text-muted small">Image Preview</span>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small text-uppercase">Availability Status</label>
+                                    <select class="form-select rounded-3" id="addHouseStatus">
+                                        <option value="Available">Available</option>
+                                        <option value="Rented">Rented</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light px-4 py-3 rounded-bottom-4">
+                        <button type="button" class="btn btn-secondary rounded-3 px-4 fw-bold" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary rounded-3 px-4 fw-bold" id="btnSubmitAddHouse">Save House Listing</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= EDIT HOUSE MODAL ================= -->
+    <div class="modal fade" id="editHouseModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-dark text-white rounded-top-4 px-4 py-3">
+                    <h5 class="modal-title fw-bold">Edit House Specifications</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="editHouseForm" onsubmit="handleEditHouseSubmit(event)">
+                    <input type="hidden" id="editHouseId">
+                    <div class="modal-body p-4">
+                        <div class="row g-3">
+                            <div class="col-md-7">
+                                <div class="row g-3 mb-3">
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">House Title / Name *</label>
+                                        <input type="text" class="form-control rounded-3" id="editHouseName" required oninput="validateEditForm()">
+                                        <div class="field-error-text" id="editNameError">House title must be at least 3 characters.</div>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">Category *</label>
+                                        <select class="form-select rounded-3" id="editHouseCategory">
+                                            {% for cat in categories %}
+                                                <option value="{{ cat }}">{{ cat }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">Monthly Rent (₹) *</label>
+                                        <input type="number" class="form-control rounded-3" id="editHousePrice" required oninput="validateEditForm()">
+                                        <div class="field-error-text" id="editPriceError">Monthly rent must be greater than ₹0.</div>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">Bedrooms (BHK) *</label>
+                                        <input type="number" class="form-control rounded-3" id="editHouseBedrooms" required oninput="validateEditForm()">
+                                        <div class="field-error-text" id="editBedroomsError">Bedrooms count must be greater than 0.</div>
+                                    </div>
+                                </div>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">Bathrooms *</label>
+                                        <input type="number" class="form-control rounded-3" id="editHouseBathrooms" required>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">Area (sq.ft) *</label>
+                                        <input type="text" class="form-control rounded-3" id="editHouseArea" required>
+                                    </div>
+                                </div>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">Furnishing Status *</label>
+                                        <select class="form-select rounded-3" id="editHouseFurnishing">
+                                            <option value="Fully Furnished">Fully Furnished</option>
+                                            <option value="Semi-Furnished">Semi-Furnished</option>
+                                            <option value="Unfurnished">Unfurnished</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">Parking Space *</label>
+                                        <input type="text" class="form-control rounded-3" id="editHouseParking" required>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small text-uppercase">Property Location / Address *</label>
+                                    <input type="text" class="form-control rounded-3" id="editHouseLocation" required oninput="validateEditForm()">
+                                    <div class="field-error-text" id="editLocationError">Location address is required (min 3 chars).</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small text-uppercase">Amenities & Key Features</label>
+                                    <textarea class="form-control rounded-3" id="editHouseAmenities" rows="2"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="col-md-5">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small text-uppercase">House Image URL</label>
+                                    <input type="text" class="form-control rounded-3 mb-2" id="editHouseImageUrl" oninput="previewEditImage()">
+                                    <label class="form-label fw-bold small text-uppercase">Upload New Image File</label>
+                                    <input type="file" class="form-control rounded-3 mb-3" id="editHouseFileInput" accept="image/*" onchange="handleEditImageUpload(event)">
+                                    
+                                    <div class="image-preview-box" id="editImgPreviewBox">
+                                        <span class="text-muted small">Image Preview</span>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small text-uppercase">Availability Status</label>
+                                    <select class="form-select rounded-3" id="editHouseStatus">
+                                        <option value="Available">Available</option>
+                                        <option value="Rented">Rented</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light px-4 py-3 rounded-bottom-4">
+                        <button type="button" class="btn btn-secondary rounded-3 px-4 fw-bold" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary rounded-3 px-4 fw-bold" id="btnSubmitEditHouse">Update House Specifications</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= VIEW HOUSE SPECS MODAL ================= -->
+    <div class="modal fade" id="viewSpecsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-dark text-white rounded-top-4 px-4 py-3">
+                    <h5 class="modal-title fw-bold">House Full Specifications Sheet</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-5">
+                            <div class="rounded-4 overflow-hidden shadow-sm mb-3" style="height: 200px; background: #cbd5e1;">
+                                <img src="" id="specsHouseImg" class="w-100 h-100 object-fit-cover" alt="House">
+                            </div>
+                            <div class="fw-bold fs-4 text-primary" id="specsPriceTag">₹35,000 / month</div>
+                        </div>
+                        <div class="col-md-7">
+                            <h5 class="fw-bold mb-1" id="specsHouseName">House Name</h5>
+                            <p class="text-muted small mb-3" id="specsLocationTag">Location</p>
+                            
+                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                <span class="spec-icon-badge"><span id="specsBedroomsTag">3 BHK</span></span>
+                                <span class="spec-icon-badge"><span id="specsBathroomsTag">3 Baths</span></span>
+                                <span class="spec-icon-badge"><span id="specsAreaTag">2400 sq.ft</span></span>
+                            </div>
+
+                            <div class="bg-light p-3 rounded-3 border mb-3">
+                                <div class="mb-2"><strong>Furnishing:</strong> <span id="specsFurnishingTag">Fully Furnished</span></div>
+                                <div class="mb-2"><strong>Parking:</strong> <span id="specsParkingTag">2 Covered Slots</span></div>
+                                <div><strong>Status:</strong> <span id="specsStatusBadge" class="badge-status badge-available">Available</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-light p-3 rounded-3 border">
+                        <h6 class="fw-bold text-dark mb-1">Key Amenities & Facility Features:</h6>
+                        <p class="text-secondary small mb-0" id="specsAmenitiesText">Solar power, Swimming pool, 24/7 Gated security.</p>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light px-4 py-3 rounded-bottom-4">
+                    <button type="button" class="btn btn-secondary rounded-3 px-4 fw-bold" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= DELETE HOUSE MODAL ================= -->
+    <div class="modal fade" id="deleteHouseModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-danger text-white rounded-top-4 px-4 py-3">
+                    <h5 class="modal-title fw-bold">Confirm Delete</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4 text-center">
+                    <input type="hidden" id="deleteHouseId">
+                    <h5 class="fw-bold text-dark mb-2" id="deleteHouseTitle">House Name</h5>
+                    <p class="text-muted mb-0">Are you sure you want to remove this house listing from the database?</p>
+                </div>
+                <div class="modal-footer bg-light justify-content-center px-4 py-3 rounded-bottom-4">
+                    <button type="button" class="btn btn-outline-secondary rounded-3 px-4 fw-bold" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger rounded-3 px-4 fw-bold" onclick="executeHouseDelete()">Delete House</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= DATABASE QUERY & RESPONSE STATUS POPUP MODAL ================= -->
+    <div class="modal fade" id="dbOperationModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header rounded-top-4 px-4 py-3" id="dbModalHeader">
+                    <h5 class="modal-title fw-bold" id="dbModalTitle">Database Operation in Progress</h5>
+                    <button type="button" class="btn-close btn-close-white d-none" id="dbModalCloseBtn" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4 text-center" id="dbModalBody">
+                    <div id="dbLoadingState" class="py-3">
+                        <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+                        <h6 class="fw-bold text-dark mb-1">Sending Query to Database...</h6>
+                        <p class="text-muted small mb-0">Please wait while server processes the request and updates database records.</p>
+                    </div>
+                    <div id="dbResultState" class="d-none py-2">
+                        <h5 class="fw-bold mb-2" id="dbResultMessage">Operation Complete</h5>
+                        <p class="text-muted small mb-0" id="dbResultDetail">Server responded successfully.</p>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light justify-content-center px-4 py-3 rounded-bottom-4 d-none" id="dbModalFooter">
+                    <button type="button" class="btn btn-primary rounded-3 px-4 fw-bold" data-bs-dismiss="modal" id="dbModalConfirmBtn">OK / Continue</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Bundle & Logic -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let serverHouses = {{ houses_json|safe|default:"[]" }};
+        let housesData = (serverHouses && serverHouses.length > 0) ? serverHouses : [];
+        let uploadedImageBase64 = "";
+        let editUploadedImageBase64 = "";
+        let currentStatusFilter = 'ALL';
+        let currentPage = 1;
+        let dbStatusModal = null;
+        let selectedAddFeatures = [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            renderHousesGrid();
+            setInterval(fetchLiveHouses, 4000);
+            dbStatusModal = new bootstrap.Modal(document.getElementById('dbOperationModal'));
+        });
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Small Toast Popup for Real-Time Live Sync Updates
+        function showLiveSyncNotification(text = 'Live Data Synced - Database Updated') {
+            const toast = document.getElementById('liveSyncToast');
+            if (!toast) return;
+            toast.textContent = text;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+
+        // Database Operation Modal Handlers
+        function showDbOperationLoading(title, queryMsg) {
+            const header = document.getElementById('dbModalHeader');
+            header.className = 'modal-header bg-dark text-white rounded-top-4 px-4 py-3';
+            document.getElementById('dbModalTitle').textContent = title || 'Database Operation in Progress';
+            
+            document.getElementById('dbLoadingState').classList.remove('d-none');
+            document.getElementById('dbResultState').classList.add('d-none');
+            document.getElementById('dbModalFooter').classList.add('d-none');
+            document.getElementById('dbModalCloseBtn').classList.add('d-none');
+
+            dbStatusModal.show();
+        }
+
+        function showDbOperationResult(isSuccess, message, detail = '') {
+            const header = document.getElementById('dbModalHeader');
+            header.className = `modal-header ${isSuccess ? 'bg-success' : 'bg-danger'} text-white rounded-top-4 px-4 py-3`;
+            document.getElementById('dbModalTitle').textContent = isSuccess ? 'Database Operation Successful' : 'Database Operation Failed';
+
+            document.getElementById('dbLoadingState').classList.add('d-none');
+            document.getElementById('dbResultState').classList.remove('d-none');
+            
+            const msgElem = document.getElementById('dbResultMessage');
+            msgElem.textContent = isSuccess ? 'Success!' : 'Error Occurred';
+            msgElem.className = `fw-bold mb-2 ${isSuccess ? 'text-success' : 'text-danger'}`;
+
+            document.getElementById('dbResultDetail').textContent = message || detail || (isSuccess ? 'Operation executed cleanly.' : 'Failed to update database.');
+            
+            document.getElementById('dbModalFooter').classList.remove('d-none');
+            document.getElementById('dbModalCloseBtn').classList.remove('d-none');
+        }
+
+        // Real-Time Validation Functions
+        function validateAddForm() {
+            const name = document.getElementById('addHouseName').value.trim();
+            const price = Number(document.getElementById('addHousePrice').value);
+            const bedrooms = Number(document.getElementById('addHouseBedrooms').value);
+            const location = document.getElementById('addHouseLocation').value.trim();
+
+            let isValid = true;
+
+            const nameErr = document.getElementById('addNameError');
+            if (name.length < 3) {
+                nameErr.style.display = 'block';
+                document.getElementById('addHouseName').classList.add('input-invalid');
+                isValid = false;
+            } else {
+                nameErr.style.display = 'none';
+                document.getElementById('addHouseName').classList.remove('input-invalid');
+                document.getElementById('addHouseName').classList.add('input-valid');
+            }
+
+            const priceErr = document.getElementById('addPriceError');
+            if (price <= 0) {
+                priceErr.style.display = 'block';
+                document.getElementById('addHousePrice').classList.add('input-invalid');
+                isValid = false;
+            } else {
+                priceErr.style.display = 'none';
+                document.getElementById('addHousePrice').classList.remove('input-invalid');
+                document.getElementById('addHousePrice').classList.add('input-valid');
+            }
+
+            const bedErr = document.getElementById('addBedroomsError');
+            if (bedrooms <= 0) {
+                bedErr.style.display = 'block';
+                document.getElementById('addHouseBedrooms').classList.add('input-invalid');
+                isValid = false;
+            } else {
+                bedErr.style.display = 'none';
+                document.getElementById('addHouseBedrooms').classList.remove('input-invalid');
+                document.getElementById('addHouseBedrooms').classList.add('input-valid');
+            }
+
+            const locErr = document.getElementById('addLocationError');
+            if (location.length < 3) {
+                locErr.style.display = 'block';
+                document.getElementById('addHouseLocation').classList.add('input-invalid');
+                isValid = false;
+            } else {
+                locErr.style.display = 'none';
+                document.getElementById('addHouseLocation').classList.remove('input-invalid');
+                document.getElementById('addHouseLocation').classList.add('input-valid');
+            }
+
+            return isValid;
+        }
+
+        function validateEditForm() {
+            const name = document.getElementById('editHouseName').value.trim();
+            const price = Number(document.getElementById('editHousePrice').value);
+            const bedrooms = Number(document.getElementById('editHouseBedrooms').value);
+            const location = document.getElementById('editHouseLocation').value.trim();
+
+            let isValid = true;
+
+            const nameErr = document.getElementById('editNameError');
+            if (name.length < 3) {
+                nameErr.style.display = 'block';
+                document.getElementById('editHouseName').classList.add('input-invalid');
+                isValid = false;
+            } else {
+                nameErr.style.display = 'none';
+                document.getElementById('editHouseName').classList.remove('input-invalid');
+            }
+
+            const priceErr = document.getElementById('editPriceError');
+            if (price <= 0) {
+                priceErr.style.display = 'block';
+                document.getElementById('editHousePrice').classList.add('input-invalid');
+                isValid = false;
+            } else {
+                priceErr.style.display = 'none';
+                document.getElementById('editHousePrice').classList.remove('input-invalid');
+            }
+
+            const bedErr = document.getElementById('editBedroomsError');
+            if (bedrooms <= 0) {
+                bedErr.style.display = 'block';
+                document.getElementById('editHouseBedrooms').classList.add('input-invalid');
+                isValid = false;
+            } else {
+                bedErr.style.display = 'none';
+                document.getElementById('editHouseBedrooms').classList.remove('input-invalid');
+            }
+
+            const locErr = document.getElementById('editLocationError');
+            if (location.length < 3) {
+                locErr.style.display = 'block';
+                document.getElementById('editHouseLocation').classList.add('input-invalid');
+                isValid = false;
+            } else {
+                locErr.style.display = 'none';
+                document.getElementById('editHouseLocation').classList.remove('input-invalid');
+            }
+
+            return isValid;
+        }
+
+        function toggleFeaturePill(el, featName) {
+            el.classList.toggle('active');
+            if (el.classList.contains('active')) {
+                if (!selectedAddFeatures.includes(featName)) selectedAddFeatures.push(featName);
+            } else {
+                selectedAddFeatures = selectedAddFeatures.filter(f => f !== featName);
+            }
+            document.getElementById('addHouseAmenities').value = selectedAddFeatures.join(', ');
+        }
+
+        function filterHousesByStatus() {
+            currentStatusFilter = document.getElementById('houseStatusFilter').value;
+            currentPage = 1;
+            renderHousesGrid();
+        }
+
+        function changePageSize() {
+            currentPage = 1;
+            renderHousesGrid();
+        }
+
+        function fetchLiveHouses() {
+            fetch('/admin-portal/api/houses/live-list/')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success' && data.houses) {
+                        const countBefore = housesData.length;
+                        housesData = data.houses;
+                        if (countBefore !== housesData.length) {
+                            showLiveSyncNotification('House Fleet Auto-Synced Live');
+                        }
+                        renderHousesGrid();
+                    }
+                })
+                .catch(err => console.log('House sync poll error:', err));
+        }
+
+        function renderHousesGrid() {
+            const container = document.getElementById('housesGridContainer');
+            if (!container) return;
+
+            const searchVal = document.getElementById('houseSearchInput').value.toLowerCase().trim();
+            const pageSize = parseInt(document.getElementById('pageSizeSelect').value) || 4;
+
+            let filtered = housesData.filter(h => {
+                const matchStatus = currentStatusFilter === 'ALL' || h.status.toLowerCase() === currentStatusFilter.toLowerCase();
+                const matchSearch = h.name.toLowerCase().includes(searchVal) || 
+                                    h.location.toLowerCase().includes(searchVal) || 
+                                    h.category.toLowerCase().includes(searchVal);
+                return matchStatus && matchSearch;
+            });
+
+            const totalEntries = filtered.length;
+            const totalPages = Math.ceil(totalEntries / pageSize) || 1;
+            if (currentPage > totalPages) currentPage = totalPages;
+
+            const startIdx = (currentPage - 1) * pageSize;
+            const endIdx = startIdx + pageSize;
+            const pageData = filtered.slice(startIdx, endIdx);
+
+            container.innerHTML = '';
+
+            if (pageData.length === 0) {
+                container.innerHTML = `
+                    <div class="col-12 text-center py-5 bg-white rounded-4 border">
+                        <h6 class="fw-bold text-muted mb-1">No house listings found matching filter.</h6>
+                        <p class="text-secondary small mb-0">Try clearing search input or adding a new house.</p>
+                    </div>
+                `;
+            } else {
+                pageData.forEach(h => {
+                    const statusBadge = h.status === 'Available' ? 'badge-available' : 'badge-booked';
+                    const cardHtml = `
+                        <div class="col-12 col-md-6 col-lg-3">
+                            <div class="crud-card">
+                                <div class="crud-img-wrapper">
+                                    <img src="${h.image}" class="crud-img" alt="${h.name}" onerror="this.src='/static/images/image/houseimg/i1.jpg'">
+                                    <span class="badge-status badge-category position-absolute top-0 start-0 m-3">${h.category}</span>
+                                    <span class="badge-status ${statusBadge} position-absolute top-0 end-0 m-3">${h.status}</span>
+                                </div>
+                                <div class="card-body p-3 d-flex flex-column justify-content-between">
+                                    <div>
+                                        <h6 class="fw-bold text-dark mb-1 text-truncate">${h.name}</h6>
+                                        <div class="fw-extrabold text-primary mb-2">₹${Number(h.price).toLocaleString()} <small class="text-muted fw-normal">/ mo</small></div>
+                                        
+                                        <div class="d-flex flex-wrap gap-1 mb-2">
+                                            <span class="badge bg-light text-secondary border fw-semibold small">${h.bedrooms} BHK</span>
+                                            <span class="badge bg-light text-secondary border fw-semibold small">${h.bathrooms} Baths</span>
+                                            <span class="badge bg-light text-secondary border fw-semibold small">${h.areaSqft}</span>
+                                        </div>
+
+                                        <p class="text-muted small mb-2 text-truncate">${h.location}</p>
+                                    </div>
+
+                                    <div class="d-grid gap-2 pt-2 border-top">
+                                        <button class="btn btn-sm btn-outline-primary fw-bold rounded-2" onclick="openViewSpecsModal(${h.id})">View Specifications</button>
+                                        <div class="d-flex gap-2">
+                                            <button class="btn btn-sm btn-dark fw-bold rounded-2 flex-grow-1" onclick="openEditHouseModal(${h.id})">Edit</button>
+                                            <button class="btn btn-sm btn-outline-danger fw-bold rounded-2" onclick="openDeleteHouseModal(${h.id}, '${h.name.replace(/'/g, "\\'")}')">Delete</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', cardHtml);
+                });
+            }
+
+            // Update Pagination Bar
+            document.getElementById('paginationInfoText').textContent = `Showing ${totalEntries === 0 ? 0 : startIdx + 1} to ${Math.min(endIdx, totalEntries)} of ${totalEntries} entries`;
+            
+            const paginationControls = document.getElementById('paginationControls');
+            paginationControls.innerHTML = '';
+
+            if (totalPages > 1) {
+                let navHtml = `
+                    <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                        <a class="page-link" href="#" onclick="event.preventDefault(); goToPage(${currentPage - 1});">Prev</a>
+                    </li>
+                `;
+                for (let i = 1; i <= totalPages; i++) {
+                    navHtml += `
+                        <li class="page-item ${currentPage === i ? 'active' : ''}">
+                            <a class="page-link" href="#" onclick="event.preventDefault(); goToPage(${i});">${i}</a>
+                        </li>
+                    `;
+                }
+                navHtml += `
+                    <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                        <a class="page-link" href="#" onclick="event.preventDefault(); goToPage(${currentPage + 1});">Next</a>
+                    </li>
+                `;
+                paginationControls.innerHTML = navHtml;
+            }
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            renderHousesGrid();
+        }
+
+        function previewAddImage() {
+            const url = document.getElementById('addHouseImageUrl').value.trim();
+            const previewBox = document.getElementById('addImgPreviewBox');
+            if (url) {
+                previewBox.innerHTML = `<img src="${url}" onerror="this.onerror=null; this.src='/static/images/image/houseimg/i1.jpg';">`;
+            } else {
+                previewBox.innerHTML = `<span class="text-muted small">Image Preview</span>`;
+            }
+        }
+
+        function handleAddImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    uploadedImageBase64 = e.target.result;
+                    document.getElementById('addImgPreviewBox').innerHTML = `<img src="${uploadedImageBase64}">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function previewEditImage() {
+            const url = document.getElementById('editHouseImageUrl').value.trim();
+            const previewBox = document.getElementById('editImgPreviewBox');
+            if (url) {
+                previewBox.innerHTML = `<img src="${url}" onerror="this.onerror=null; this.src='/static/images/image/houseimg/i1.jpg';">`;
+            } else {
+                previewBox.innerHTML = `<span class="text-muted small">Image Preview</span>`;
+            }
+        }
+
+        function handleEditImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    editUploadedImageBase64 = e.target.result;
+                    document.getElementById('editImgPreviewBox').innerHTML = `<img src="${editUploadedImageBase64}">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function handleAddHouseSubmit(event) {
+            event.preventDefault();
+            if (!validateAddForm()) return;
+
+            const name = document.getElementById('addHouseName').value.trim();
+            const category = document.getElementById('addHouseCategory').value;
+            const price = document.getElementById('addHousePrice').value;
+            const bedrooms = document.getElementById('addHouseBedrooms').value;
+            const bathrooms = document.getElementById('addHouseBathrooms').value;
+            const areaSqft = document.getElementById('addHouseArea').value.trim();
+            const furnishing = document.getElementById('addHouseFurnishing').value;
+            const parking = document.getElementById('addHouseParking').value.trim();
+            const location = document.getElementById('addHouseLocation').value.trim();
+            const amenities = document.getElementById('addHouseAmenities').value.trim();
+            const status = document.getElementById('addHouseStatus').value;
+            let image = uploadedImageBase64 || document.getElementById('addHouseImageUrl').value.trim() || '/static/images/image/houseimg/i1.jpg';
+
+            const payload = {
+                name, category, price, bedrooms, bathrooms, areaSqft, furnishing, parking, location, amenities, status, image
+            };
+
+            const addModalEl = document.getElementById('addHouseModal');
+            const addModal = bootstrap.Modal.getInstance(addModalEl);
+            if (addModal) addModal.hide();
+
+            showDbOperationLoading('Adding New House Listing', 'Transmitting payload parameters to server database...');
+
+            const csrftoken = getCookie('csrftoken');
+            fetch('/admin-portal/api/houses/add/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showDbOperationResult(true, data.message || `House '${name}' created successfully!`);
+                    document.getElementById('addHouseForm').reset();
+                    uploadedImageBase64 = "";
+                    document.getElementById('addImgPreviewBox').innerHTML = `<span class="text-muted small">Image Preview</span>`;
+                    fetchLiveHouses();
+                } else {
+                    showDbOperationResult(false, 'Error: ' + data.message);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showDbOperationResult(false, 'Failed to connect to database server.');
+            });
+        }
+
+        function openEditHouseModal(id) {
+            const h = housesData.find(item => item.id === id);
+            if (!h) return;
+
+            document.getElementById('editHouseId').value = h.id;
+            document.getElementById('editHouseName').value = h.name;
+            document.getElementById('editHouseCategory').value = h.category;
+            document.getElementById('editHousePrice').value = h.price;
+            document.getElementById('editHouseBedrooms').value = h.bedrooms;
+            document.getElementById('editHouseBathrooms').value = h.bathrooms;
+            document.getElementById('editHouseArea').value = h.areaSqft;
+            document.getElementById('editHouseFurnishing').value = h.furnishing;
+            document.getElementById('editHouseParking').value = h.parking;
+            document.getElementById('editHouseLocation').value = h.location;
+            document.getElementById('editHouseAmenities').value = h.amenities || '';
+            document.getElementById('editHouseStatus').value = h.status;
+            document.getElementById('editHouseImageUrl').value = h.image || '';
+
+            document.getElementById('editImgPreviewBox').innerHTML = `<img src="${h.image}" onerror="this.src='/static/images/image/houseimg/i1.jpg';">`;
+            editUploadedImageBase64 = "";
+
+            const editModal = new bootstrap.Modal(document.getElementById('editHouseModal'));
+            editModal.show();
+        }
+
+        function handleEditHouseSubmit(event) {
+            event.preventDefault();
+            if (!validateEditForm()) return;
+
+            const id = document.getElementById('editHouseId').value;
+            const name = document.getElementById('editHouseName').value.trim();
+            const category = document.getElementById('editHouseCategory').value;
+            const price = document.getElementById('editHousePrice').value;
+            const bedrooms = document.getElementById('editHouseBedrooms').value;
+            const bathrooms = document.getElementById('editHouseBathrooms').value;
+            const areaSqft = document.getElementById('editHouseArea').value.trim();
+            const furnishing = document.getElementById('editHouseFurnishing').value;
+            const parking = document.getElementById('editHouseParking').value.trim();
+            const location = document.getElementById('editHouseLocation').value.trim();
+            const amenities = document.getElementById('editHouseAmenities').value.trim();
+            const status = document.getElementById('editHouseStatus').value;
+            let image = editUploadedImageBase64 || document.getElementById('editHouseImageUrl').value.trim() || '/static/images/image/houseimg/i1.jpg';
+
+            const payload = {
+                id, name, category, price, bedrooms, bathrooms, areaSqft, furnishing, parking, location, amenities, status, image
+            };
+
+            const editModalEl = document.getElementById('editHouseModal');
+            const editModal = bootstrap.Modal.getInstance(editModalEl);
+            if (editModal) editModal.hide();
+
+            showDbOperationLoading('Updating House Specifications', 'Persisting updated parameters in database...');
+
+            const csrftoken = getCookie('csrftoken');
+            fetch('/admin-portal/api/houses/edit/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showDbOperationResult(true, data.message || `House '${name}' updated successfully!`);
+                    fetchLiveHouses();
+                } else {
+                    showDbOperationResult(false, 'Error: ' + data.message);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showDbOperationResult(false, 'Failed to update database record.');
+            });
+        }
+
+        function openViewSpecsModal(id) {
+            const h = housesData.find(item => item.id === id);
+            if (!h) return;
+
+            document.getElementById('specsHouseImg').src = h.image;
+            document.getElementById('specsHouseName').textContent = h.name;
+            document.getElementById('specsPriceTag').textContent = `₹${Number(h.price).toLocaleString()} / month`;
+            document.getElementById('specsLocationTag').textContent = h.location;
+            document.getElementById('specsBedroomsTag').textContent = `${h.bedrooms} BHK`;
+            document.getElementById('specsBathroomsTag').textContent = `${h.bathrooms} Baths`;
+            document.getElementById('specsAreaTag').textContent = h.areaSqft;
+            document.getElementById('specsFurnishingTag').textContent = h.furnishing;
+            document.getElementById('specsParkingTag').textContent = h.parking;
+            
+            const badge = document.getElementById('specsStatusBadge');
+            badge.textContent = h.status;
+            badge.className = `badge-status ${h.status === 'Available' ? 'badge-available' : 'badge-booked'}`;
+
+            document.getElementById('specsAmenitiesText').textContent = h.amenities || 'Standard house amenities included.';
+
+            const modal = new bootstrap.Modal(document.getElementById('viewSpecsModal'));
+            modal.show();
+        }
+
+        function openDeleteHouseModal(id, title) {
+            document.getElementById('deleteHouseId').value = id;
+            document.getElementById('deleteHouseTitle').textContent = title;
+            const modal = new bootstrap.Modal(document.getElementById('deleteHouseModal'));
+            modal.show();
+        }
+
+        function executeHouseDelete() {
+            const id = document.getElementById('deleteHouseId').value;
+            const deleteModalEl = document.getElementById('deleteHouseModal');
+            const deleteModal = bootstrap.Modal.getInstance(deleteModalEl);
+            if (deleteModal) deleteModal.hide();
+
+            showDbOperationLoading('Deleting House Listing', 'Removing house record from database...');
+
+            const csrftoken = getCookie('csrftoken');
+            fetch('/admin-portal/api/houses/delete/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({ id: id })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showDbOperationResult(true, 'House listing deleted successfully.');
+                    fetchLiveHouses();
+                } else {
+                    showDbOperationResult(false, 'Error: ' + data.message);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showDbOperationResult(false, 'Failed to delete record from server.');
+            });
+        }
+
+        // Category & Feature Management Handlers (Tabs 2 & 3)
+        function validateCategoryInput() {
+            const name = document.getElementById('newCategoryName').value.trim();
+            const err = document.getElementById('newCatNameError');
+            if (name.length < 3) {
+                err.style.display = 'block';
+                document.getElementById('newCategoryName').classList.add('input-invalid');
+            } else {
+                err.style.display = 'none';
+                document.getElementById('newCategoryName').classList.remove('input-invalid');
+            }
+        }
+
+        function validateFeatureInput() {
+            const name = document.getElementById('newFeatureName').value.trim();
+            const err = document.getElementById('newFeatNameError');
+            if (name.length < 3) {
+                err.style.display = 'block';
+                document.getElementById('newFeatureName').classList.add('input-invalid');
+            } else {
+                err.style.display = 'none';
+                document.getElementById('newFeatureName').classList.remove('input-invalid');
+            }
+        }
+
+        function handleCategorySubmit(event, type) {
+            event.preventDefault();
+            const name = document.getElementById('newCategoryName').value.trim();
+            const desc = document.getElementById('newCategoryDesc').value.trim();
+            if (name.length < 3) return;
+
+            showDbOperationLoading('Adding Category', 'Transmitting new category parameters to server...');
+
+            const csrftoken = getCookie('csrftoken');
+            fetch('/admin-portal/api/categories/add/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({ name: name, description: desc, vehicle_type: type })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showDbOperationResult(true, `House category '${name}' added successfully! Reloading page to update tabs.`);
+                    setTimeout(() => window.location.reload(), 1500);
+                } else {
+                    showDbOperationResult(false, 'Error: ' + data.message);
+                }
+            })
+            .catch(err => showDbOperationResult(false, 'Failed to save category.'));
+        }
+
+        function deleteCategory(id, name) {
+            if (!confirm(`Are you sure you want to delete category '${name}'?`)) return;
+            showDbOperationLoading('Deleting Category', 'Removing category from server...');
+
+            const csrftoken = getCookie('csrftoken');
+            fetch('/admin-portal/api/categories/delete/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({ id: id, name: name })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showDbOperationResult(true, `Category '${name}' deleted successfully!`);
+                    const row = document.getElementById(`house-cat-row-${id}`);
+                    if (row) row.remove();
+                } else {
+                    showDbOperationResult(false, 'Error: ' + data.message);
+                }
+            })
+            .catch(err => showDbOperationResult(false, 'Failed to delete category.'));
+        }
+
+        function handleFeatureSubmit(event, type) {
+            event.preventDefault();
+            const name = document.getElementById('newFeatureName').value.trim();
+            const desc = document.getElementById('newFeatureDesc').value.trim();
+            if (name.length < 3) return;
+
+            showDbOperationLoading('Adding Feature', 'Adding new house amenity feature...');
+
+            const csrftoken = getCookie('csrftoken');
+            fetch('/admin-portal/api/features/add/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({ name: name, description: desc, vehicle_type: type })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showDbOperationResult(true, `House feature '${name}' added successfully! Reloading page to update tabs.`);
+                    setTimeout(() => window.location.reload(), 1500);
+                } else {
+                    showDbOperationResult(false, 'Error: ' + data.message);
+                }
+            })
+            .catch(err => showDbOperationResult(false, 'Failed to save feature.'));
+        }
+
+        function deleteFeature(id, name) {
+            if (!confirm(`Are you sure you want to delete feature '${name}'?`)) return;
+            showDbOperationLoading('Deleting Feature', 'Removing feature from server...');
+
+            const csrftoken = getCookie('csrftoken');
+            fetch('/admin-portal/api/features/delete/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({ id: id, name: name })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showDbOperationResult(true, `Feature '${name}' deleted successfully!`);
+                    const row = document.getElementById(`house-feat-row-${id}`);
+                    if (row) row.remove();
+                } else {
+                    showDbOperationResult(false, 'Error: ' + data.message);
+                }
+            })
+            .catch(err => showDbOperationResult(false, 'Failed to delete feature.'));
+        }
+    </script>
+</body>
+</html>

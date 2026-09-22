@@ -1,0 +1,245 @@
+{% load static %}
+<footer class="footer mt-5">
+    <div class="container">
+        <div class="row g-4">
+            <!-- Company Info -->
+            <div class="col-lg-3 col-md-6">
+                <div class="footer-section">
+                    <h3 class="footer-title">About Rentify</h3>
+                    <p class="footer-text">Your trusted partner for all rental needs. We provide quality cars, bikes, halls, offices, and houses for rent across Gujarat.</p>
+                    <div class="social-links mt-3">
+                        <a href="https://www.facebook.com/share/1B8SWYWsta/?mibextid=qi2Omg" class="social-icon" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="https://www.instagram.com/rentify_car?igsh=ZzBqNmY4YzZqYWQ5" class="social-icon" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="https://youtube.com/@rentifycarrent?si=PtaWHat5tIAcWUl5" class="social-icon" target="_blank" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                        <a href="https://chat.whatsapp.com/BkPraTtFeIj4LCxPZChHWc" class="social-icon" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="col-lg-2 col-md-6">
+                <div class="footer-section">
+                    <h3 class="footer-title">Quick Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="/vehicles/cars/"><i class="fas fa-car me-2"></i>Car Rental</a></li>
+                        <li><a href="/vehicles/bikes/"><i class="fas fa-motorcycle me-2"></i>Bike Rental</a></li>
+                        <li><a href="/properties/halls/"><i class="fas fa-hotel me-2"></i>Hall Rental</a></li>
+                        <li><a href="/properties/offices/"><i class="fas fa-building me-2"></i>Office Rental</a></li>
+                        <li><a href="/properties/houses/"><i class="fas fa-home me-2"></i>House Rental</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Contact Info -->
+            <div class="col-lg-3 col-md-6">
+                <div class="footer-section">
+                    <h3 class="footer-title">Contact Us</h3>
+                    <ul class="contact-info">
+                        <li><i class="fas fa-phone-alt"></i> +91 79905 21230</li>
+                        <li><i class="fas fa-envelope"></i> contact.rentify@gmail.com</li>
+                        <li><i class="fas fa-map-marker-alt"></i> Branch-1: Axardeep Complex, Shastrinagar, Bhavnagar</li>
+                        <li><i class="fas fa-map-marker-alt"></i> Branch-2: Navrangpura, Ahmedabad</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Feedback Form -->
+            <div class="col-lg-4 col-md-6">
+                <div class="footer-section">
+                    <h3 class="footer-title">Send Us Feedback</h3>
+                    <form class="feedback-form" id="footerFeedbackForm">
+                        {% csrf_token %}
+                        <div class="mb-2">
+                            <input type="text" class="form-control form-control-sm" name="name" id="feedbackName" placeholder="Your Name" required>
+                        </div>
+                        <div class="mb-2">
+                            <input type="email" class="form-control form-control-sm" name="email" id="feedbackEmail" placeholder="Your Email" required>
+                        </div>
+                        <div class="mb-2">
+                            <textarea class="form-control form-control-sm" name="feedback" id="feedbackText" rows="2" placeholder="Your Feedback" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-warning btn-sm w-100 fw-bold text-dark">Submit Feedback</button>
+                        <div id="feedbackMessage" class="mt-2" style="display: none;"></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4 pt-3 border-top" style="border-color: #e5e7eb !important;">
+            <div class="col-12">
+                <div class="footer-bottom text-center">
+                    <p class="mb-0 text-muted small">
+                        © 2026 <strong>Rentify</strong>. All rights reserved | Designed with <i class="fas fa-heart text-danger"></i> for seamless rental experiences.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<style>
+    .footer {
+        background-color: #ffffff;
+        color: #1f2937;
+        padding: 50px 0 25px;
+        margin-top: 60px;
+        border-top: 1px solid #e5e7eb;
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.03);
+    }
+
+    .footer-title {
+        color: #1e3c72;
+        font-size: 1.15rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+        position: relative;
+        padding-bottom: 8px;
+    }
+
+    .footer-title::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 40px;
+        height: 3px;
+        background: #f39c12;
+        border-radius: 2px;
+    }
+
+    .footer-text {
+        color: #4b5563;
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
+
+    .footer-links {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .footer-links li {
+        margin-bottom: 10px;
+    }
+
+    .footer-links a {
+        color: #4b5563;
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: inline-block;
+    }
+
+    .footer-links a:hover {
+        color: #1e3c72;
+        transform: translateX(5px);
+    }
+
+    .contact-info {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .contact-info li {
+        margin-bottom: 12px;
+        display: flex;
+        align-items: flex-start;
+        color: #4b5563;
+        font-size: 0.88rem;
+    }
+
+    .contact-info li i {
+        margin-right: 12px;
+        color: #f39c12;
+        margin-top: 3px;
+        width: 16px;
+    }
+
+    .social-links {
+        display: flex;
+        gap: 12px;
+    }
+
+    .social-icon {
+        color: #1e3c72;
+        background: #f3f4f6;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        border: 1px solid #e5e7eb;
+    }
+
+    .social-icon:hover {
+        background: #1e3c72;
+        color: #ffffff;
+        transform: translateY(-3px);
+        border-color: #1e3c72;
+    }
+
+    .feedback-form input,
+    .feedback-form textarea {
+        background: #f9fafb;
+        border: 1px solid #d1d5db;
+        color: #1f2937;
+    }
+
+    .feedback-form input::placeholder,
+    .feedback-form textarea::placeholder {
+        color: #9ca3af;
+    }
+
+    .feedback-form input:focus,
+    .feedback-form textarea:focus {
+        background: #ffffff;
+        border-color: #1e3c72;
+        color: #1f2937;
+        box-shadow: 0 0 0 3px rgba(30, 60, 114, 0.1);
+    }
+
+    @media (max-width: 768px) {
+        .footer {
+            padding: 40px 0 20px;
+        }
+        .footer-title::after {
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .footer-section {
+            text-align: center;
+        }
+        .social-links {
+            justify-content: center;
+        }
+        .contact-info li {
+            justify-content: center;
+        }
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('footerFeedbackForm');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const msg = document.getElementById('feedbackMessage');
+                msg.style.display = 'block';
+                msg.className = 'mt-2 alert alert-success small p-2';
+                msg.textContent = 'Thank you for your feedback! Your message has been submitted successfully.';
+                form.reset();
+                setTimeout(() => {
+                    msg.style.display = 'none';
+                }, 4000);
+            });
+        }
+    });
+</script>

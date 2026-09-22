@@ -1,0 +1,688 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hall Rental Inquiries - Rentify</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #1e3c72;
+            --accent-color: #f39c12;
+            --light-bg: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            color: #333;
+        }
+
+        .top-bar {
+            background-color: white;
+            padding: 15px 0;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .hall-card {
+            border: none;
+            border-radius: 16px;
+            overflow: hidden;
+            background: white;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.06);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .hall-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+        }
+
+        .hall-image {
+            height: 220px;
+            object-fit: cover;
+            width: 100%;
+        }
+
+        .hall-features {
+            list-style: none;
+            padding: 0;
+            margin: 15px 0;
+        }
+
+        .hall-features li {
+            margin-bottom: 8px;
+            color: #555;
+            font-size: 0.95rem;
+        }
+
+        .hall-features i {
+            margin-right: 10px;
+            color: var(--primary-color);
+            width: 20px;
+        }
+
+        .hall-price {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #28a745;
+            margin: 10px 0;
+        }
+
+        .btn-inquiry {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem;
+            font-weight: 700;
+            border-radius: 10px;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .btn-inquiry:hover {
+            color: white;
+            opacity: 0.92;
+            transform: translateY(-2px);
+        }
+
+        .cat-filter-btn {
+            transition: all 0.2s ease;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <div class="top-bar">
+        <div class="container d-flex justify-content-between align-items-center">
+            <a href="/core/" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                <i class="fas fa-arrow-left me-1"></i> Home
+            </a>
+            <div class="d-flex align-items-center gap-2">
+                <h4 class="mb-0 text-primary fw-bold"><i class="fas fa-building me-2"></i>Event & Banquet Halls Catalog</h4>
+                <span class="badge bg-success-subtle text-success border border-success rounded-pill px-3 py-2 fw-bold d-flex align-items-center gap-1 small ms-2">
+                    <span class="spinner-grow spinner-grow-sm text-success" role="status"></span> LIVE AUTO-SYNC
+                </span>
+            </div>
+            <a href="/bookings/my-hall-inquiries/" class="btn btn-primary btn-sm rounded-pill px-3">
+                <i class="fas fa-calendar-check me-1"></i> My Hall Inquiries
+            </a>
+        </div>
+    </div>
+
+    <!-- Client Side Executive Category Filter Bar (Currently Available Categories Only) -->
+    <div class="container mb-4">
+        <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+            <div class="row g-3 align-items-center">
+                <div class="col-12 col-md-8">
+                    <div class="d-flex flex-wrap gap-2 align-items-center" id="clientCategoryFilterBar">
+                        <button class="btn btn-primary rounded-pill px-3 py-2 fw-bold text-uppercase small cat-filter-btn active" onclick="setClientCategoryFilter('ALL', this)">
+                            All Available Halls ({{ halls.count }})
+                        </button>
+                        {% for cat in available_categories %}
+                            <button class="btn btn-outline-primary rounded-pill px-3 py-2 fw-bold text-uppercase small cat-filter-btn" onclick="setClientCategoryFilter('{{ cat|escapejs }}', this)">
+                                {{ cat }}
+                            </button>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="col-12 col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0 text-muted"><i class="fas fa-search"></i></span>
+                        <input type="text" class="form-control bg-light border-start-0 ps-0 rounded-end-pill" id="clientSearchInput" placeholder="Search hall name or location..." onkeyup="renderClientHalls()">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container mb-5">
+        <div class="row g-4" id="hallsContainer">
+            {% for hall in halls %}
+            <div class="col-md-4">
+                <div class="hall-card">
+                    <div class="position-relative">
+                        <img src="{{ hall.image }}" class="hall-image" alt="{{ hall.name }}" onerror="this.src='/static/images/image/c1.jpg'">
+                        <span class="position-absolute top-0 start-0 m-3 badge bg-primary text-white fw-bold px-3 py-2 rounded-pill text-uppercase">
+                            {{ hall.category }}
+                        </span>
+                        <span class="position-absolute top-0 end-0 m-3 badge {% if hall.status == 'Available' %}bg-success{% else %}bg-danger{% endif %} text-white fw-bold px-3 py-2 rounded-pill">
+                            {{ hall.status }}
+                        </span>
+                    </div>
+                    <div class="card-body p-4 d-flex flex-column justify-content-between">
+                        <div>
+                            <h5 class="card-title fw-bold text-dark">{{ hall.name }}</h5>
+                            <div class="hall-price">₹{{ hall.price_per_day|floatformat:0 }} <small class="fs-6 text-muted fw-normal">/ day</small></div>
+                            
+                            <ul class="hall-features">
+                                <li><i class="fas fa-users text-primary"></i> <strong>{{ hall.capacity }} Guests</strong> Capacity</li>
+                                <li><i class="fas fa-snowflake text-info"></i> {{ hall.ac_type }}</li>
+                                <li><i class="fas fa-parking text-success"></i> {{ hall.parking }}</li>
+                                <li><i class="fas fa-utensils text-warning"></i> {{ hall.catering_policy }}</li>
+                            </ul>
+                            <p class="text-muted small mb-3">
+                                <i class="fas fa-map-marker-alt text-danger me-1"></i> {{ hall.location }}
+                            </p>
+                        </div>
+                        <button class="btn btn-inquiry w-100 fw-bold" onclick="openQuickInquiryModal({{ hall.id }}, '{{ hall.name|escapejs }}', '{{ hall.price_per_day|floatformat:0 }}', '{{ hall.location|escapejs }}')">
+                            Submit Inquiry <i class="fas fa-paper-plane ms-2"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <p class="text-muted fw-bold">No event halls listed currently.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- QUICK PROPERTY HALL INQUIRY MODAL -->
+    <div class="modal fade" id="quickInquiryModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-primary text-white rounded-top-4 px-4 py-3">
+                    <h5 class="modal-title fw-bold" id="inquiryModalTitle"><i class="fas fa-building me-2"></i>Event Hall Booking Inquiry</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="quickInquiryForm" onsubmit="submitQuickInquiry(event)" novalidate>
+                    {% csrf_token %}
+                    <input type="hidden" id="inquiryHallId">
+                    <input type="hidden" id="inquiryHallTitle">
+                    <div class="modal-body p-4">
+                        <div class="mb-3 bg-light p-3 rounded-3 border d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="fw-bold text-dark mb-1" id="inquiryHallNameDisplay">Golden Pearl Banquet</h6>
+                                <span class="text-muted small"><i class="fas fa-info-circle me-1"></i>Fill up inquiry details for custom quote & meeting schedule.</span>
+                            </div>
+                            <span class="text-success fw-bold fs-5" id="inquiryHallPriceDisplay">₹45,000 / day</span>
+                        </div>
+
+                        <div class="row g-3">
+                            <!-- Category / Inquiry Type (FIXED TO HALL) -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-uppercase">Inquiry Type (Fixed)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-primary text-white fw-bold"><i class="fas fa-building me-1"></i></span>
+                                    <input type="text" class="form-control fw-bold bg-light" value="Event Hall / Banquet" readonly>
+                                    <input type="hidden" id="inquiryType" value="hall">
+                                </div>
+                            </div>
+
+                            <!-- Number of Days Selection -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-uppercase">Rental Duration (Number of Days) <span class="text-danger">*</span></label>
+                                <select class="form-select rounded-3 fw-semibold text-primary" id="inquiryNumDays" onchange="handleDaysChange()">
+                                    <option value="1" selected>1 Day Rental</option>
+                                    <option value="2">2 Days Rental</option>
+                                    <option value="3">3 Days Rental</option>
+                                    <option value="4">4 Days Rental</option>
+                                    <option value="5">5+ Days Rental</option>
+                                </select>
+                            </div>
+
+                            <!-- 1 DAY CONDITIONAL FIELDS: Date + Hours Needed -->
+                            <div id="singleDayFields" class="col-12">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold small text-uppercase">Event Date <span class="text-danger">*</span></label>
+                                        <input type="date" class="form-control rounded-3" id="inquirySingleDate" oninput="validateFormRealtime()">
+                                        <div class="invalid-feedback text-danger small mt-1" id="singleDateError">Event date cannot be in the past.</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold small text-uppercase">Hours Needed <span class="text-danger">*</span></label>
+                                        <select class="form-select rounded-3" id="inquiryHours">
+                                            <option value="4 Hours">4 Hours (Half Day)</option>
+                                            <option value="6 Hours">6 Hours</option>
+                                            <option value="8 Hours" selected>8 Hours (Standard)</option>
+                                            <option value="12 Hours">12 Hours (Full Day Event)</option>
+                                            <option value="24 Hours">24 Hours (Overnight Setup)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- MULTI DAY CONDITIONAL FIELDS: Start Date & End Date -->
+                            <div id="multiDayFields" class="col-12 d-none">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold small text-uppercase">Event Start Date <span class="text-danger">*</span></label>
+                                        <input type="date" class="form-control rounded-3" id="inquiryStartDate" oninput="validateFormRealtime()">
+                                        <div class="invalid-feedback text-danger small mt-1" id="startDateError">Start date cannot be in the past.</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-bold small text-uppercase">Event End Date <span class="text-danger">*</span></label>
+                                        <input type="date" class="form-control rounded-3" id="inquiryEndDate" oninput="validateFormRealtime()">
+                                        <div class="invalid-feedback text-danger small mt-1" id="endDateError">End date must be on or after start date.</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Full Name -->
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-uppercase">Full Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control rounded-3" id="inquiryName" placeholder="e.g. Rahul Patel" value="{% if request.user.get_full_name %}{{ request.user.get_full_name }}{% else %}{{ request.user.username }}{% endif %}" oninput="validateFormRealtime()" required>
+                                <div class="invalid-feedback text-danger small mt-1" id="nameError">Name must be at least 2 characters.</div>
+                            </div>
+
+                            <!-- Phone Number -->
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-uppercase">Phone Number <span class="text-danger">*</span></label>
+                                <input type="tel" class="form-control rounded-3" id="inquiryPhone" placeholder="+91 98765 43210" value="+91 98765 43210" oninput="validateFormRealtime()" required>
+                                <div class="invalid-feedback text-danger small mt-1" id="phoneError">Enter a valid 10+ digit phone number.</div>
+                            </div>
+
+                            <!-- Email Address -->
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold small text-uppercase">Email Address <span class="text-danger">*</span></label>
+                                <input type="email" class="form-control rounded-3" id="inquiryEmail" placeholder="rahul@gmail.com" value="{{ request.user.email }}" oninput="validateFormRealtime()" required>
+                                <div class="invalid-feedback text-danger small mt-1" id="emailError">Enter a valid email address.</div>
+                            </div>
+
+                            <!-- Capacity Needed -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-uppercase">Expected Guests Count <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control rounded-3" id="inquiryCapacity" placeholder="e.g. 500 Guests" value="500 Guests" oninput="validateFormRealtime()" required>
+                            </div>
+
+                            <!-- Budget Min & Max -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small text-uppercase">Budget Range (₹ Min - Max)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light text-muted fw-bold">₹</span>
+                                    <input type="number" class="form-control" id="inquiryBudgetMin" placeholder="Min" value="25000" min="0" oninput="validateFormRealtime()">
+                                    <span class="input-group-text bg-light text-muted fw-bold">to ₹</span>
+                                    <input type="number" class="form-control" id="inquiryBudgetMax" placeholder="Max" value="50000" min="0" oninput="validateFormRealtime()">
+                                </div>
+                                <div class="text-danger small mt-1 d-none" id="budgetError">Max budget must be greater than or equal to Min budget.</div>
+                            </div>
+
+                            <!-- Location Preference -->
+                            <div class="col-12">
+                                <label class="form-label fw-bold small text-uppercase">Location Preference (Hall Sector)</label>
+                                <input type="text" class="form-control rounded-3 bg-light" id="inquiryLocation" value="Palace Road, Central Sector, Bhavnagar" readonly>
+                            </div>
+
+                            <!-- Special Requirements -->
+                            <div class="col-12">
+                                <label class="form-label fw-bold small text-uppercase">Message / Special Requirements</label>
+                                <textarea class="form-control rounded-3" id="inquiryReq" rows="2" placeholder="e.g. Stage DJ setup, catering access, AC banquet hall requirement..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light px-4 py-3 rounded-bottom-4 justify-content-between">
+                        <div class="text-muted small">
+                            <i class="fas fa-shield-alt text-success me-1"></i> Live DB sync enabled.
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-outline-secondary rounded-3 px-4 fw-bold" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary rounded-3 px-4 fw-bold" id="btnSubmitInquiry">
+                                <i class="fas fa-paper-plane me-1"></i> Submit Hall Inquiry
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let serverHalls = {{ halls_json|safe|default:"[]" }};
+        let currentSelectedCategory = 'ALL';
+
+        document.addEventListener('DOMContentLoaded', function() {
+            renderClientHalls();
+            setInterval(fetchLiveHalls, 4000);
+            setTodayDatesDefault();
+        });
+
+        function setTodayDatesDefault() {
+            const today = new Date().toISOString().split('T')[0];
+            ['inquirySingleDate', 'inquiryStartDate', 'inquiryEndDate'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    if (!el.value) el.value = today;
+                    el.setAttribute('min', today);
+                }
+            });
+        }
+
+        function handleDaysChange() {
+            const numDays = parseInt(document.getElementById('inquiryNumDays').value) || 1;
+            const singleBox = document.getElementById('singleDayFields');
+            const multiBox = document.getElementById('multiDayFields');
+
+            if (numDays === 1) {
+                singleBox.classList.remove('d-none');
+                multiBox.classList.add('d-none');
+            } else {
+                singleBox.classList.add('d-none');
+                multiBox.classList.remove('d-none');
+                
+                const startVal = document.getElementById('inquiryStartDate').value;
+                if (startVal) {
+                    const dt = new Date(startVal);
+                    dt.setDate(dt.getDate() + (numDays - 1));
+                    document.getElementById('inquiryEndDate').value = dt.toISOString().split('T')[0];
+                }
+            }
+            validateFormRealtime();
+        }
+
+        function validateFormRealtime() {
+            let isValid = true;
+
+            const nameEl = document.getElementById('inquiryName');
+            const nameErr = document.getElementById('nameError');
+            if (!nameEl.value || nameEl.value.trim().length < 2) {
+                nameEl.classList.add('is-invalid');
+                nameErr.style.display = 'block';
+                isValid = false;
+            } else {
+                nameEl.classList.remove('is-invalid');
+                nameErr.style.display = 'none';
+            }
+
+            const phoneEl = document.getElementById('inquiryPhone');
+            const phoneErr = document.getElementById('phoneError');
+            const phoneRegex = /^[0-9+\s\-]{10,16}$/;
+            if (!phoneRegex.test(phoneEl.value.trim())) {
+                phoneEl.classList.add('is-invalid');
+                phoneErr.style.display = 'block';
+                isValid = false;
+            } else {
+                phoneEl.classList.remove('is-invalid');
+                phoneErr.style.display = 'none';
+            }
+
+            const emailEl = document.getElementById('inquiryEmail');
+            const emailErr = document.getElementById('emailError');
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (emailEl.value && !emailRegex.test(emailEl.value.trim())) {
+                emailEl.classList.add('is-invalid');
+                emailErr.style.display = 'block';
+                isValid = false;
+            } else {
+                emailEl.classList.remove('is-invalid');
+                emailErr.style.display = 'none';
+            }
+
+            const numDays = parseInt(document.getElementById('inquiryNumDays').value) || 1;
+            const today = new Date().toISOString().split('T')[0];
+            if (numDays === 1) {
+                const sDate = document.getElementById('inquirySingleDate').value;
+                const sErr = document.getElementById('singleDateError');
+                if (sDate && sDate < today) {
+                    document.getElementById('inquirySingleDate').classList.add('is-invalid');
+                    sErr.style.display = 'block';
+                    isValid = false;
+                } else {
+                    document.getElementById('inquirySingleDate').classList.remove('is-invalid');
+                    sErr.style.display = 'none';
+                }
+            } else {
+                const stDate = document.getElementById('inquiryStartDate').value;
+                const enDate = document.getElementById('inquiryEndDate').value;
+                const stErr = document.getElementById('startDateError');
+                const enErr = document.getElementById('endDateError');
+
+                if (stDate && stDate < today) {
+                    document.getElementById('inquiryStartDate').classList.add('is-invalid');
+                    stErr.style.display = 'block';
+                    isValid = false;
+                } else {
+                    document.getElementById('inquiryStartDate').classList.remove('is-invalid');
+                    stErr.style.display = 'none';
+                }
+
+                if (enDate && enDate < stDate) {
+                    document.getElementById('inquiryEndDate').classList.add('is-invalid');
+                    enErr.style.display = 'block';
+                    isValid = false;
+                } else {
+                    document.getElementById('inquiryEndDate').classList.remove('is-invalid');
+                    enErr.style.display = 'none';
+                }
+            }
+
+            const bMin = parseFloat(document.getElementById('inquiryBudgetMin').value) || 0;
+            const bMax = parseFloat(document.getElementById('inquiryBudgetMax').value) || 0;
+            const budgetErr = document.getElementById('budgetError');
+            if (bMin > 0 && bMax > 0 && bMax < bMin) {
+                budgetErr.classList.remove('d-none');
+                isValid = false;
+            } else {
+                budgetErr.classList.add('d-none');
+            }
+
+            document.getElementById('btnSubmitInquiry').disabled = !isValid;
+            return isValid;
+        }
+
+        function setClientCategoryFilter(cat, btnElem) {
+            currentSelectedCategory = cat;
+            document.querySelectorAll('#clientCategoryFilterBar .cat-filter-btn').forEach(btn => {
+                btn.classList.remove('btn-primary', 'active');
+                btn.classList.add('btn-outline-primary');
+            });
+            if (btnElem) {
+                btnElem.classList.remove('btn-outline-primary');
+                btnElem.classList.add('btn-primary', 'active');
+            }
+            renderClientHalls();
+        }
+
+        function updateClientCategoryFilterBar(availableCategories) {
+            const bar = document.getElementById('clientCategoryFilterBar');
+            if (!bar) return;
+
+            const totalAvailableCount = serverHalls.filter(h => h.status === 'Available').length;
+            
+            let html = `
+                <button class="btn ${currentSelectedCategory === 'ALL' ? 'btn-primary active' : 'btn-outline-primary'} rounded-pill px-3 py-2 fw-bold text-uppercase small cat-filter-btn" onclick="setClientCategoryFilter('ALL', this)">
+                    All Available Halls (${totalAvailableCount})
+                </button>
+            `;
+
+            if (availableCategories && availableCategories.length > 0) {
+                availableCategories.forEach(cat => {
+                    const count = serverHalls.filter(h => h.status === 'Available' && h.category && h.category.toLowerCase() === cat.toLowerCase()).length;
+                    if (count > 0) {
+                        const isActive = currentSelectedCategory.toLowerCase() === cat.toLowerCase();
+                        html += `
+                            <button class="btn ${isActive ? 'btn-primary active' : 'btn-outline-primary'} rounded-pill px-3 py-2 fw-bold text-uppercase small cat-filter-btn" onclick="setClientCategoryFilter('${cat.replace(/'/g, "\\'")}', this)">
+                                ${cat} (${count})
+                            </button>
+                        `;
+                    }
+                });
+            }
+
+            bar.innerHTML = html;
+        }
+
+        function fetchLiveHalls() {
+            fetch('/properties/api/halls/live-list/')
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success' && data.halls) {
+                    serverHalls = data.halls;
+                    if (data.available_categories) {
+                        updateClientCategoryFilterBar(data.available_categories);
+                    }
+                    renderClientHalls();
+                }
+            })
+            .catch(err => console.log('Live sync polling...'));
+        }
+
+        function renderClientHalls() {
+            const container = document.getElementById('hallsContainer');
+            if (!container || !serverHalls) return;
+
+            const searchInput = document.getElementById('clientSearchInput');
+            const searchVal = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+            container.innerHTML = '';
+            
+            // Filter to show ONLY currently available halls matching category & search
+            let filtered = serverHalls.filter(h => {
+                const isAvailable = h.status === 'Available';
+                const matchCategory = currentSelectedCategory === 'ALL' || (h.category && h.category.toLowerCase() === currentSelectedCategory.toLowerCase());
+                const matchSearch = h.name.toLowerCase().includes(searchVal) || h.location.toLowerCase().includes(searchVal) || (h.amenities && h.amenities.toLowerCase().includes(searchVal));
+                return isAvailable && matchCategory && matchSearch;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="col-12 text-center py-5">
+                        <h5 class="text-muted fw-bold">No event halls currently available under "${currentSelectedCategory}" category.</h5>
+                        <p class="text-secondary small">Please select another category or check back later.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            filtered.forEach(hall => {
+                const statusBadge = 'bg-success';
+                const cardHtml = `
+                    <div class="col-md-4">
+                        <div class="hall-card">
+                            <div class="position-relative">
+                                <img src="${hall.image}" class="hall-image" alt="${hall.name}" onerror="this.src='/static/images/image/c1.jpg'">
+                                <span class="position-absolute top-0 start-0 m-3 badge bg-primary text-white fw-bold px-3 py-2 rounded-pill text-uppercase">
+                                    ${hall.category}
+                                </span>
+                                <span class="position-absolute top-0 end-0 m-3 badge ${statusBadge} text-white fw-bold px-3 py-2 rounded-pill">
+                                    ${hall.status}
+                                </span>
+                            </div>
+                            <div class="card-body p-4 d-flex flex-column justify-content-between">
+                                <div>
+                                    <h5 class="card-title fw-bold text-dark">${hall.name}</h5>
+                                    <div class="hall-price">₹${Number(hall.price).toLocaleString('en-IN')} <small class="fs-6 text-muted fw-normal">/ day</small></div>
+                                    
+                                    <ul class="hall-features">
+                                        <li><i class="fas fa-users text-primary"></i> <strong>${hall.capacity} Guests</strong> Capacity</li>
+                                        <li><i class="fas fa-snowflake text-info"></i> ${hall.acType}</li>
+                                        <li><i class="fas fa-parking text-success"></i> ${hall.parking}</li>
+                                        <li><i class="fas fa-utensils text-warning"></i> ${hall.catering}</li>
+                                    </ul>
+                                    <p class="text-muted small mb-3">
+                                        <i class="fas fa-map-marker-alt text-danger me-1"></i> ${hall.location}
+                                    </p>
+                                </div>
+                                <button class="btn btn-inquiry w-100 fw-bold" onclick="openQuickInquiryModal(${hall.id}, '${hall.name.replace(/'/g, "\\'")}', '${hall.price}', '${hall.location.replace(/'/g, "\\'")}')">
+                                    Submit Inquiry <i class="fas fa-paper-plane ms-2"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', cardHtml);
+            });
+        }
+
+        let quickInquiryModalInstance = null;
+
+        function openQuickInquiryModal(id, title, price, location) {
+            document.getElementById('inquiryHallId').value = id;
+            document.getElementById('inquiryHallTitle').value = title;
+            document.getElementById('inquiryHallNameDisplay').textContent = title;
+            document.getElementById('inquiryHallPriceDisplay').textContent = `₹${Number(price).toLocaleString('en-IN')} / day`;
+            if (location) {
+                document.getElementById('inquiryLocation').value = location;
+            }
+
+            document.getElementById('inquiryNumDays').value = "1";
+            handleDaysChange();
+
+            quickInquiryModalInstance = new bootstrap.Modal(document.getElementById('quickInquiryModal'));
+            quickInquiryModalInstance.show();
+        }
+
+        function submitQuickInquiry(e) {
+            e.preventDefault();
+            if (!validateFormRealtime()) {
+                alert('Please fix errors in the form before submitting.');
+                return;
+            }
+
+            const btn = document.getElementById('btnSubmitInquiry');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Submitting...';
+
+            const numDays = parseInt(document.getElementById('inquiryNumDays').value) || 1;
+            let startDateVal = '', endDateVal = '', hoursVal = '';
+
+            if (numDays === 1) {
+                startDateVal = document.getElementById('inquirySingleDate').value;
+                endDateVal = startDateVal;
+                hoursVal = document.getElementById('inquiryHours').value;
+            } else {
+                startDateVal = document.getElementById('inquiryStartDate').value;
+                endDateVal = document.getElementById('inquiryEndDate').value;
+                hoursVal = '';
+            }
+
+            const payload = {
+                hall_id: document.getElementById('inquiryHallId').value,
+                hall_title: document.getElementById('inquiryHallTitle').value,
+                inquiry_type: 'hall',
+                name: document.getElementById('inquiryName').value,
+                phone: document.getElementById('inquiryPhone').value,
+                email: document.getElementById('inquiryEmail').value,
+                num_days: numDays,
+                start_date: startDateVal,
+                end_date: endDateVal,
+                hours_needed: hoursVal,
+                capacity_needed: document.getElementById('inquiryCapacity').value,
+                budget_min: document.getElementById('inquiryBudgetMin').value,
+                budget_max: document.getElementById('inquiryBudgetMax').value,
+                location_preference: document.getElementById('inquiryLocation').value,
+                requirements: document.getElementById('inquiryReq').value
+            };
+
+            fetch('/properties/api/halls/submit-inquiry/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-paper-plane me-1"></i> Submit Hall Inquiry';
+                if (data.status === 'success') {
+                    if (quickInquiryModalInstance) quickInquiryModalInstance.hide();
+                    if (confirm('Hall inquiry submitted successfully to Admin!\n\nWould you like to view your hall inquiries dashboard now?')) {
+                        window.location.href = '/bookings/my-hall-inquiries/';
+                    }
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(err => {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-paper-plane me-1"></i> Submit Hall Inquiry';
+                alert('Network error submitting inquiry.');
+            });
+        }
+    </script>
+    {% include 'core/footer.html' %}
+</body>
+</html>

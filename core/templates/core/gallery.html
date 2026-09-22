@@ -1,0 +1,754 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rentify Gallery</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(135deg, #000428, #004e92);
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 40px;
+      color: white;
+      font-size: 2.5em;
+      position: relative;
+      padding-bottom: 15px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+
+    h1::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100px;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #f39c12, transparent);
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 25px;
+      padding: 20px;
+    }
+
+    .gallery-item {
+      position: relative;
+      overflow: hidden;
+      border-radius: 15px;
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+      height: 300px;
+      background: #fff;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .gallery-item:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .gallery-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+
+    .gallery-item:hover img {
+      transform: scale(1.1);
+    }
+
+    .overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 20px;
+      color: white;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .gallery-item:hover .overlay {
+      opacity: 1;
+    }
+
+    .overlay h3 {
+      font-size: 1.2em;
+      margin-bottom: 5px;
+      transform: translateY(20px);
+      transition: transform 0.3s ease;
+    }
+
+    .overlay p {
+      font-size: 0.9em;
+      opacity: 0.8;
+      transform: translateY(20px);
+      transition: transform 0.3s ease 0.1s;
+    }
+
+    .gallery-item:hover .overlay h3,
+    .gallery-item:hover .overlay p {
+      transform: translateY(0);
+    }
+
+    .filter-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+
+    .filter-button {
+      padding: 10px 25px;
+      border: none;
+      border-radius: 25px;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.9em;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .filter-button:hover,
+    .filter-button.active {
+      background: #f39c12;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    @media (max-width: 768px) {
+      .gallery {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 15px;
+        padding: 10px;
+      }
+
+      .gallery-item {
+        height: 250px;
+      }
+
+      h1 {
+        font-size: 2em;
+        margin-bottom: 30px;
+      }
+
+      .filter-buttons {
+        gap: 10px;
+      }
+
+      .filter-button {
+        padding: 8px 20px;
+        font-size: 0.8em;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Our Rental Collection</h1>
+    
+    <div class="filter-buttons">
+      <button class="filter-button active">All</button>
+      <button class="filter-button">Cars</button>
+      <button class="filter-button">Bikes</button>
+      <button class="filter-button">Halls</button>
+      <button class="filter-button">Houses</button>
+      <button class="filter-button">Offices</button>
+      <button class="filter-button">Others</button>
+    </div>
+
+    <div class="gallery">
+      <!-- Cars -->
+      <div class="gallery-item" data-category="Cars">
+        <img src="{% static 'images/image/carimgs/i20.jpg' %}" alt="Hyundai i20">
+        <div class="overlay">
+          <h3>Hyundai i20</h3>
+          <p>₹2000/day - Premium Hatchback</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Cars">
+        <img src="{% static 'images/image/carimgs/i201.jpg' %}" alt="Hyundai i20">
+        <div class="overlay">
+          <h3>Hyundai i20</h3>
+          <p>₹2000/day - Premium Hatchback</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Cars">
+        <img src="{% static 'images/image/carimgs/i203.jpg' %}" alt="Hyundai i20">
+        <div class="overlay">
+          <h3>Hyundai i20</h3>
+          <p>₹2000/day - Premium Hatchback</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Cars">
+        <img src="{% static 'images/image/carimgs/swift1.jpg' %}" alt="Maruti Swift">
+        <div class="overlay">
+          <h3>Maruti Swift</h3>
+          <p>₹2000/day - Stylish Hatchback</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Cars">
+        <img src="{% static 'images/image/carimgs/swift5.jpg' %}" alt="Maruti Swift">
+        <div class="overlay">
+          <h3>Maruti Swift</h3>
+          <p>₹2000/day - Stylish Hatchback</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Cars">
+        <img src="{% static 'images/image/carimgs/thar1.jpg' %}" alt="Mahindra Thar">
+        <div class="overlay">
+          <h3>Mahindra Thar</h3>
+          <p>₹4000/day - Off-road SUV</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Cars">
+        <img src="{% static 'images/image/carimgs/thar2.jpg' %}" alt="Mahindra Thar">
+        <div class="overlay">
+          <h3>Mahindra Thar</h3>
+          <p>₹4000/day - Off-road SUV</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Cars">
+        <img src="{% static 'images/image/carimgs/thar3.jpg' %}" alt="Mahindra Thar">
+        <div class="overlay">
+          <h3>Mahindra Thar</h3>
+          <p>₹4000/day - Off-road SUV</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Cars">
+        <img src="{% static 'images/image/carimgs/verna1.jpg' %}" alt="Hyundai Verna">
+        <div class="overlay">
+          <h3>Hyundai Verna</h3>
+          <p>₹2500/day - Premium Sedan</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Cars">
+        <img src="{% static 'images/image/carimgs/verna3.jpg' %}" alt="Hyundai Verna">
+        <div class="overlay">
+          <h3>Hyundai Verna</h3>
+          <p>₹2500/day - Premium Sedan</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Cars">
+        <img src="{% static 'images/image/carimgs/verna4.jpg' %}" alt="Hyundai Verna">
+        <div class="overlay">
+          <h3>Hyundai Verna</h3>
+          <p>₹2500/day - Premium Sedan</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Cars">
+        <img src="{% static 'images/image/baleno.jpg' %}" alt="Maruti Baleno">
+        <div class="overlay">
+          <h3>Maruti Baleno</h3>
+          <p>₹2000/day - Premium Hatchback</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Cars">
+        <img src="{% static 'images/image/ertica.jpg' %}" alt="Maruti Ertiga">
+        <div class="overlay">
+          <h3>Maruti Ertiga</h3>
+          <p>₹3000/day - Family MPV</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Cars">
+        <img src="{% static 'images/image/ertika.jpg' %}" alt="Maruti Ertiga">
+        <div class="overlay">
+          <h3>Maruti Ertiga</h3>
+          <p>₹3000/day - Family MPV</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Cars">
+        <img src="{% static 'images/image/car2.jpg' %}" alt="Luxury Car">
+        <div class="overlay">
+          <h3>Luxury Sedan</h3>
+          <p>₹4000/day - Premium Car</p>
+        </div>
+      </div>
+
+      <!-- Bikes -->
+      <div class="gallery-item" data-category="Bikes">
+        <img src="{% static 'images/image/bikeimg/bullet1.jpg' %}" alt="Royal Enfield Bullet">
+        <div class="overlay">
+          <h3>Royal Enfield Bullet</h3>
+          <p>₹800/day - Classic Cruiser</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Bikes">
+        <img src="{% static 'images/image/bikeimg/fz.jpg' %}" alt="Yamaha FZ">
+        <div class="overlay">
+          <h3>Yamaha FZ</h3>
+          <p>₹700/day - Street Bike</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Bikes">
+        <img src="{% static 'images/image/bikeimg/fzs.jpg' %}" alt="Yamaha FZS">
+        <div class="overlay">
+          <h3>Yamaha FZS</h3>
+          <p>₹800/day - Premium Street Bike</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Bikes">
+        <img src="{% static 'images/image/bikeimg/gt650.jpg' %}" alt="Royal Enfield GT 650">
+        <div class="overlay">
+          <h3>Royal Enfield Continental GT 650</h3>
+          <p>₹1200/day - Cafe Racer</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Bikes">
+        <img src="{% static 'images/image/bikeimg/hayabusa.jpg' %}" alt="Suzuki Hayabusa">
+        <div class="overlay">
+          <h3>Suzuki Hayabusa</h3>
+          <p>₹2000/day - Super Sport</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Bikes">
+        <img src="{% static 'images/image/bikeimg/jawa1.jpg' %}" alt="Jawa">
+        <div class="overlay">
+          <h3>Jawa Classic</h3>
+          <p>₹800/day - Vintage Style</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Bikes">
+        <img src="{% static 'images/image/bikeimg/jawa2.jpg' %}" alt="Jawa">
+        <div class="overlay">
+          <h3>Jawa Classic</h3>
+          <p>₹800/day - Vintage Style</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Bikes">
+        <img src="{% static 'images/image/bikeimg/jawa3.jpg' %}" alt="Jawa">
+        <div class="overlay">
+          <h3>Jawa Classic</h3>
+          <p>₹800/day - Vintage Style</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Bikes">
+        <img src="{% static 'images/image/bikeimg/ktm.jpg' %}" alt="KTM Duke">
+        <div class="overlay">
+          <h3>KTM Duke</h3>
+          <p>₹1200/day - Performance Bike</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Bikes">
+        <img src="{% static 'images/image/bikeimg/mt15.jpg' %}" alt="Yamaha MT15">
+        <div class="overlay">
+          <h3>Yamaha MT15</h3>
+          <p>₹1000/day - Street Fighter</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Bikes">
+        <img src="{% static 'images/image/bikeimg/r15-1.jpg' %}" alt="Yamaha R15">
+        <div class="overlay">
+          <h3>Yamaha R15</h3>
+          <p>₹1000/day - Sports Bike</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Bikes">
+        <img src="{% static 'images/image/bikeimg/r15-2.jpg' %}" alt="Yamaha R15">
+        <div class="overlay">
+          <h3>Yamaha R15</h3>
+          <p>₹1000/day - Sports Bike</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Bikes">
+        <img src="{% static 'images/image/bikeimg/hunter.jpg' %}" alt="Royal Enfield Hunter">
+        <div class="overlay">
+          <h3>Royal Enfield Hunter</h3>
+          <p>₹900/day - Modern Classic</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Bikes">
+        <img src="{% static 'images/image/bikeimg/jawa4.jpg' %}" alt="Jawa">
+        <div class="overlay">
+          <h3>Jawa Classic</h3>
+          <p>₹800/day - Vintage Style</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Bikes">
+        <img src="{% static 'images/image/bikeimg/r15-3.jpg' %}" alt="Yamaha R15">
+        <div class="overlay">
+          <h3>Yamaha R15</h3>
+          <p>₹1000/day - Sports Bike</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Bikes">
+        <img src="{% static 'images/image/bikeimg/r15-4.jpg' %}" alt="Yamaha R15">
+        <div class="overlay">
+          <h3>Yamaha R15</h3>
+          <p>₹1000/day - Sports Bike</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Bikes">
+        <img src="{% static 'images/image/bikeimg/r15-5.jpg' %}" alt="Yamaha R15">
+        <div class="overlay">
+          <h3>Yamaha R15</h3>
+          <p>₹1000/day - Sports Bike</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Bikes">
+        <img src="{% static 'images/image/bikeimg/r15.jpg' %}" alt="Yamaha R15">
+        <div class="overlay">
+          <h3>Yamaha R15</h3>
+          <p>₹1000/day - Sports Bike</p>
+        </div>
+      </div>
+
+      <!-- Houses -->
+      <div class="gallery-item" data-category="Houses">
+        <img src="{% static 'images/image/houseimg/i1.jpg' %}" alt="House 1">
+        <div class="overlay">
+          <h3>Modern House</h3>
+          <p>₹15000/month - 2BHK</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Houses">
+        <img src="{% static 'images/image/houseimg/i2.jpg' %}" alt="House 2">
+        <div class="overlay">
+          <h3>Family House</h3>
+          <p>₹20000/month - 3BHK</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Houses">
+        <img src="{% static 'images/image/houseimg/i3.jpg' %}" alt="House 3">
+        <div class="overlay">
+          <h3>Luxury House</h3>
+          <p>₹25000/month - 4BHK</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Houses">
+        <img src="{% static 'images/image/houseimg/i4.jpg' %}" alt="House 4">
+        <div class="overlay">
+          <h3>Premium House</h3>
+          <p>₹30000/month - Duplex</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Houses">
+        <img src="{% static 'images/image/houseimg/i5.jpg' %}" alt="House 5">
+        <div class="overlay">
+          <h3>Garden House</h3>
+          <p>₹35000/month - Villa</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Houses">
+        <img src="{% static 'images/image/houseimg/i6.jpg' %}" alt="House 6">
+        <div class="overlay">
+          <h3>Deluxe House</h3>
+          <p>₹40000/month - Bungalow</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Houses">
+        <img src="{% static 'images/image/houseimg/i7.jpg' %}" alt="House 7">
+        <div class="overlay">
+          <h3>Executive House</h3>
+          <p>₹45000/month - Penthouse</p>
+        </div>
+      </div>
+
+      <!-- Halls -->
+      <div class="gallery-item" data-category="Halls">
+        <img src="{% static 'images/image/hallimg/4ren.jpg' %}" alt="4 Ren Hall">
+        <div class="overlay">
+          <h3>4 Ren Hall</h3>
+          <p>₹25000/day - Event Space</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Halls">
+        <img src="{% static 'images/image/hallimg/alimentos.jpg' %}" alt="Alimentos Hall">
+        <div class="overlay">
+          <h3>Alimentos Hall</h3>
+          <p>₹30000/day - Premium Venue</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Halls">
+        <img src="{% static 'images/image/hallimg/avalon.jpg' %}" alt="Avalon Hall">
+        <div class="overlay">
+          <h3>Avalon Hall</h3>
+          <p>₹35000/day - Luxury Space</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Halls">
+        <img src="{% static 'images/image/hallimg/goldenpearl.jpg' %}" alt="Golden Pearl">
+        <div class="overlay">
+          <h3>Golden Pearl Hall</h3>
+          <p>₹40000/day - Wedding Venue</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Halls">
+        <img src="{% static 'images/image/hallimg/hirarupa.jpg' %}" alt="Hirarupa Hall">
+        <div class="overlay">
+          <h3>Hirarupa Hall</h3>
+          <p>₹28000/day - Multi-purpose Hall</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Halls">
+        <img src="{% static 'images/image/hallimg/iscon.jpg' %}" alt="ISCON Hall">
+        <div class="overlay">
+          <h3>ISCON Hall</h3>
+          <p>₹45000/day - Grand Hall</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Halls">
+        <img src="{% static 'images/image/hallimg/rangoli.jpg' %}" alt="Rangoli Hall">
+        <div class="overlay">
+          <h3>Rangoli Hall</h3>
+          <p>₹32000/day - Event Center</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Halls">
+        <img src="{% static 'images/image/hallimg/rangoli2.jpg' %}" alt="Rangoli Hall 2">
+        <div class="overlay">
+          <h3>Rangoli Hall 2</h3>
+          <p>₹35000/day - Premium Event Center</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Halls">
+        <img src="{% static 'images/image/hallimg/raviera.jpg' %}" alt="Raviera Hall">
+        <div class="overlay">
+          <h3>Raviera Hall</h3>
+          <p>₹38000/day - Luxury Event Space</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Halls">
+        <img src="{% static 'images/image/hallimg/shivsakti.jpg' %}" alt="Shiv Shakti Hall">
+        <div class="overlay">
+          <h3>Shiv Shakti Hall</h3>
+          <p>₹30000/day - Celebration Venue</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Halls">
+        <img src="{% static 'images/image/hallimg/silvernest.jpg' %}" alt="Silver Nest Hall">
+        <div class="overlay">
+          <h3>Silver Nest Hall</h3>
+          <p>₹42000/day - Premium Banquet</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Halls">
+        <img src="{% static 'images/image/hallimg/vishvakarma.jpg' %}" alt="Vishvakarma Hall">
+        <div class="overlay">
+          <h3>Vishvakarma Hall</h3>
+          <p>₹36000/day - Grand Celebration Hall</p>
+        </div>
+      </div>
+
+      <!-- Offices -->
+      <div class="gallery-item" data-category="Offices">
+        <img src="{% static 'images/image/officeimg/o1.jpg' %}" alt="Office Space 1">
+        <div class="overlay">
+          <h3>Modern Office Space</h3>
+          <p>₹20000/month - 1000 sq.ft</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Offices">
+        <img src="{% static 'images/image/officeimg/o2.jpg' %}" alt="Office Space 2">
+        <div class="overlay">
+          <h3>Co-working Space</h3>
+          <p>₹15000/month - Flexible Seating</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Offices">
+        <img src="{% static 'images/image/officeimg/o3.jpg' %}" alt="Office Space 3">
+        <div class="overlay">
+          <h3>Executive Suite</h3>
+          <p>₹30000/month - Premium Location</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Offices">
+        <img src="{% static 'images/image/officeimg/o4.jpg' %}" alt="Office Space 4">
+        <div class="overlay">
+          <h3>Business Center</h3>
+          <p>₹25000/month - Full Services</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Offices">
+        <img src="{% static 'images/image/officeimg/o5.jpg' %}" alt="Office Space 5">
+        <div class="overlay">
+          <h3>Corporate Office</h3>
+          <p>₹35000/month - Prime Location</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Offices">
+        <img src="{% static 'images/image/officeimg/o6.jpg' %}" alt="Office Space 6">
+        <div class="overlay">
+          <h3>Startup Space</h3>
+          <p>₹18000/month - Modern Amenities</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Offices">
+        <img src="{% static 'images/image/officeimg/o7.jpg' %}" alt="Office Space 7">
+        <div class="overlay">
+          <h3>Tech Hub</h3>
+          <p>₹28000/month - IT Ready</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Offices">
+        <img src="{% static 'images/image/officeimg/o8.jpg' %}" alt="Office Space 8">
+        <div class="overlay">
+          <h3>Compact Office</h3>
+          <p>₹12000/month - Small Teams</p>
+        </div>
+      </div>
+
+      <!-- Others -->
+      <div class="gallery-item" data-category="Others">
+        <img src="{% static 'images/image/backimg.png' %}" alt="Background Image">
+        <div class="overlay">
+          <h3>Background Image</h3>
+          <p>Website Background</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Others">
+        <img src="{% static 'images/image/bg2.jpg' %}" alt="Background 2">
+        <div class="overlay">
+          <h3>Background 2</h3>
+          <p>Website Background</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Others">
+        <img src="{% static 'images/image/carrental.jpg' %}" alt="Car Rental">
+        <div class="overlay">
+          <h3>Car Rental Service</h3>
+          <p>Our Services</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Others">
+        <img src="{% static 'images/image/first.jpg' %}" alt="Welcome Image">
+        <div class="overlay">
+          <h3>Welcome Image</h3>
+          <p>Homepage Banner</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Others">
+        <img src="{% static 'images/image/c1.jpg' %}" alt="Custom 1">
+        <div class="overlay">
+          <h3>Custom Image 1</h3>
+          <p>Website Content</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Others">
+        <img src="{% static 'images/image/c2.jpg' %}" alt="Custom 2">
+        <div class="overlay">
+          <h3>Custom Image 2</h3>
+          <p>Website Content</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Others">
+        <img src="{% static 'images/image/c3.jpg' %}" alt="Custom 3">
+        <div class="overlay">
+          <h3>Custom Image 3</h3>
+          <p>Website Content</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Others">
+        <img src="{% static 'images/image/c4.jpg' %}" alt="Custom 4">
+        <div class="overlay">
+          <h3>Custom Image 4</h3>
+          <p>Website Content</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Others">
+        <img src="{% static 'images/image/c5.jpg' %}" alt="Custom 5">
+        <div class="overlay">
+          <h3>Custom Image 5</h3>
+          <p>Website Content</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Others">
+        <img src="{% static 'images/image/c6.jpg' %}" alt="Custom 6">
+        <div class="overlay">
+          <h3>Custom Image 6</h3>
+          <p>Website Content</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Others">
+        <img src="{% static 'images/image/c7.jpg' %}" alt="Custom 7">
+        <div class="overlay">
+          <h3>Custom Image 7</h3>
+          <p>Website Content</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Others">
+        <img src="{% static 'images/image/c8.jpg' %}" alt="Custom 8">
+        <div class="overlay">
+          <h3>Custom Image 8</h3>
+          <p>Website Content</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Others">
+        <img src="{% static 'images/image/f5.jpg' %}" alt="Feature 5">
+        <div class="overlay">
+          <h3>Feature Image</h3>
+          <p>Website Feature</p>
+        </div>
+      </div>
+      <div class="gallery-item" data-category="Others">
+        <img src="{% static 'images/image/fir.jpg' %}" alt="First Image">
+        <div class="overlay">
+          <h3>First Image</h3>
+          <p>Website Content</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Add filter functionality
+    const filterButtons = document.querySelectorAll('.filter-button');
+    const galleryItems = document.querySelectorAll('.gallery-item');
+    
+    filterButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        // Remove active class from all buttons
+        filterButtons.forEach(btn => btn.classList.remove('active'));
+        // Add active class to clicked button
+        button.classList.add('active');
+        
+        const category = button.textContent;
+        
+        galleryItems.forEach(item => {
+          if (category === 'All' || item.dataset.category === category) {
+            item.style.display = 'block';
+          } else {
+            item.style.display = 'none';
+          }
+        });
+      });
+    });
+  </script>
+    {% include 'core/footer.html' %}
+</body>
+</html>

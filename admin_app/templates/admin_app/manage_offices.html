@@ -1,0 +1,1414 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Commercial Offices - Admin Portal</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Admin Sidebar Styles -->
+    <link rel="stylesheet" href="{% static 'css/admin_sidebar.css' %}">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #0056b3;
+            --primary-hover: #004085;
+            --dark: #0f172a;
+            --card-bg: #ffffff;
+            --border-color: #e2e8f0;
+            --accent-bg: #f8fafc;
+        }
+
+        /* STRICT ICON REMOVAL - HIDE ALL ICON TAGS */
+        i, .fa, .fas, .far, .fal, .fab, svg.feather {
+            display: none !important;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #f1f5f9;
+            color: #334155;
+            margin: 0;
+            padding: 0;
+        }
+
+        .admin-layout-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .admin-main-content {
+            flex-grow: 1;
+            padding: 28px;
+            background-color: #f8fafc;
+            min-height: 100vh;
+            overflow-y: auto;
+        }
+
+        .executive-page-header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            border-radius: 16px;
+            padding: 24px 30px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.25);
+        }
+
+        .crud-card {
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            transition: all 0.25s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .crud-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.1);
+            border-color: var(--primary);
+        }
+
+        .crud-img-wrapper {
+            position: relative;
+            height: 180px;
+            background-color: #cbd5e1;
+            overflow: hidden;
+        }
+        .crud-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        .crud-card:hover .crud-img {
+            transform: scale(1.04);
+        }
+
+        .badge-status {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+        .badge-available { background-color: #10b981; color: #ffffff; }
+        .badge-booked { background-color: #ef4444; color: #ffffff; }
+        .badge-category { background-color: rgba(15, 23, 42, 0.85); color: #ffffff; font-weight: 700; font-size: 0.72rem; }
+
+        .image-preview-box {
+            width: 100%;
+            height: 180px;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background-color: #f8fafc;
+        }
+        .image-preview-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .spec-icon-badge {
+            background-color: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        /* Small Real-Time Live Sync Toast Notification */
+        .live-sync-toast {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 10000;
+            background: #0f172a;
+            color: #38bdf8;
+            padding: 10px 18px;
+            border-radius: 30px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            box-shadow: 0 8px 20px rgba(15,23,42,0.3);
+            border: 1px solid rgba(56,189,248,0.3);
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+        .live-sync-toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Real-Time Form Validation Helper Text */
+        .field-error-text {
+            font-size: 0.78rem;
+            color: #dc2626;
+            font-weight: 600;
+            margin-top: 4px;
+            display: none;
+        }
+        .input-invalid {
+            border-color: #dc2626 !important;
+            background-color: #fef2f2 !important;
+        }
+        .input-valid {
+            border-color: #10b981 !important;
+        }
+
+        .feature-pill {
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s ease;
+        }
+        .feature-pill.active {
+            background-color: #0056b3 !important;
+            color: #ffffff !important;
+            border-color: #0056b3 !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Small Real-Time Sync Update Notification Badge -->
+    <div id="liveSyncToast" class="live-sync-toast">
+        Database Auto-Synced Live
+    </div>
+
+    <div class="admin-layout-wrapper">
+        <!-- Sidebar Navigation -->
+        {% include 'admin_app/admin_header.html' %}
+
+        <!-- Main Workspace -->
+        <main class="admin-main-content">
+            <!-- Executive Header Banner (100% Icon-Free Clean Design) -->
+            <div class="executive-page-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="badge bg-primary bg-opacity-20 text-white px-3 py-1 rounded-pill fw-bold border border-light border-opacity-25 small">
+                            Commercial Office Management
+                        </span>
+                    </div>
+                    <h2 class="fw-bold mb-1 text-white">Manage Commercial Offices & Real-Time Specifications</h2>
+                    <p class="text-white-50 small mb-0">Create office listings with manual entry, real-time input validation, and live database sync popups.</p>
+                </div>
+                <button class="btn btn-warning text-dark fw-extrabold rounded-3 px-4 py-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#addOfficeModal">
+                    Add New Office Listing
+                </button>
+            </div>
+
+            <!-- Executive 3-Tab Control Switcher -->
+            <ul class="nav nav-pills gap-2 mb-4 p-2 bg-white rounded-4 border shadow-sm" id="officeMgmtTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active rounded-3 px-4 py-2 fw-bold" id="tab-offices-btn" data-bs-toggle="tab" data-bs-target="#tab-offices" type="button" role="tab">
+                        1. All Offices Fleet ({{ offices.count }})
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link rounded-3 px-4 py-2 fw-bold" id="tab-categories-btn" data-bs-toggle="tab" data-bs-target="#tab-categories" type="button" role="tab">
+                        2. Office Categories ({{ office_categories_list|length }})
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link rounded-3 px-4 py-2 fw-bold" id="tab-features-btn" data-bs-toggle="tab" data-bs-target="#tab-features" type="button" role="tab">
+                        3. Office Features & Amenities ({{ office_features_list|length }})
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="officeMgmtTabContent">
+                <!-- TAB 1: ALL OFFICES FLEET -->
+                <div class="tab-pane fade show active" id="tab-offices" role="tabpanel">
+                    <!-- Filter & Search Bar -->
+                    <div class="card border-0 shadow-sm rounded-4 p-3 mb-4 bg-white">
+                        <div class="row g-3 align-items-center">
+                            <div class="col-12 col-md-5">
+                                <input type="text" class="form-control bg-light rounded-3" id="officeSearchInput" placeholder="Search office title, location, or category..." onkeyup="renderOfficesGrid()">
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-4">
+                                <select class="form-select rounded-3" id="officeStatusFilter" onchange="filterOfficesByStatus()">
+                                    <option value="ALL">All Statuses (Available, Leased)</option>
+                                    <option value="Available">Available Offices Only</option>
+                                    <option value="Leased">Leased Offices Only</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-3 d-flex align-items-center justify-content-sm-end gap-2">
+                                <span class="text-muted small fw-bold text-nowrap">Cards / Page:</span>
+                                <select class="form-select form-select-sm rounded-3 w-auto fw-bold" id="pageSizeSelect" onchange="changePageSize()">
+                                    <option value="4" selected>4 per page</option>
+                                    <option value="8">8 per page</option>
+                                    <option value="12">12 per page</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Offices Cards Grid -->
+                    <div class="row g-4 mb-4" id="officesGridContainer">
+                        <!-- Dynamically rendered via JS -->
+                    </div>
+
+                    <!-- Pagination Bar -->
+                    <div class="d-flex flex-wrap justify-content-between align-items-center bg-white p-3 rounded-4 shadow-sm border">
+                        <div class="text-muted small fw-bold" id="paginationInfoText">
+                            Showing entries
+                        </div>
+                        <nav aria-label="Offices Pagination">
+                            <ul class="pagination pagination-sm mb-0" id="paginationControls">
+                                <!-- Rendered via JS -->
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+
+                <!-- TAB 2: OFFICE CATEGORIES CRUD -->
+                <div class="tab-pane fade" id="tab-categories" role="tabpanel">
+                    <div class="row g-4 mb-4">
+                        <div class="col-lg-4">
+                            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                                <h5 class="fw-bold mb-3">Add New Office Category</h5>
+                                <form id="addCategoryForm" onsubmit="handleCategorySubmit(event, 'office')">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold small text-uppercase">Category Name</label>
+                                        <input type="text" class="form-control rounded-3" id="newCategoryName" placeholder="e.g. IT Tech Suite, Co-Working Hub" required oninput="validateCategoryInput()">
+                                        <div class="field-error-text" id="newCatNameError">Category name must be at least 3 characters.</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold small text-uppercase">Description</label>
+                                        <textarea class="form-control rounded-3" id="newCategoryDesc" rows="3" placeholder="Category details & specs..."></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary w-100 rounded-3 fw-bold py-2 shadow-sm" id="btnSaveCategory">
+                                        Save Office Category
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-8">
+                            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                                <h5 class="fw-bold mb-3">Active Office Categories & Listing Counts</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Category Name</th>
+                                                <th>Description</th>
+                                                <th>Offices Assigned</th>
+                                                <th class="text-end">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="officeCategoriesTableBody">
+                                            {% for cat in office_categories_list %}
+                                                <tr id="office-cat-row-{{ cat.id }}">
+                                                    <td class="fw-bold text-dark">{{ cat.name }}</td>
+                                                    <td class="text-muted small">{{ cat.description|default:"Standard office category" }}</td>
+                                                    <td><span class="badge bg-primary bg-opacity-10 text-primary fw-bold px-3 py-1 rounded-pill">{{ cat.count }} Offices</span></td>
+                                                    <td class="text-end">
+                                                        <button class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="deleteCategory({{ cat.id }}, '{{ cat.name|escapejs }}')">
+                                                            Delete
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            {% empty %}
+                                                <tr>
+                                                    <td colspan="4" class="text-muted small text-center py-4">No custom office categories found in database. Default active: {{ categories|join:", " }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: OFFICE FEATURES CRUD -->
+                <div class="tab-pane fade" id="tab-features" role="tabpanel">
+                    <div class="row g-4 mb-4">
+                        <div class="col-lg-4">
+                            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                                <h5 class="fw-bold mb-3">Add Custom Office Feature</h5>
+                                <form id="addFeatureForm" onsubmit="handleFeatureSubmit(event, 'office')">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold small text-uppercase">Feature / Amenity Name</label>
+                                        <input type="text" class="form-control rounded-3" id="newFeatureName" placeholder="e.g. High-Speed Fiber Internet, Server Room" required oninput="validateFeatureInput()">
+                                        <div class="field-error-text" id="newFeatNameError">Feature name must be at least 3 characters.</div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold small text-uppercase">Description</label>
+                                        <textarea class="form-control rounded-3" id="newFeatureDesc" rows="3" placeholder="Feature details..."></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-success w-100 rounded-3 fw-bold py-2 shadow-sm" id="btnSaveFeature">
+                                        Save Office Feature
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-8">
+                            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                                <h5 class="fw-bold mb-3">Active Office Features & Amenities Library</h5>
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Feature Name</th>
+                                                <th>Description</th>
+                                                <th class="text-end">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="officeFeaturesTableBody">
+                                            {% for feat in office_features_list %}
+                                                <tr id="office-feat-row-{{ feat.id }}">
+                                                    <td class="fw-bold text-dark">{{ feat.name }}</td>
+                                                    <td class="text-muted small">{{ feat.description|default:"Standard office feature" }}</td>
+                                                    <td class="text-end">
+                                                        <button class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="deleteFeature({{ feat.id }}, '{{ feat.name|escapejs }}')">
+                                                            Delete
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            {% empty %}
+                                                <tr>
+                                                    <td colspan="3" class="text-muted small text-center py-4">No custom office features added yet.</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ================= ADD NEW OFFICE MODAL ================= -->
+    <div class="modal fade" id="addOfficeModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-dark text-white rounded-top-4 px-4 py-3">
+                    <h5 class="modal-title fw-bold">Add New Commercial Office Space</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="addOfficeForm" onsubmit="handleAddOfficeSubmit(event)">
+                    <div class="modal-body p-4">
+                        <div class="row g-3">
+                            <div class="col-md-7">
+                                <div class="row g-3 mb-3">
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">Office Title / Name *</label>
+                                        <input type="text" class="form-control rounded-3" id="addOfficeName" placeholder="e.g. Cyber Park Tech Suite 402" required oninput="validateAddForm()">
+                                        <div class="field-error-text" id="addNameError">Office title must be at least 3 characters.</div>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">Category *</label>
+                                        <select class="form-select rounded-3" id="addOfficeCategory">
+                                            {% for cat in categories %}
+                                                <option value="{{ cat }}">{{ cat }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">Monthly Rent (₹) *</label>
+                                        <input type="number" class="form-control rounded-3" id="addOfficePrice" placeholder="75000" required oninput="validateAddForm()">
+                                        <div class="field-error-text" id="addPriceError">Monthly rent must be greater than ₹0.</div>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">Workstations / Seats *</label>
+                                        <input type="number" class="form-control rounded-3" id="addOfficeWorkstations" placeholder="25" required oninput="validateAddForm()">
+                                        <div class="field-error-text" id="addWorkstationsError">Workstations count must be greater than 0.</div>
+                                    </div>
+                                </div>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">Conference Rooms *</label>
+                                        <input type="number" class="form-control rounded-3" id="addOfficeConference" placeholder="2" required>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">Area (sq.ft) *</label>
+                                        <input type="text" class="form-control rounded-3" id="addOfficeArea" placeholder="1800 sq.ft" required>
+                                    </div>
+                                </div>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">AC System *</label>
+                                        <select class="form-select rounded-3" id="addOfficeAc">
+                                            <option value="VRV Central AC">VRV Central AC</option>
+                                            <option value="Split AC Systems">Split AC Systems</option>
+                                            <option value="Naturally Ventilated">Naturally Ventilated</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">Parking Space *</label>
+                                        <input type="text" class="form-control rounded-3" id="addOfficeParking" placeholder="4 Underground Slots" required>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small text-uppercase">Property Location / Address *</label>
+                                    <input type="text" class="form-control rounded-3" id="addOfficeLocation" placeholder="Waghawadi Road, Commercial Complex" required oninput="validateAddForm()">
+                                    <div class="field-error-text" id="addLocationError">Location address is required (min 3 chars).</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small text-uppercase">Select Included Amenities & Features</label>
+                                    <div class="d-flex flex-wrap gap-2" id="addFeaturePills">
+                                        {% for feat in office_features_list %}
+                                            <span class="badge border bg-light text-dark px-3 py-2 rounded-pill feature-pill" onclick="toggleFeaturePill(this, '{{ feat.name|escapejs }}')">
+                                                {{ feat.name }}
+                                            </span>
+                                        {% empty %}
+                                            <span class="text-muted small">No custom features added yet.</span>
+                                        {% endfor %}
+                                    </div>
+                                    <input type="hidden" id="addOfficeAmenities" value="">
+                                </div>
+                            </div>
+
+                            <div class="col-md-5">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small text-uppercase">Office Image URL</label>
+                                    <input type="text" class="form-control rounded-3 mb-2" id="addOfficeImageUrl" placeholder="/static/images/image/officeimg/o1.jpg" oninput="previewAddImage()">
+                                    <label class="form-label fw-bold small text-uppercase">Or Upload Image File</label>
+                                    <input type="file" class="form-control rounded-3 mb-3" id="addOfficeFileInput" accept="image/*" onchange="handleAddImageUpload(event)">
+                                    
+                                    <div class="image-preview-box" id="addImgPreviewBox">
+                                        <span class="text-muted small">Image Preview</span>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small text-uppercase">Availability Status</label>
+                                    <select class="form-select rounded-3" id="addOfficeStatus">
+                                        <option value="Available">Available</option>
+                                        <option value="Leased">Leased</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light px-4 py-3 rounded-bottom-4">
+                        <button type="button" class="btn btn-secondary rounded-3 px-4 fw-bold" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary rounded-3 px-4 fw-bold" id="btnSubmitAddOffice">Save Office Listing</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= EDIT OFFICE MODAL ================= -->
+    <div class="modal fade" id="editOfficeModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-dark text-white rounded-top-4 px-4 py-3">
+                    <h5 class="modal-title fw-bold">Edit Office Specifications</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form id="editOfficeForm" onsubmit="handleEditOfficeSubmit(event)">
+                    <input type="hidden" id="editOfficeId">
+                    <div class="modal-body p-4">
+                        <div class="row g-3">
+                            <div class="col-md-7">
+                                <div class="row g-3 mb-3">
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">Office Title / Name *</label>
+                                        <input type="text" class="form-control rounded-3" id="editOfficeName" required oninput="validateEditForm()">
+                                        <div class="field-error-text" id="editNameError">Office title must be at least 3 characters.</div>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">Category *</label>
+                                        <select class="form-select rounded-3" id="editOfficeCategory">
+                                            {% for cat in categories %}
+                                                <option value="{{ cat }}">{{ cat }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">Monthly Rent (₹) *</label>
+                                        <input type="number" class="form-control rounded-3" id="editOfficePrice" required oninput="validateEditForm()">
+                                        <div class="field-error-text" id="editPriceError">Monthly rent must be greater than ₹0.</div>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">Workstations / Seats *</label>
+                                        <input type="number" class="form-control rounded-3" id="editOfficeWorkstations" required oninput="validateEditForm()">
+                                        <div class="field-error-text" id="editWorkstationsError">Workstations count must be greater than 0.</div>
+                                    </div>
+                                </div>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">Conference Rooms *</label>
+                                        <input type="number" class="form-control rounded-3" id="editOfficeConference" required>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">Area (sq.ft) *</label>
+                                        <input type="text" class="form-control rounded-3" id="editOfficeArea" required>
+                                    </div>
+                                </div>
+                                <div class="row g-3 mb-3">
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">AC System *</label>
+                                        <select class="form-select rounded-3" id="editOfficeAc">
+                                            <option value="VRV Central AC">VRV Central AC</option>
+                                            <option value="Split AC Systems">Split AC Systems</option>
+                                            <option value="Naturally Ventilated">Naturally Ventilated</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label fw-bold small text-uppercase">Parking Space *</label>
+                                        <input type="text" class="form-control rounded-3" id="editOfficeParking" required>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small text-uppercase">Property Location / Address *</label>
+                                    <input type="text" class="form-control rounded-3" id="editOfficeLocation" required oninput="validateEditForm()">
+                                    <div class="field-error-text" id="editLocationError">Location address is required (min 3 chars).</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small text-uppercase">Amenities & Key Features</label>
+                                    <textarea class="form-control rounded-3" id="editOfficeAmenities" rows="2"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="col-md-5">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small text-uppercase">Office Image URL</label>
+                                    <input type="text" class="form-control rounded-3 mb-2" id="editOfficeImageUrl" oninput="previewEditImage()">
+                                    <label class="form-label fw-bold small text-uppercase">Upload New Image File</label>
+                                    <input type="file" class="form-control rounded-3 mb-3" id="editOfficeFileInput" accept="image/*" onchange="handleEditImageUpload(event)">
+                                    
+                                    <div class="image-preview-box" id="editImgPreviewBox">
+                                        <span class="text-muted small">Image Preview</span>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small text-uppercase">Availability Status</label>
+                                    <select class="form-select rounded-3" id="editOfficeStatus">
+                                        <option value="Available">Available</option>
+                                        <option value="Leased">Leased</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light px-4 py-3 rounded-bottom-4">
+                        <button type="button" class="btn btn-secondary rounded-3 px-4 fw-bold" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary rounded-3 px-4 fw-bold" id="btnSubmitEditOffice">Update Office Specifications</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= VIEW OFFICE SPECS MODAL ================= -->
+    <div class="modal fade" id="viewSpecsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-dark text-white rounded-top-4 px-4 py-3">
+                    <h5 class="modal-title fw-bold">Commercial Office Full Specifications Sheet</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-5">
+                            <div class="rounded-4 overflow-hidden shadow-sm mb-3" style="height: 200px; background: #cbd5e1;">
+                                <img src="" id="specsOfficeImg" class="w-100 h-100 object-fit-cover" alt="Office">
+                            </div>
+                            <div class="fw-bold fs-4 text-primary" id="specsPriceTag">₹75,000 / month</div>
+                        </div>
+                        <div class="col-md-7">
+                            <h5 class="fw-bold mb-1" id="specsOfficeName">Office Name</h5>
+                            <p class="text-muted small mb-3" id="specsLocationTag">Location</p>
+                            
+                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                <span class="spec-icon-badge"><span id="specsWorkstationsTag">25 Workstations</span></span>
+                                <span class="spec-icon-badge"><span id="specsConferenceTag">2 Conf Rooms</span></span>
+                                <span class="spec-icon-badge"><span id="specsAreaTag">1800 sq.ft</span></span>
+                            </div>
+
+                            <div class="bg-light p-3 rounded-3 border mb-3">
+                                <div class="mb-2"><strong>AC System:</strong> <span id="specsAcTag">VRV Central AC</span></div>
+                                <div class="mb-2"><strong>Parking:</strong> <span id="specsParkingTag">4 Underground Slots</span></div>
+                                <div><strong>Status:</strong> <span id="specsStatusBadge" class="badge-status badge-available">Available</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-light p-3 rounded-3 border">
+                        <h6 class="fw-bold text-dark mb-1">Key Amenities & Facility Features:</h6>
+                        <p class="text-secondary small mb-0" id="specsAmenitiesText">High-speed fiber internet, Server room, Cafeteria.</p>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light px-4 py-3 rounded-bottom-4">
+                    <button type="button" class="btn btn-secondary rounded-3 px-4 fw-bold" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= DELETE OFFICE MODAL ================= -->
+    <div class="modal fade" id="deleteOfficeModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-danger text-white rounded-top-4 px-4 py-3">
+                    <h5 class="modal-title fw-bold">Confirm Delete</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4 text-center">
+                    <input type="hidden" id="deleteOfficeId">
+                    <h5 class="fw-bold text-dark mb-2" id="deleteOfficeTitle">Office Name</h5>
+                    <p class="text-muted mb-0">Are you sure you want to remove this office listing from the database?</p>
+                </div>
+                <div class="modal-footer bg-light justify-content-center px-4 py-3 rounded-bottom-4">
+                    <button type="button" class="btn btn-outline-secondary rounded-3 px-4 fw-bold" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger rounded-3 px-4 fw-bold" onclick="executeOfficeDelete()">Delete Office</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= DATABASE QUERY & RESPONSE STATUS POPUP MODAL ================= -->
+    <div class="modal fade" id="dbOperationModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header rounded-top-4 px-4 py-3" id="dbModalHeader">
+                    <h5 class="modal-title fw-bold" id="dbModalTitle">Database Operation in Progress</h5>
+                    <button type="button" class="btn-close btn-close-white d-none" id="dbModalCloseBtn" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4 text-center" id="dbModalBody">
+                    <div id="dbLoadingState" class="py-3">
+                        <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+                        <h6 class="fw-bold text-dark mb-1">Sending Query to Database...</h6>
+                        <p class="text-muted small mb-0">Please wait while server processes the request and updates database records.</p>
+                    </div>
+                    <div id="dbResultState" class="d-none py-2">
+                        <h5 class="fw-bold mb-2" id="dbResultMessage">Operation Complete</h5>
+                        <p class="text-muted small mb-0" id="dbResultDetail">Server responded successfully.</p>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light justify-content-center px-4 py-3 rounded-bottom-4 d-none" id="dbModalFooter">
+                    <button type="button" class="btn btn-primary rounded-3 px-4 fw-bold" data-bs-dismiss="modal" id="dbModalConfirmBtn">OK / Continue</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Bundle & Logic -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let serverOffices = {{ offices_json|safe|default:"[]" }};
+        let officesData = (serverOffices && serverOffices.length > 0) ? serverOffices : [];
+        let uploadedImageBase64 = "";
+        let editUploadedImageBase64 = "";
+        let currentStatusFilter = 'ALL';
+        let currentPage = 1;
+        let dbStatusModal = null;
+        let selectedAddFeatures = [];
+
+        document.addEventListener('DOMContentLoaded', function() {
+            renderOfficesGrid();
+            setInterval(fetchLiveOffices, 4000);
+            dbStatusModal = new bootstrap.Modal(document.getElementById('dbOperationModal'));
+        });
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Small Toast Popup for Real-Time Live Sync Updates
+        function showLiveSyncNotification(text = 'Live Data Synced - Database Updated') {
+            const toast = document.getElementById('liveSyncToast');
+            if (!toast) return;
+            toast.textContent = text;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+
+        // Database Operation Modal Handlers
+        function showDbOperationLoading(title, queryMsg) {
+            const header = document.getElementById('dbModalHeader');
+            header.className = 'modal-header bg-dark text-white rounded-top-4 px-4 py-3';
+            document.getElementById('dbModalTitle').textContent = title || 'Database Operation in Progress';
+            
+            document.getElementById('dbLoadingState').classList.remove('d-none');
+            document.getElementById('dbResultState').classList.add('d-none');
+            document.getElementById('dbModalFooter').classList.add('d-none');
+            document.getElementById('dbModalCloseBtn').classList.add('d-none');
+
+            dbStatusModal.show();
+        }
+
+        function showDbOperationResult(isSuccess, message, detail = '') {
+            const header = document.getElementById('dbModalHeader');
+            header.className = `modal-header ${isSuccess ? 'bg-success' : 'bg-danger'} text-white rounded-top-4 px-4 py-3`;
+            document.getElementById('dbModalTitle').textContent = isSuccess ? 'Database Operation Successful' : 'Database Operation Failed';
+
+            document.getElementById('dbLoadingState').classList.add('d-none');
+            document.getElementById('dbResultState').classList.remove('d-none');
+            
+            const msgElem = document.getElementById('dbResultMessage');
+            msgElem.textContent = isSuccess ? 'Success!' : 'Error Occurred';
+            msgElem.className = `fw-bold mb-2 ${isSuccess ? 'text-success' : 'text-danger'}`;
+
+            document.getElementById('dbResultDetail').textContent = message || detail || (isSuccess ? 'Operation executed cleanly.' : 'Failed to update database.');
+            
+            document.getElementById('dbModalFooter').classList.remove('d-none');
+            document.getElementById('dbModalCloseBtn').classList.remove('d-none');
+        }
+
+        // Real-Time Validation Functions
+        function validateAddForm() {
+            const name = document.getElementById('addOfficeName').value.trim();
+            const price = Number(document.getElementById('addOfficePrice').value);
+            const workstations = Number(document.getElementById('addOfficeWorkstations').value);
+            const location = document.getElementById('addOfficeLocation').value.trim();
+
+            let isValid = true;
+
+            const nameErr = document.getElementById('addNameError');
+            if (name.length < 3) {
+                nameErr.style.display = 'block';
+                document.getElementById('addOfficeName').classList.add('input-invalid');
+                isValid = false;
+            } else {
+                nameErr.style.display = 'none';
+                document.getElementById('addOfficeName').classList.remove('input-invalid');
+                document.getElementById('addOfficeName').classList.add('input-valid');
+            }
+
+            const priceErr = document.getElementById('addPriceError');
+            if (price <= 0) {
+                priceErr.style.display = 'block';
+                document.getElementById('addOfficePrice').classList.add('input-invalid');
+                isValid = false;
+            } else {
+                priceErr.style.display = 'none';
+                document.getElementById('addOfficePrice').classList.remove('input-invalid');
+                document.getElementById('addOfficePrice').classList.add('input-valid');
+            }
+
+            const workErr = document.getElementById('addWorkstationsError');
+            if (workstations <= 0) {
+                workErr.style.display = 'block';
+                document.getElementById('addOfficeWorkstations').classList.add('input-invalid');
+                isValid = false;
+            } else {
+                workErr.style.display = 'none';
+                document.getElementById('addOfficeWorkstations').classList.remove('input-invalid');
+                document.getElementById('addOfficeWorkstations').classList.add('input-valid');
+            }
+
+            const locErr = document.getElementById('addLocationError');
+            if (location.length < 3) {
+                locErr.style.display = 'block';
+                document.getElementById('addOfficeLocation').classList.add('input-invalid');
+                isValid = false;
+            } else {
+                locErr.style.display = 'none';
+                document.getElementById('addOfficeLocation').classList.remove('input-invalid');
+                document.getElementById('addOfficeLocation').classList.add('input-valid');
+            }
+
+            return isValid;
+        }
+
+        function validateEditForm() {
+            const name = document.getElementById('editOfficeName').value.trim();
+            const price = Number(document.getElementById('editOfficePrice').value);
+            const workstations = Number(document.getElementById('editOfficeWorkstations').value);
+            const location = document.getElementById('editOfficeLocation').value.trim();
+
+            let isValid = true;
+
+            const nameErr = document.getElementById('editNameError');
+            if (name.length < 3) {
+                nameErr.style.display = 'block';
+                document.getElementById('editOfficeName').classList.add('input-invalid');
+                isValid = false;
+            } else {
+                nameErr.style.display = 'none';
+                document.getElementById('editOfficeName').classList.remove('input-invalid');
+            }
+
+            const priceErr = document.getElementById('editPriceError');
+            if (price <= 0) {
+                priceErr.style.display = 'block';
+                document.getElementById('editOfficePrice').classList.add('input-invalid');
+                isValid = false;
+            } else {
+                priceErr.style.display = 'none';
+                document.getElementById('editOfficePrice').classList.remove('input-invalid');
+            }
+
+            const workErr = document.getElementById('editWorkstationsError');
+            if (workstations <= 0) {
+                workErr.style.display = 'block';
+                document.getElementById('editOfficeWorkstations').classList.add('input-invalid');
+                isValid = false;
+            } else {
+                workErr.style.display = 'none';
+                document.getElementById('editOfficeWorkstations').classList.remove('input-invalid');
+            }
+
+            const locErr = document.getElementById('editLocationError');
+            if (location.length < 3) {
+                locErr.style.display = 'block';
+                document.getElementById('editOfficeLocation').classList.add('input-invalid');
+                isValid = false;
+            } else {
+                locErr.style.display = 'none';
+                document.getElementById('editOfficeLocation').classList.remove('input-invalid');
+            }
+
+            return isValid;
+        }
+
+        function toggleFeaturePill(el, featName) {
+            el.classList.toggle('active');
+            if (el.classList.contains('active')) {
+                if (!selectedAddFeatures.includes(featName)) selectedAddFeatures.push(featName);
+            } else {
+                selectedAddFeatures = selectedAddFeatures.filter(f => f !== featName);
+            }
+            document.getElementById('addOfficeAmenities').value = selectedAddFeatures.join(', ');
+        }
+
+        function filterOfficesByStatus() {
+            currentStatusFilter = document.getElementById('officeStatusFilter').value;
+            currentPage = 1;
+            renderOfficesGrid();
+        }
+
+        function changePageSize() {
+            currentPage = 1;
+            renderOfficesGrid();
+        }
+
+        function fetchLiveOffices() {
+            fetch('/admin-portal/api/offices/live-list/')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success' && data.offices) {
+                        const countBefore = officesData.length;
+                        officesData = data.offices;
+                        if (countBefore !== officesData.length) {
+                            showLiveSyncNotification('Office Fleet Auto-Synced Live');
+                        }
+                        renderOfficesGrid();
+                    }
+                })
+                .catch(err => console.log('Office sync poll error:', err));
+        }
+
+        function renderOfficesGrid() {
+            const container = document.getElementById('officesGridContainer');
+            if (!container) return;
+
+            const searchVal = document.getElementById('officeSearchInput').value.toLowerCase().trim();
+            const pageSize = parseInt(document.getElementById('pageSizeSelect').value) || 4;
+
+            let filtered = officesData.filter(o => {
+                const matchStatus = currentStatusFilter === 'ALL' || o.status.toLowerCase() === currentStatusFilter.toLowerCase();
+                const matchSearch = o.name.toLowerCase().includes(searchVal) || 
+                                    o.location.toLowerCase().includes(searchVal) || 
+                                    o.category.toLowerCase().includes(searchVal);
+                return matchStatus && matchSearch;
+            });
+
+            const totalEntries = filtered.length;
+            const totalPages = Math.ceil(totalEntries / pageSize) || 1;
+            if (currentPage > totalPages) currentPage = totalPages;
+
+            const startIdx = (currentPage - 1) * pageSize;
+            const endIdx = startIdx + pageSize;
+            const pageData = filtered.slice(startIdx, endIdx);
+
+            container.innerHTML = '';
+
+            if (pageData.length === 0) {
+                container.innerHTML = `
+                    <div class="col-12 text-center py-5 bg-white rounded-4 border">
+                        <h6 class="fw-bold text-muted mb-1">No office listings found matching filter.</h6>
+                        <p class="text-secondary small mb-0">Try clearing search input or adding a new commercial office.</p>
+                    </div>
+                `;
+            } else {
+                pageData.forEach(o => {
+                    const statusBadge = o.status === 'Available' ? 'badge-available' : 'badge-booked';
+                    const cardHtml = `
+                        <div class="col-12 col-md-6 col-lg-3">
+                            <div class="crud-card">
+                                <div class="crud-img-wrapper">
+                                    <img src="${o.image}" class="crud-img" alt="${o.name}" onerror="this.src='/static/images/image/officeimg/o1.jpg'">
+                                    <span class="badge-status badge-category position-absolute top-0 start-0 m-3">${o.category}</span>
+                                    <span class="badge-status ${statusBadge} position-absolute top-0 end-0 m-3">${o.status}</span>
+                                </div>
+                                <div class="card-body p-3 d-flex flex-column justify-content-between">
+                                    <div>
+                                        <h6 class="fw-bold text-dark mb-1 text-truncate">${o.name}</h6>
+                                        <div class="fw-extrabold text-primary mb-2">₹${Number(o.price).toLocaleString()} <small class="text-muted fw-normal">/ mo</small></div>
+                                        
+                                        <div class="d-flex flex-wrap gap-1 mb-2">
+                                            <span class="badge bg-light text-secondary border fw-semibold small">${o.workstations} Workstations</span>
+                                            <span class="badge bg-light text-secondary border fw-semibold small">${o.conferenceRooms} Conf Rooms</span>
+                                            <span class="badge bg-light text-secondary border fw-semibold small">${o.areaSqft}</span>
+                                        </div>
+
+                                        <p class="text-muted small mb-2 text-truncate">${o.location}</p>
+                                    </div>
+
+                                    <div class="d-grid gap-2 pt-2 border-top">
+                                        <button class="btn btn-sm btn-outline-primary fw-bold rounded-2" onclick="openViewSpecsModal(${o.id})">View Specifications</button>
+                                        <div class="d-flex gap-2">
+                                            <button class="btn btn-sm btn-dark fw-bold rounded-2 flex-grow-1" onclick="openEditOfficeModal(${o.id})">Edit</button>
+                                            <button class="btn btn-sm btn-outline-danger fw-bold rounded-2" onclick="openDeleteOfficeModal(${o.id}, '${o.name.replace(/'/g, "\\'")}')">Delete</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', cardHtml);
+                });
+            }
+
+            // Update Pagination Bar
+            document.getElementById('paginationInfoText').textContent = `Showing ${totalEntries === 0 ? 0 : startIdx + 1} to ${Math.min(endIdx, totalEntries)} of ${totalEntries} entries`;
+            
+            const paginationControls = document.getElementById('paginationControls');
+            paginationControls.innerHTML = '';
+
+            if (totalPages > 1) {
+                let navHtml = `
+                    <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                        <a class="page-link" href="#" onclick="event.preventDefault(); goToPage(${currentPage - 1});">Prev</a>
+                    </li>
+                `;
+                for (let i = 1; i <= totalPages; i++) {
+                    navHtml += `
+                        <li class="page-item ${currentPage === i ? 'active' : ''}">
+                            <a class="page-link" href="#" onclick="event.preventDefault(); goToPage(${i});">${i}</a>
+                        </li>
+                    `;
+                }
+                navHtml += `
+                    <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                        <a class="page-link" href="#" onclick="event.preventDefault(); goToPage(${currentPage + 1});">Next</a>
+                    </li>
+                `;
+                paginationControls.innerHTML = navHtml;
+            }
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            renderOfficesGrid();
+        }
+
+        function previewAddImage() {
+            const url = document.getElementById('addOfficeImageUrl').value.trim();
+            const previewBox = document.getElementById('addImgPreviewBox');
+            if (url) {
+                previewBox.innerHTML = `<img src="${url}" onerror="this.onerror=null; this.src='/static/images/image/officeimg/o1.jpg';">`;
+            } else {
+                previewBox.innerHTML = `<span class="text-muted small">Image Preview</span>`;
+            }
+        }
+
+        function handleAddImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    uploadedImageBase64 = e.target.result;
+                    document.getElementById('addImgPreviewBox').innerHTML = `<img src="${uploadedImageBase64}">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function previewEditImage() {
+            const url = document.getElementById('editOfficeImageUrl').value.trim();
+            const previewBox = document.getElementById('editImgPreviewBox');
+            if (url) {
+                previewBox.innerHTML = `<img src="${url}" onerror="this.onerror=null; this.src='/static/images/image/officeimg/o1.jpg';">`;
+            } else {
+                previewBox.innerHTML = `<span class="text-muted small">Image Preview</span>`;
+            }
+        }
+
+        function handleEditImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    editUploadedImageBase64 = e.target.result;
+                    document.getElementById('editImgPreviewBox').innerHTML = `<img src="${editUploadedImageBase64}">`;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function handleAddOfficeSubmit(event) {
+            event.preventDefault();
+            if (!validateAddForm()) return;
+
+            const name = document.getElementById('addOfficeName').value.trim();
+            const category = document.getElementById('addOfficeCategory').value;
+            const price = document.getElementById('addOfficePrice').value;
+            const workstations = document.getElementById('addOfficeWorkstations').value;
+            const conferenceRooms = document.getElementById('addOfficeConference').value;
+            const areaSqft = document.getElementById('addOfficeArea').value.trim();
+            const acType = document.getElementById('addOfficeAc').value;
+            const parking = document.getElementById('addOfficeParking').value.trim();
+            const location = document.getElementById('addOfficeLocation').value.trim();
+            const amenities = document.getElementById('addOfficeAmenities').value.trim();
+            const status = document.getElementById('addOfficeStatus').value;
+            let image = uploadedImageBase64 || document.getElementById('addOfficeImageUrl').value.trim() || '/static/images/image/officeimg/o1.jpg';
+
+            const payload = {
+                name, category, price, workstations, conferenceRooms, areaSqft, acType, parking, location, amenities, status, image
+            };
+
+            const addModalEl = document.getElementById('addOfficeModal');
+            const addModal = bootstrap.Modal.getInstance(addModalEl);
+            if (addModal) addModal.hide();
+
+            showDbOperationLoading('Adding New Office Listing', 'Transmitting payload parameters to server database...');
+
+            const csrftoken = getCookie('csrftoken');
+            fetch('/admin-portal/api/offices/add/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showDbOperationResult(true, data.message || `Office '${name}' created successfully!`);
+                    document.getElementById('addOfficeForm').reset();
+                    uploadedImageBase64 = "";
+                    document.getElementById('addImgPreviewBox').innerHTML = `<span class="text-muted small">Image Preview</span>`;
+                    fetchLiveOffices();
+                } else {
+                    showDbOperationResult(false, 'Error: ' + data.message);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showDbOperationResult(false, 'Failed to connect to database server.');
+            });
+        }
+
+        function openEditOfficeModal(id) {
+            const o = officesData.find(item => item.id === id);
+            if (!o) return;
+
+            document.getElementById('editOfficeId').value = o.id;
+            document.getElementById('editOfficeName').value = o.name;
+            document.getElementById('editOfficeCategory').value = o.category;
+            document.getElementById('editOfficePrice').value = o.price;
+            document.getElementById('editOfficeWorkstations').value = o.workstations;
+            document.getElementById('editOfficeConference').value = o.conferenceRooms;
+            document.getElementById('editOfficeArea').value = o.areaSqft;
+            document.getElementById('editOfficeAc').value = o.acType;
+            document.getElementById('editOfficeParking').value = o.parking;
+            document.getElementById('editOfficeLocation').value = o.location;
+            document.getElementById('editOfficeAmenities').value = o.amenities || '';
+            document.getElementById('editOfficeStatus').value = o.status;
+            document.getElementById('editOfficeImageUrl').value = o.image || '';
+
+            document.getElementById('editImgPreviewBox').innerHTML = `<img src="${o.image}" onerror="this.src='/static/images/image/officeimg/o1.jpg';">`;
+            editUploadedImageBase64 = "";
+
+            const editModal = new bootstrap.Modal(document.getElementById('editOfficeModal'));
+            editModal.show();
+        }
+
+        function handleEditOfficeSubmit(event) {
+            event.preventDefault();
+            if (!validateEditForm()) return;
+
+            const id = document.getElementById('editOfficeId').value;
+            const name = document.getElementById('editOfficeName').value.trim();
+            const category = document.getElementById('editOfficeCategory').value;
+            const price = document.getElementById('editOfficePrice').value;
+            const workstations = document.getElementById('editOfficeWorkstations').value;
+            const conferenceRooms = document.getElementById('editOfficeConference').value;
+            const areaSqft = document.getElementById('editOfficeArea').value.trim();
+            const acType = document.getElementById('editOfficeAc').value;
+            const parking = document.getElementById('editOfficeParking').value.trim();
+            const location = document.getElementById('editOfficeLocation').value.trim();
+            const amenities = document.getElementById('editOfficeAmenities').value.trim();
+            const status = document.getElementById('editOfficeStatus').value;
+            let image = editUploadedImageBase64 || document.getElementById('editOfficeImageUrl').value.trim() || '/static/images/image/officeimg/o1.jpg';
+
+            const payload = {
+                id, name, category, price, workstations, conferenceRooms, areaSqft, acType, parking, location, amenities, status, image
+            };
+
+            const editModalEl = document.getElementById('editOfficeModal');
+            const editModal = bootstrap.Modal.getInstance(editModalEl);
+            if (editModal) editModal.hide();
+
+            showDbOperationLoading('Updating Office Specifications', 'Persisting updated parameters in database...');
+
+            const csrftoken = getCookie('csrftoken');
+            fetch('/admin-portal/api/offices/edit/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showDbOperationResult(true, data.message || `Office '${name}' updated successfully!`);
+                    fetchLiveOffices();
+                } else {
+                    showDbOperationResult(false, 'Error: ' + data.message);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showDbOperationResult(false, 'Failed to update database record.');
+            });
+        }
+
+        function openViewSpecsModal(id) {
+            const o = officesData.find(item => item.id === id);
+            if (!o) return;
+
+            document.getElementById('specsOfficeImg').src = o.image;
+            document.getElementById('specsOfficeName').textContent = o.name;
+            document.getElementById('specsPriceTag').textContent = `₹${Number(o.price).toLocaleString()} / month`;
+            document.getElementById('specsLocationTag').textContent = o.location;
+            document.getElementById('specsWorkstationsTag').textContent = `${o.workstations} Workstations`;
+            document.getElementById('specsConferenceTag').textContent = `${o.conferenceRooms} Conf Rooms`;
+            document.getElementById('specsAreaTag').textContent = o.areaSqft;
+            document.getElementById('specsAcTag').textContent = o.acType;
+            document.getElementById('specsParkingTag').textContent = o.parking;
+            
+            const badge = document.getElementById('specsStatusBadge');
+            badge.textContent = o.status;
+            badge.className = `badge-status ${o.status === 'Available' ? 'badge-available' : 'badge-booked'}`;
+
+            document.getElementById('specsAmenitiesText').textContent = o.amenities || 'Standard office amenities included.';
+
+            const modal = new bootstrap.Modal(document.getElementById('viewSpecsModal'));
+            modal.show();
+        }
+
+        function openDeleteOfficeModal(id, title) {
+            document.getElementById('deleteOfficeId').value = id;
+            document.getElementById('deleteOfficeTitle').textContent = title;
+            const modal = new bootstrap.Modal(document.getElementById('deleteOfficeModal'));
+            modal.show();
+        }
+
+        function executeOfficeDelete() {
+            const id = document.getElementById('deleteOfficeId').value;
+            const deleteModalEl = document.getElementById('deleteOfficeModal');
+            const deleteModal = bootstrap.Modal.getInstance(deleteModalEl);
+            if (deleteModal) deleteModal.hide();
+
+            showDbOperationLoading('Deleting Office Listing', 'Removing office record from database...');
+
+            const csrftoken = getCookie('csrftoken');
+            fetch('/admin-portal/api/offices/delete/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({ id: id })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showDbOperationResult(true, 'Office listing deleted successfully.');
+                    fetchLiveOffices();
+                } else {
+                    showDbOperationResult(false, 'Error: ' + data.message);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showDbOperationResult(false, 'Failed to delete record from server.');
+            });
+        }
+
+        // Category & Feature Management Handlers (Tabs 2 & 3)
+        function validateCategoryInput() {
+            const name = document.getElementById('newCategoryName').value.trim();
+            const err = document.getElementById('newCatNameError');
+            if (name.length < 3) {
+                err.style.display = 'block';
+                document.getElementById('newCategoryName').classList.add('input-invalid');
+            } else {
+                err.style.display = 'none';
+                document.getElementById('newCategoryName').classList.remove('input-invalid');
+            }
+        }
+
+        function validateFeatureInput() {
+            const name = document.getElementById('newFeatureName').value.trim();
+            const err = document.getElementById('newFeatNameError');
+            if (name.length < 3) {
+                err.style.display = 'block';
+                document.getElementById('newFeatureName').classList.add('input-invalid');
+            } else {
+                err.style.display = 'none';
+                document.getElementById('newFeatureName').classList.remove('input-invalid');
+            }
+        }
+
+        function handleCategorySubmit(event, type) {
+            event.preventDefault();
+            const name = document.getElementById('newCategoryName').value.trim();
+            const desc = document.getElementById('newCategoryDesc').value.trim();
+            if (name.length < 3) return;
+
+            showDbOperationLoading('Adding Category', 'Transmitting new category parameters to server...');
+
+            const csrftoken = getCookie('csrftoken');
+            fetch('/admin-portal/api/categories/add/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({ name: name, description: desc, vehicle_type: type })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showDbOperationResult(true, `Office category '${name}' added successfully! Reloading page to update tabs.`);
+                    setTimeout(() => window.location.reload(), 1500);
+                } else {
+                    showDbOperationResult(false, 'Error: ' + data.message);
+                }
+            })
+            .catch(err => showDbOperationResult(false, 'Failed to save category.'));
+        }
+
+        function deleteCategory(id, name) {
+            if (!confirm(`Are you sure you want to delete category '${name}'?`)) return;
+            showDbOperationLoading('Deleting Category', 'Removing category from server...');
+
+            const csrftoken = getCookie('csrftoken');
+            fetch('/admin-portal/api/categories/delete/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({ id: id, name: name })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showDbOperationResult(true, `Category '${name}' deleted successfully!`);
+                    const row = document.getElementById(`office-cat-row-${id}`);
+                    if (row) row.remove();
+                } else {
+                    showDbOperationResult(false, 'Error: ' + data.message);
+                }
+            })
+            .catch(err => showDbOperationResult(false, 'Failed to delete category.'));
+        }
+
+        function handleFeatureSubmit(event, type) {
+            event.preventDefault();
+            const name = document.getElementById('newFeatureName').value.trim();
+            const desc = document.getElementById('newFeatureDesc').value.trim();
+            if (name.length < 3) return;
+
+            showDbOperationLoading('Adding Feature', 'Adding new office amenity feature...');
+
+            const csrftoken = getCookie('csrftoken');
+            fetch('/admin-portal/api/features/add/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({ name: name, description: desc, vehicle_type: type })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showDbOperationResult(true, `Office feature '${name}' added successfully! Reloading page to update tabs.`);
+                    setTimeout(() => window.location.reload(), 1500);
+                } else {
+                    showDbOperationResult(false, 'Error: ' + data.message);
+                }
+            })
+            .catch(err => showDbOperationResult(false, 'Failed to save feature.'));
+        }
+
+        function deleteFeature(id, name) {
+            if (!confirm(`Are you sure you want to delete feature '${name}'?`)) return;
+            showDbOperationLoading('Deleting Feature', 'Removing feature from server...');
+
+            const csrftoken = getCookie('csrftoken');
+            fetch('/admin-portal/api/features/delete/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({ id: id, name: name })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showDbOperationResult(true, `Feature '${name}' deleted successfully!`);
+                    const row = document.getElementById(`office-feat-row-${id}`);
+                    if (row) row.remove();
+                } else {
+                    showDbOperationResult(false, 'Error: ' + data.message);
+                }
+            })
+            .catch(err => showDbOperationResult(false, 'Failed to delete feature.'));
+        }
+    </script>
+</body>
+</html>

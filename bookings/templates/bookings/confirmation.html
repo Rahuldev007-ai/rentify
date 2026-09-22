@@ -1,0 +1,371 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Confirmed #VG-2026-{% if inquiry %}{{ inquiry.id }}{% else %}8942{% endif %} - Rentify</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            --success-gradient: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            --accent-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            --light-bg: #f8fafc;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            color: #1e293b;
+            min-height: 100vh;
+        }
+
+        .voucher-wrapper {
+            max-width: 820px;
+            margin: 40px auto 60px;
+        }
+
+        .confirmation-card {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.07);
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+
+        .confirmation-header {
+            background: var(--success-gradient);
+            color: white;
+            padding: 3rem 2rem 2.5rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .success-check-badge {
+            width: 86px;
+            height: 86px;
+            background: rgba(255, 255, 255, 0.22);
+            backdrop-filter: blur(10px);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.8rem;
+            color: white;
+            margin-bottom: 1.2rem;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            animation: pulseSuccess 2s infinite ease-in-out;
+        }
+
+        @keyframes pulseSuccess {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(255, 255, 255, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+        }
+
+        .voucher-body {
+            padding: 2.5rem 2rem;
+        }
+
+        .ref-header-bar {
+            background: #f1f5f9;
+            border-radius: 16px;
+            padding: 1.25rem 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid #e2e8f0;
+        }
+
+        .info-card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .info-tile {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .info-tile:hover {
+            background: #ffffff;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+            border-color: #cbd5e1;
+        }
+
+        .info-tile label {
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .status-pill-success {
+            background: #d1fae5;
+            color: #047857;
+            font-weight: 800;
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-size: 0.88rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .table-receipt {
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+
+        .table-receipt th {
+            background: #f1f5f9;
+            color: #334155;
+            font-weight: 700;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 12px 18px;
+        }
+
+        .table-receipt td {
+            padding: 14px 18px;
+            vertical-align: middle;
+            font-size: 0.95rem;
+        }
+
+        .btn-action-primary {
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            font-weight: 700;
+            padding: 12px 20px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-action-primary:hover {
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(30, 60, 114, 0.3);
+        }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                background: white !important;
+                padding: 0 !important;
+            }
+            .voucher-wrapper {
+                margin: 0 !important;
+                max-width: 100% !important;
+            }
+            .confirmation-card {
+                box-shadow: none !important;
+                border: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Unified Top Navigation Bar (Hidden on Print) -->
+    <div class="no-print">
+        {% include 'core/navbar.html' %}
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <div class="voucher-wrapper">
+            <div class="confirmation-card">
+                
+                <!-- Green Success Banner -->
+                <div class="confirmation-header">
+                    <div class="success-check-badge">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <h2 class="fw-extrabold mb-1">Rental Booking Confirmed!</h2>
+                    <p class="mb-0 text-white-50 fs-6">Your order details have been registered. Keep this receipt for pickup verification.</p>
+                </div>
+
+                <!-- Voucher Content Body -->
+                <div class="voucher-body">
+
+                    <!-- Reference Bar -->
+                    <div class="ref-header-bar d-flex justify-content-between align-items-center flex-wrap gap-3">
+                        <div>
+                            <span class="text-secondary small fw-bold text-uppercase d-block mb-1">Booking Reference ID</span>
+                            <h3 class="fw-extrabold text-primary mb-0 font-monospace">#VG-2026-{% if inquiry %}{{ inquiry.id }}{% else %}8942{% endif %}</h3>
+                        </div>
+                        <div>
+                            <span class="status-pill-success">
+                                <i class="fas fa-check-circle"></i> {% if inquiry %}{{ inquiry.status|title }}{% else %}Confirmed{% endif %}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Item & Customer Details Grid -->
+                    <div class="info-card-grid">
+                        <div class="info-tile">
+                            <label><i class="fas fa-car text-primary me-1"></i> Reserved Item / Vehicle</label>
+                            <strong class="text-dark fs-6 d-block">{% if inquiry %}{{ inquiry.item_title }}{% else %}Mahindra Thar 4x4 LX Hardtop{% endif %}</strong>
+                        </div>
+
+                        <div class="info-tile">
+                            <label><i class="fas fa-user text-primary me-1"></i> Customer Name</label>
+                            <strong class="text-dark fs-6 d-block">{% if inquiry %}{{ inquiry.applicant_name }}{% else %}Rahul Sharma{% endif %}</strong>
+                            {% if inquiry and inquiry.email %}
+                                <small class="text-muted d-block">{{ inquiry.email }}</small>
+                            {% endif %}
+                        </div>
+
+                        <div class="info-tile">
+                            <label><i class="fas fa-map-marker-alt text-danger me-1"></i> Pickup Hub / Location</label>
+                            <strong class="text-dark fs-6 d-block">{% if inquiry %}{{ inquiry.appointment_time|default:"Bhavnagar Central Hub" }}{% else %}Bhavnagar Central Hub{% endif %}</strong>
+                        </div>
+
+                        <div class="info-tile">
+                            <label><i class="fas fa-calendar-alt text-success me-1"></i> Rental Duration & Dates</label>
+                            <strong class="text-dark fs-6 d-block">{% if inquiry %}{{ inquiry.booking_date|default:"Flexible Date" }}{% else %}Flexible Date{% endif %}</strong>
+                        </div>
+                    </div>
+
+                    <!-- Receipt Breakdown Table -->
+                    <div class="mb-4">
+                        <h5 class="fw-bold text-dark mb-3"><i class="fas fa-file-invoice text-primary me-2"></i>Payment Receipt Details</h5>
+                        <div class="table-responsive">
+                            <table class="table table-receipt mb-0">
+                                <tbody>
+                                    <tr>
+                                        <td class="text-secondary fw-semibold">Rental Category</td>
+                                        <td class="text-end fw-bold text-dark">{% if inquiry %}{{ inquiry.category_type|title }}{% else %}Car Rental{% endif %}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-secondary fw-semibold">Payment Option</td>
+                                        <td class="text-end fw-bold text-primary">{% if inquiry %}{{ inquiry.payment_method }}{% else %}COD at Showroom{% endif %}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-secondary fw-semibold">Payment Status</td>
+                                        <td class="text-end">
+                                            {% if inquiry %}
+                                                {% if inquiry.payment_status|lower == 'paid' %}
+                                                    <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 fw-bold fs-7">
+                                                        <i class="fas fa-check-circle me-1"></i> Paid Online
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3 py-2 fw-bold fs-7">
+                                                        <i class="fas fa-clock me-1"></i> {{ inquiry.payment_status }}
+                                                    </span>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle px-3 py-2 fw-bold fs-7">
+                                                    Pending (Pay at Showroom)
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% if inquiry and inquiry.transaction_id %}
+                                    <tr>
+                                        <td class="text-secondary fw-semibold">Transaction ID</td>
+                                        <td class="text-end font-monospace text-dark fw-bold">{{ inquiry.transaction_id }}</td>
+                                    </tr>
+                                    {% endif %}
+                                    <tr>
+                                        <td class="text-secondary fw-semibold">Total Payable Amount</td>
+                                        <td class="text-end fw-bold text-dark fs-6">{% if inquiry %}{{ inquiry.guests_or_km|default:"Standard Rental Rate" }}{% else %}Total: ₹2,499{% endif %}</td>
+                                    </tr>
+                                    <tr class="table-light">
+                                        <td class="fw-extrabold text-dark fs-6">Order Status</td>
+                                        <td class="text-end fw-extrabold text-success fs-5">{% if inquiry %}{{ inquiry.status|title }}{% else %}Confirmed{% endif %}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Pickup Instructions Alert -->
+                    <div class="alert alert-info border-0 shadow-sm rounded-3 mb-4 d-flex align-items-center gap-3">
+                        <i class="fas fa-info-circle text-info fs-3"></i>
+                        <div class="small">
+                            <strong class="d-block text-dark mb-0.5">Pickup Verification Required</strong>
+                            Please present this booking voucher along with a valid government ID (Aadhaar / Driving License) when collecting your vehicle or key.
+                        </div>
+                    </div>
+
+                    <!-- Interactive Action Bar (Hidden on Print) -->
+                    <div class="row g-3 no-print">
+                        <div class="col-12 col-md-4">
+                            <a href="/bookings/my-bookings/" class="btn-action-primary w-100 py-2.5">
+                                <i class="fas fa-bookmark"></i> View My Bookings
+                            </a>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <button onclick="window.print()" class="btn btn-outline-dark w-100 py-2.5 fw-bold rounded-3">
+                                <i class="fas fa-print me-1"></i> Print / Save PDF
+                            </button>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <button onclick="downloadTextReceipt()" class="btn btn-outline-success w-100 py-2.5 fw-bold rounded-3">
+                                <i class="fas fa-download me-1"></i> Text Voucher
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function downloadTextReceipt() {
+            const receiptText = `=====================================================
+RENTIFY VEHICLE RENTAL BOOKING RECEIPT & VOUCHER
+=====================================================
+Booking Reference : #VG-2026-{% if inquiry %}{{ inquiry.id }}{% else %}8942{% endif %}
+Customer Name     : {% if inquiry %}{{ inquiry.applicant_name }}{% else %}Customer{% endif %}
+Vehicle Reserved  : {% if inquiry %}{{ inquiry.item_title }}{% else %}Car Rental{% endif %}
+Pickup Location   : {% if inquiry %}{{ inquiry.appointment_time }}{% else %}Bhavnagar Central Hub{% endif %}
+Booking Dates     : {% if inquiry %}{{ inquiry.booking_date }}{% else %}Flexible{% endif %}
+Total Amount      : {% if inquiry %}{{ inquiry.guests_or_km }}{% else %}Standard Rate{% endif %}
+Payment Method    : {% if inquiry %}{{ inquiry.payment_method }}{% else %}COD at Showroom{% endif %}
+Payment Status    : {% if inquiry %}{{ inquiry.payment_status }}{% else %}Pending{% endif %}
+Transaction ID    : {% if inquiry and inquiry.transaction_id %}{{ inquiry.transaction_id }}{% else %}N/A{% endif %}
+Booking Status    : {% if inquiry %}{{ inquiry.status }}{% else %}Confirmed{% endif %}
+=====================================================
+Thank you for booking with Rentify!
+Show this voucher at pickup for key handover.
+=====================================================`;
+
+            const blob = new Blob([receiptText], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Rentify_Voucher_VG-2026-{% if inquiry %}{{ inquiry.id }}{% else %}8942{% endif %}.txt`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+
+    <!-- Footer (Hidden on Print) -->
+    <div class="no-print">
+        {% include 'core/footer.html' %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

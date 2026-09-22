@@ -1,0 +1,601 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Royal Enfield Bullet 350 - Bike Details | Rentify</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        .flatpickr-day.flatpickr-disabled, .flatpickr-day.flatpickr-disabled:hover {
+            background-color: #fee2e2 !important;
+            color: #dc2626 !important;
+            text-decoration: line-through;
+            cursor: not-allowed !important;
+            border-color: #fca5a5 !important;
+        }
+        :root {
+            --primary-color: #1e3c72;
+            --secondary-color: #ff3d00;
+            --light-bg: #f4f6f9;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--light-bg);
+            color: #333;
+            min-height: 100vh;
+            padding-bottom: 3rem;
+        }
+
+        .top-navbar {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 1rem 0;
+            margin-bottom: 2rem;
+        }
+
+        .bike-details-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2.5rem;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        .bike-gallery {
+            position: relative;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .bike-gallery img {
+            width: 100%;
+            height: 420px;
+            object-fit: cover;
+            border-radius: 15px;
+            transition: transform 0.4s ease;
+        }
+
+        .bike-title {
+            font-size: 2.2rem;
+            color: var(--primary-color);
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .price-tag {
+            background: linear-gradient(135deg, #ff3d00 0%, #ff6e40 100%);
+            color: white;
+            padding: 0.6rem 1.8rem;
+            border-radius: 50px;
+            display: inline-block;
+            font-size: 1.3rem;
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(255, 61, 0, 0.3);
+        }
+
+        .spec-badge {
+            background: #eef2f7;
+            color: #1e3c72;
+            font-weight: 600;
+            padding: 0.4rem 0.9rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .feature-card {
+            padding: 1rem;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .feature-card i {
+            color: var(--primary-color);
+            font-size: 1.4rem;
+        }
+
+        .rental-form-card {
+            background: #ffffff;
+            padding: 2rem;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #2d3748;
+            font-size: 0.9rem;
+        }
+
+        .form-control, .form-select {
+            border: 1.5px solid #cbd5e0;
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+        }
+
+        .price-summary-box {
+            background: #f1f5f9;
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-checkout {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            border: none;
+            padding: 0.9rem 1.5rem;
+            font-weight: 700;
+            font-size: 1.05rem;
+            border-radius: 12px;
+            width: 100%;
+            box-shadow: 0 4px 15px rgba(30, 60, 114, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .btn-checkout:hover {
+            transform: translateY(-2px);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header class="top-navbar">
+        <div class="container d-flex justify-content-between align-items-center">
+            <a href="/vehicles/bikes/" class="btn btn-outline-dark btn-sm rounded-pill px-3">
+                <i class="fas fa-arrow-left me-1"></i> Back to Bike Catalog
+            </a>
+            <h5 class="mb-0 text-primary fw-bold"><i class="fas fa-motorcycle me-2"></i>Rentify Bike Rentals</h5>
+            <a href="/bookings/my-bookings/" class="btn btn-primary btn-sm rounded-pill px-3">
+                <i class="fas fa-bookmark me-1"></i> My Bookings
+            </a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="bike-details-container">
+            <div class="row g-4">
+                <!-- Bike Specs Showcase Column -->
+                <div class="col-lg-7">
+                    <div class="bike-gallery mb-3">
+                        <img src="{{ bike.image }}" alt="{{ bike.name }}" class="img-fluid" onerror="this.src='{% static 'images/image/bikeimg/bullet.jpg' %}'">
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <span class="spec-badge"><i class="fas fa-motorcycle"></i> {{ bike.engine_cc }}</span>
+                        <span class="spec-badge"><i class="fas fa-tachometer-alt"></i> {{ bike.power_hp }}</span>
+                        <span class="spec-badge"><i class="fas fa-gas-pump"></i> {{ bike.average_mileage }}</span>
+                        <span class="spec-badge"><i class="fas fa-shield-alt"></i> Dual Channel ABS</span>
+                        <span class="spec-badge"><i class="fas fa-star text-warning"></i> 4.9 Rating</span>
+                    </div>
+
+                    <div class="bike-info">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h1 class="bike-title">{{ bike.name }}</h1>
+                            <div class="price-tag">₹{{ bike.price_per_day }} <small class="fw-normal" style="font-size: 0.85rem;">/ day</small></div>
+                        </div>
+
+                        <p class="text-secondary mb-4">
+                            Experience ultimate two-wheeler freedom with the premium {{ bike.name }} ({{ bike.category }}). Built with high reliability, excellent fuel efficiency, and superior ergonomic comfort for both city commutes and long weekend highway touring.
+                        </p>
+
+                        <h5 class="fw-bold mb-3"><i class="fas fa-shield-alt text-primary me-2"></i>Rental Inclusions & Benefits</h5>
+                        <div class="feature-grid">
+                            {% if features_list %}
+                                {% for feat in features_list %}
+                                    <div class="feature-card">
+                                        {% if "abs" in feat|lower or "brake" in feat|lower %}
+                                            <i class="fas fa-shield-alt text-primary"></i>
+                                        {% elif "electric" in feat|lower or "start" in feat|lower %}
+                                            <i class="fas fa-bolt text-warning"></i>
+                                        {% elif "digital" in feat|lower or "console" in feat|lower or "meter" in feat|lower %}
+                                            <i class="fas fa-tachometer-alt text-info"></i>
+                                        {% elif "wheel" in feat|lower or "alloy" in feat|lower %}
+                                            <i class="fas fa-dharmachakra text-secondary"></i>
+                                        {% elif "helmet" in feat|lower %}
+                                            <i class="fas fa-hard-hat text-danger"></i>
+                                        {% elif "fuel" in feat|lower or "tank" in feat|lower %}
+                                            <i class="fas fa-gas-pump text-success"></i>
+                                        {% else %}
+                                            <i class="fas fa-check-circle text-success"></i>
+                                        {% endif %}
+                                        <div>
+                                            <strong class="d-block text-dark">{{ feat }}</strong>
+                                            <small class="text-muted">Verified Specification</small>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <div class="feature-card">
+                                    <i class="fas fa-hard-hat text-danger"></i>
+                                    <div>
+                                        <strong class="d-block text-dark">2 ISI Helmets Provided</strong>
+                                        <small class="text-muted">Rider + Pillion helmet included</small>
+                                    </div>
+                                </div>
+                                <div class="feature-card">
+                                    <i class="fas fa-shield-alt text-primary"></i>
+                                    <div>
+                                        <strong class="d-block text-dark">Dual Channel ABS</strong>
+                                        <small class="text-muted">Front & Rear Disc Brakes</small>
+                                    </div>
+                                </div>
+                                <div class="feature-card">
+                                    <i class="fas fa-gas-pump text-success"></i>
+                                    <div>
+                                        <strong class="d-block text-dark">Fuel Tank Sanitized</strong>
+                                        <small class="text-muted">Long-range highway cruising</small>
+                                    </div>
+                                </div>
+                                <div class="feature-card">
+                                    <i class="fas fa-tools text-info"></i>
+                                    <div>
+                                        <strong class="d-block text-dark">24/7 Roadside Assist</strong>
+                                        <small class="text-muted">Breakdown support guaranteed</small>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Customer Reviews & Feedback Ratings Section -->
+                        <div class="mt-4 pt-4 border-top">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <h5 class="fw-bold mb-0 text-dark"><i class="fas fa-star text-warning me-2"></i>Rider Reviews & Ratings</h5>
+                                    <small class="text-muted">Real feedback submitted by verified riders who booked this bike.</small>
+                                </div>
+                                <div class="text-end">
+                                    <span class="fs-4 fw-extrabold text-dark">{{ avg_rating|default:"4.8" }}</span>
+                                    <span class="text-warning fs-5">★</span>
+                                    <small class="text-muted d-block">({{ reviews_count|default:"1" }} Verified Reviews)</small>
+                                </div>
+                            </div>
+
+                            <div class="row g-3" id="customerReviewsContainer">
+                                {% for rev in reviews %}
+                                <div class="col-12">
+                                    <div class="p-3 bg-white rounded-3 border shadow-sm">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 36px; height: 36px;">
+                                                    {{ rev.user_name|slice:":1"|upper }}
+                                                </div>
+                                                <div>
+                                                    <h6 class="fw-bold text-dark mb-0">{{ rev.user_name }}</h6>
+                                                    <small class="text-muted">{{ rev.date }}</small>
+                                                </div>
+                                            </div>
+                                            <div class="text-warning fw-bold">
+                                                {{ rev.rating }} <i class="fas fa-star ms-1"></i>
+                                            </div>
+                                        </div>
+                                        <p class="text-secondary small mb-0">{{ rev.comment }}</p>
+                                    </div>
+                                </div>
+                                {% empty %}
+                                <div class="col-12 text-center py-4 bg-light rounded-3 border">
+                                    <i class="fas fa-comment-alt text-muted fs-3 mb-2"></i>
+                                    <h6 class="fw-bold text-dark mb-1">Customer Rating Score: {{ avg_rating|default:"4.8" }} ★</h6>
+                                    <p class="text-secondary small mb-0">"Excellent bike performance, well maintained, and smooth ride experience!"</p>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Booking Details Form Column -->
+                <div class="col-lg-5">
+                    <div class="rental-form-card">
+                        <h4 class="fw-bold text-dark mb-1"><i class="fas fa-calendar-check text-primary me-2"></i>Bike Rental Booking</h4>
+                        <p class="text-muted small mb-3">Select start date first, then pick your return date for instant calculation.</p>
+
+                        {% if not request.user.is_authenticated %}
+                        <div class="alert alert-warning border-0 shadow-sm rounded-3 mb-4 d-flex align-items-center gap-3">
+                            <i class="fas fa-lock text-warning fs-3"></i>
+                            <div>
+                                <strong class="d-block text-dark">Login Required to Book</strong>
+                                <span class="small text-muted">Please log in to submit your bike rental. <a href="/accounts/login/?next=/vehicles/bike-details/?id={{ bike.id }}" class="fw-bold text-primary">Login Here &rarr;</a></span>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <form method="POST" action="" id="bikeBookingForm">
+                            {% csrf_token %}
+                            <input type="hidden" name="bike_name" id="vehicle_name" value="{{ bike.name }}">
+                            <input type="hidden" name="daily_rate" id="daily_rate" value="{{ bike.price_per_day }}">
+
+                            <div class="mb-3">
+                                <label for="full_name" class="form-label d-flex justify-content-between align-items-center">
+                                    <span>Full Name</span>
+                                    {% if request.user.is_authenticated %}
+                                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle small font-monospace"><i class="fas fa-lock me-1"></i>Locked to Profile</span>
+                                    {% endif %}
+                                </label>
+                                <input type="text" class="form-control {% if request.user.is_authenticated %}bg-light text-muted{% endif %}" id="full_name" name="full_name" placeholder="John Doe" value="{% if request.user.is_authenticated %}{% if request.user.get_full_name %}{{ request.user.get_full_name }}{% else %}{{ request.user.username }}{% endif %}{% endif %}" {% if request.user.is_authenticated %}readonly{% else %}required{% endif %}>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="email" class="form-label d-flex justify-content-between align-items-center">
+                                    <span>Email Address</span>
+                                    {% if request.user.is_authenticated %}
+                                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle small font-monospace"><i class="fas fa-lock me-1"></i>Locked to Profile</span>
+                                    {% endif %}
+                                </label>
+                                <input type="email" class="form-control {% if request.user.is_authenticated %}bg-light text-muted{% endif %}" id="email" name="email" placeholder="john@example.com" value="{% if request.user.is_authenticated %}{{ request.user.email }}{% endif %}" {% if request.user.is_authenticated %}readonly{% else %}required{% endif %}>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="phone" class="form-label d-flex justify-content-between align-items-center">
+                                    <span>Phone Number</span>
+                                    {% if request.user.is_authenticated %}
+                                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle small font-monospace"><i class="fas fa-lock me-1"></i>Locked to Profile</span>
+                                    {% endif %}
+                                </label>
+                                <input type="tel" class="form-control {% if request.user.is_authenticated %}bg-light text-muted{% endif %}" id="phone" name="phone" placeholder="+91 98765 43210" value="{% if request.user.is_authenticated and request.user.profile %}{{ request.user.profile.phone_number }}{% endif %}" {% if request.user.is_authenticated %}readonly{% else %}required{% endif %}>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="pickup_location" class="form-label">Pickup City / Station</label>
+                                <select class="form-select" id="pickup_location" name="pickup_location" required>
+                                    <option value="Bhavnagar Station Road" {% if location|lower == 'bhavnagar' or not location %}selected{% endif %}>Bhavnagar Station Road</option>
+                                    <option value="Mumbai Central Hub" {% if location|lower == 'mumbai' %}selected{% endif %}>Mumbai Central Hub</option>
+                                    <option value="Ahmedabad SG Highway" {% if location|lower == 'ahmedabad' %}selected{% endif %}>Ahmedabad SG Highway</option>
+                                    <option value="Bangalore Indiranagar Hub" {% if location|lower == 'bangalore' %}selected{% endif %}>Bangalore Indiranagar Hub</option>
+                                </select>
+                            </div>
+
+                            <div class="row g-2 mb-3">
+                                <div class="col-6">
+                                    <label for="pickup_date" class="form-label">Start Date (Pickup)</label>
+                                    <input type="date" class="form-control" id="pickup_date" name="pickup_date" required>
+                                </div>
+                                <div class="col-6">
+                                    <label for="return_date" class="form-label">End Date (Return)</label>
+                                    <input type="date" class="form-control" id="return_date" name="return_date" disabled required>
+                                </div>
+                            </div>
+
+                            <!-- Real-time Overlap Error Message Container -->
+                            <div id="dateOverlapError" class="alert alert-danger p-2 small fw-bold d-none mb-3 border-danger rounded-3">
+                                <i class="fas fa-exclamation-triangle me-1"></i> <span id="dateOverlapErrorText">Selected dates are already booked!</span>
+                            </div>
+
+                            <!-- Mileage Allowance Notice Box (120 KM/day) -->
+                            <div class="p-3 bg-light border border-success-subtle rounded-3 mb-3">
+                                <div class="d-flex align-items-center gap-2 text-success mb-1">
+                                    <i class="fas fa-road fs-5"></i>
+                                    <strong class="fs-6 text-dark">Driving Limit: 120 KM / Day Included</strong>
+                                </div>
+                                <small class="text-secondary d-block">
+                                    You can drive up to <strong>120 KM/day</strong> included in the base rate. Any extra mileage driven beyond the limit will incur a nominal extra fee (₹5/KM) payable upon bike return.
+                                </small>
+                            </div>
+
+                            <!-- Real-time Price Summary -->
+                            <div class="price-summary-box">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-secondary">Rental Duration:</span>
+                                    <strong class="text-dark" id="summary_days">1 Day</strong>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-secondary">Daily Rate:</span>
+                                    <span class="text-dark" id="summary_rate">₹{{ bike.price_per_day }} / day</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-secondary">Included Mileage Limit:</span>
+                                    <span class="text-dark font-monospace fw-bold" id="summary_km">120 KM</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-secondary">Base Amount:</span>
+                                    <span class="text-dark" id="summary_base">₹{{ bike.price_per_day }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-secondary">GST & Helmet Cover (18%):</span>
+                                    <span class="text-dark" id="summary_tax">--</span>
+                                </div>
+                                <hr class="my-2">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <strong class="text-dark fs-5">Total Payable:</strong>
+                                    <strong class="text-primary fs-4" id="summary_total">₹{{ bike.price_per_day }}</strong>
+                                </div>
+                                <input type="hidden" name="total_amount" id="total_amount" value="{{ bike.price_per_day }}">
+                            </div>
+
+                            {% if request.user.is_authenticated %}
+                            <button type="submit" class="btn btn-checkout" id="submitBookingBtn">
+                                <i class="fas fa-credit-card me-2"></i> Proceed to Select Payment &rarr;
+                            </button>
+                            {% else %}
+                            <a href="/accounts/login/?next=/vehicles/bike-details/?id={{ bike.id }}" class="btn btn-checkout" style="background: linear-gradient(135deg, #374151 0%, #111827 100%);">
+                                <i class="fas fa-lock me-2"></i> Log In to Confirm Booking &rarr;
+                            </a>
+                            {% endif %}
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const pickupInput = document.getElementById('pickup_date');
+            const returnInput = document.getElementById('return_date');
+            const locationSelect = document.getElementById('pickup_location');
+            const submitBtn = document.getElementById('submitBookingBtn');
+            const dateErrorDiv = document.getElementById('dateOverlapError');
+            const dateErrorText = document.getElementById('dateOverlapErrorText');
+            const dailyRate = Number("{{ bike.price_per_day|default:899 }}");
+
+            const bookedDatesArray = JSON.parse('{{ booked_dates_json|escapejs }}');
+            const bookedDatesSet = new Set(bookedDatesArray);
+
+            // Initialize Flatpickr Interactive Calendar Widget with Blocked Date Renderer
+            const fpPickup = flatpickr("#pickup_date", {
+                dateFormat: "Y-m-d",
+                minDate: "today",
+                disable: bookedDatesArray,
+                onChange: function(selectedDates, dateStr) {
+                    if (selectedDates.length > 0) {
+                        returnInput.disabled = false;
+                        const nextDay = new Date(selectedDates[0]);
+                        nextDay.setDate(nextDay.getDate() + 1);
+                        fpReturn.set("minDate", nextDay);
+                        if (!returnInput.value || returnInput.value <= dateStr) {
+                            fpReturn.setDate(nextDay);
+                        }
+                    }
+                    calculateRealtimePrice();
+                },
+                onDayCreate: function(dObj, dStr, fp, dayElem) {
+                    const dateFormatted = flatpickr.formatDate(dayElem.dateObj, "Y-m-d");
+                    if (bookedDatesSet.has(dateFormatted)) {
+                        dayElem.classList.add("flatpickr-disabled", "booked-date-blocked");
+                        dayElem.title = "Booked by another customer (Blocked)";
+                    }
+                }
+            });
+
+            const fpReturn = flatpickr("#return_date", {
+                dateFormat: "Y-m-d",
+                minDate: "today",
+                disable: bookedDatesArray,
+                onChange: function(selectedDates, dateStr) {
+                    calculateRealtimePrice();
+                },
+                onDayCreate: function(dObj, dStr, fp, dayElem) {
+                    const dateFormatted = flatpickr.formatDate(dayElem.dateObj, "Y-m-d");
+                    if (bookedDatesSet.has(dateFormatted)) {
+                        dayElem.classList.add("flatpickr-disabled", "booked-date-blocked");
+                        dayElem.title = "Booked by another customer (Blocked)";
+                    }
+                }
+            });
+
+            const contextStartDate = "{{ start_date }}";
+            const contextEndDate = "{{ end_date }}";
+            const contextLocation = "{{ location|lower }}";
+
+            // Extract from URL parameters or context
+            const urlParams = new URLSearchParams(window.location.search);
+            const paramStartDate = urlParams.get('start_date') || contextStartDate;
+            const paramEndDate = urlParams.get('end_date') || contextEndDate;
+            const paramLocation = (urlParams.get('location') || contextLocation).toLowerCase();
+
+            if (paramLocation && locationSelect) {
+                for (let i = 0; i < locationSelect.options.length; i++) {
+                    if (locationSelect.options[i].value.toLowerCase().includes(paramLocation)) {
+                        locationSelect.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+
+            if (paramStartDate && !bookedDatesSet.has(paramStartDate)) {
+                fpPickup.setDate(paramStartDate);
+                returnInput.disabled = false;
+                if (paramEndDate && paramEndDate > paramStartDate && !bookedDatesSet.has(paramEndDate)) {
+                    fpReturn.setDate(paramEndDate);
+                }
+            }
+
+            function checkDateAvailability() {
+                if (!pickupInput.value || !returnInput.value) return true;
+
+                const start = new Date(pickupInput.value);
+                const end = new Date(returnInput.value);
+                const conflicts = [];
+
+                let curr = new Date(start);
+                while (curr <= end) {
+                    const dateStr = curr.toISOString().split('T')[0];
+                    if (bookedDatesSet.has(dateStr)) {
+                        conflicts.push(dateStr);
+                    }
+                    curr.setDate(curr.getDate() + 1);
+                }
+
+                if (conflicts.length > 0) {
+                    dateErrorText.textContent = `🚫 Booked by another user on: ${conflicts.join(', ')}. Please select available dates!`;
+                    dateErrorDiv.classList.remove('d-none');
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.classList.add('bg-secondary');
+                    }
+                    return false;
+                } else {
+                    dateErrorDiv.classList.add('d-none');
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.classList.remove('bg-secondary');
+                    }
+                    return true;
+                }
+            }
+
+            function calculateRealtimePrice() {
+                if (!pickupInput.value || !returnInput.value) return;
+
+                const start = new Date(pickupInput.value);
+                const end = new Date(returnInput.value);
+
+                if (start && end && end > start) {
+                    const timeDiff = end.getTime() - start.getTime();
+                    const days = Math.max(1, Math.ceil(timeDiff / (1000 * 3600 * 24)));
+                    const baseAmount = days * dailyRate;
+                    const taxAmount = Math.round(baseAmount * 0.18);
+                    const totalAmount = baseAmount + taxAmount;
+
+                    document.getElementById('summary_days').textContent = days + (days === 1 ? ' Day' : ' Days');
+                    document.getElementById('summary_rate').textContent = `₹${dailyRate.toLocaleString('en-IN')} / day`;
+                    document.getElementById('summary_km').textContent = `${(days * 120).toLocaleString('en-IN')} KM Total (${days}x 120 KM/day)`;
+                    document.getElementById('summary_base').textContent = '₹' + baseAmount.toLocaleString('en-IN');
+                    document.getElementById('summary_tax').textContent = '₹' + taxAmount.toLocaleString('en-IN');
+                    document.getElementById('summary_total').textContent = '₹' + totalAmount.toLocaleString('en-IN');
+                    document.getElementById('total_amount').value = totalAmount;
+                }
+                checkDateAvailability();
+            }
+
+            const form = document.getElementById('bikeBookingForm');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    if (!checkDateAvailability()) {
+                        e.preventDefault();
+                        alert('Cannot submit booking: Selected dates are already booked by another user. Please pick non-booked dates.');
+                    }
+                });
+            }
+
+            calculateRealtimePrice();
+        });
+    </script>
+    {% include 'core/footer.html' %}
+</body>
+</html>

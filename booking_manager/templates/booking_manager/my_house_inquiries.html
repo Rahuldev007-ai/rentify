@@ -1,0 +1,413 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My House Inquiries - Rentify</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #1a237e;
+            --light-bg: #f4f6f9;
+        }
+        body {
+            background-color: var(--light-bg);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding-bottom: 4rem;
+        }
+        .top-navbar {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 1rem 0;
+            margin-bottom: 2rem;
+        }
+        .inquiry-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            margin-bottom: 24px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            transition: transform 0.3s ease;
+        }
+        .inquiry-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        .inquiry-header {
+            background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+            color: white;
+            padding: 18px 24px;
+        }
+        .inquiry-body {
+            padding: 24px;
+        }
+        .status-badge {
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .status-pending { background-color: #fff3cd; color: #856404; }
+        .status-approved { background-color: #d4edda; color: #155724; }
+        .status-rejected { background-color: #f8d7da; color: #721c24; }
+        .status-cancelled { background-color: #e2e8f0; color: #4a5568; }
+        .detail-item { margin-bottom: 12px; color: #4a5568; font-size: 0.95rem; }
+        .detail-item i { width: 25px; color: #1a237e; }
+        .house-img-thumb {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="top-navbar">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-2">
+                <a href="/core/" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                    <i class="fas fa-arrow-left me-1"></i> Home
+                </a>
+                <a href="/properties/houses/" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                    <i class="fas fa-home me-1"></i> Browse Houses
+                </a>
+            </div>
+            <h4 class="mb-0 text-primary fw-bold"><i class="fas fa-home me-2"></i>My House Rental Inquiries</h4>
+            <span class="badge bg-primary px-3 py-2 fs-6">{{ inquiries.count }} Active Inquiries</span>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="row">
+            {% for inquiry in inquiries %}
+            <div class="col-12">
+                <div class="inquiry-card">
+                    <div class="inquiry-header">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <h5 class="mb-0 fw-bold">{{ inquiry.item_title }}</h5>
+                                    <span class="badge bg-light text-primary fw-bold text-uppercase px-3 py-1 rounded-pill">
+                                        <i class="fas fa-home me-1"></i> RESIDENTIAL HOUSE
+                                    </span>
+                                </div>
+                                <div class="text-white-50 small mt-1">
+                                    <i class="fas fa-calendar-day me-1"></i> Preferred Move-in Date: <strong>{{ inquiry.booking_date|default:"Flexible Date" }}</strong>
+                                </div>
+                            </div>
+                            <div>
+                                {% if inquiry.status == 'Approved' or inquiry.status == 'Confirmed' %}
+                                    <span class="status-badge status-approved"><i class="fas fa-check-circle me-1"></i> Status: Approved</span>
+                                {% elif inquiry.status == 'Meeting Scheduled' %}
+                                    <span class="status-badge bg-info text-dark"><i class="fas fa-video me-1"></i> Meeting Scheduled</span>
+                                {% elif inquiry.status == 'Quoted' or inquiry.status == 'Price Described' %}
+                                    <span class="status-badge bg-primary text-white"><i class="fas fa-tag me-1"></i> Rent Quoted</span>
+                                {% elif inquiry.status == 'Rejected' %}
+                                    <span class="status-badge status-rejected"><i class="fas fa-times-circle me-1"></i> Status: Rejected</span>
+                                {% elif inquiry.status == 'Cancelled' %}
+                                    <span class="status-badge status-cancelled"><i class="fas fa-ban me-1"></i> Status: Cancelled</span>
+                                {% else %}
+                                    <span class="status-badge status-pending"><i class="fas fa-hourglass-half me-1"></i> Status: Pending Review</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="inquiry-body">
+                        <div class="row align-items-start g-4">
+                            <div class="col-md-3">
+                                <img src="{{ inquiry.image_url }}" alt="{{ inquiry.item_title }}" class="house-img-thumb mb-2" onerror="this.src='/static/images/image/houseimg/i1.jpg'">
+                                <div class="badge bg-light text-dark w-100 border py-2 fw-bold text-wrap">
+                                    <i class="fas fa-hashtag me-1 text-primary"></i> ID: #VG-HS-{{ inquiry.id }}
+                                </div>
+                            </div>
+                            <div class="col-md-9">
+                                <div class="row g-3">
+                                    <!-- Applicant Info -->
+                                    <div class="col-md-6 border-end">
+                                        <h6 class="fw-bold text-primary mb-2"><i class="fas fa-user-circle me-1"></i> Applicant Details</h6>
+                                        <div class="detail-item mb-1">
+                                            <strong>Full Name:</strong> {{ inquiry.applicant_name }}
+                                        </div>
+                                        <div class="detail-item mb-1">
+                                            <strong>Phone Number:</strong> <a href="tel:{{ inquiry.phone_number }}" class="text-decoration-none fw-semibold">{{ inquiry.phone_number }}</a>
+                                        </div>
+                                        <div class="detail-item mb-1">
+                                            <strong>Email Address:</strong> {{ inquiry.email|default:"Not Provided" }}
+                                        </div>
+                                        <div class="detail-item mb-1">
+                                            <strong>Submitted On:</strong> {{ inquiry.created_at|date:"M d, Y (h:i A)" }}
+                                        </div>
+                                    </div>
+
+                                    <!-- House Inquiry Specs -->
+                                    <div class="col-md-6">
+                                        <h6 class="fw-bold text-primary mb-2"><i class="fas fa-sliders-h me-1"></i> Lease Specifications</h6>
+                                        <div class="detail-item mb-1">
+                                            <strong>Move-in Date:</strong> {{ inquiry.booking_date|default:"Flexible Date" }}
+                                        </div>
+                                        <div class="detail-item mb-1">
+                                            <strong>Lease Term & Furnishing:</strong> {{ inquiry.duration|default:"12 Months Lease" }}
+                                        </div>
+                                        <div class="detail-item mb-1">
+                                            <strong>Occupants Count:</strong> {{ inquiry.capacity_needed|default:inquiry.guests_or_km|default:"4 Occupants" }}
+                                        </div>
+                                        <div class="detail-item mb-1">
+                                            <strong>Budget Range:</strong> 
+                                            {% if inquiry.budget_min > 0 or inquiry.budget_max > 0 %}
+                                                <span class="text-success fw-bold">₹{{ inquiry.budget_min|floatformat:0 }} - ₹{{ inquiry.budget_max|floatformat:0 }} / mo</span>
+                                            {% else %}
+                                                <span class="text-muted">Flexible Budget</span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="detail-item mb-1">
+                                            <strong>Location Pref:</strong> {{ inquiry.location_preference|default:"Palace Road, Bhavnagar" }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {% if inquiry.special_requirements %}
+                                <div class="detail-item mt-3 bg-light p-3 rounded-3 border">
+                                    <i class="fas fa-clipboard-list text-primary me-1"></i>
+                                    <strong>Special Requirements & Message:</strong>
+                                    <p class="ms-4 mb-0 text-secondary small">{{ inquiry.special_requirements }}</p>
+                                </div>
+                                {% endif %}
+
+                                <!-- ADMIN RESPONSE & MEETING SCHEDULING CARD -->
+                                {% if inquiry.representative_name or inquiry.meeting_location or inquiry.quoted_price > 0 or inquiry.admin_notes %}
+                                <div class="mt-3 p-3 rounded-3 bg-success bg-opacity-10 border border-success border-opacity-25">
+                                    <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+                                        <h6 class="fw-bold text-success mb-0">
+                                            <i class="fas fa-user-tie me-2"></i>Admin Meeting & Response Details
+                                        </h6>
+                                        {% if inquiry.quoted_price > 0 %}
+                                        <span class="badge bg-success fs-6 fw-bold px-3 py-2 rounded-pill">
+                                            Quoted Rent: ₹{{ inquiry.quoted_price|floatformat:0 }} / month
+                                        </span>
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="row g-2 align-items-center">
+                                        {% if inquiry.representative_name %}
+                                        <div class="col-md-6 text-dark small">
+                                            <i class="fas fa-phone-alt text-primary me-1"></i>
+                                            <strong>Call Representative:</strong> {{ inquiry.representative_name }}
+                                            {% if inquiry.representative_phone %}
+                                            (<a href="tel:{{ inquiry.representative_phone }}" class="fw-bold text-decoration-none">{{ inquiry.representative_phone }}</a>)
+                                            {% endif %}
+                                        </div>
+                                        {% endif %}
+
+                                        {% if inquiry.meeting_location %}
+                                        <div class="col-md-6 text-end">
+                                            {% if 'meet.google.com' in inquiry.meeting_location or 'http' in inquiry.meeting_location %}
+                                            <a href="{{ inquiry.meeting_location }}" target="_blank" class="btn btn-success btn-sm fw-bold rounded-pill px-3 shadow-sm">
+                                                <i class="fas fa-video me-1"></i> Join Google Meet Video Call
+                                            </a>
+                                            {% else %}
+                                            <span class="badge bg-light text-dark border p-2 fw-semibold">
+                                                <i class="fas fa-map-marker-alt text-danger me-1"></i> {{ inquiry.meeting_location }}
+                                            </span>
+                                            {% endif %}
+                                        </div>
+                                        {% endif %}
+
+                                        {% if inquiry.admin_notes %}
+                                        <div class="col-12 mt-2 pt-2 border-top border-success border-opacity-25 text-secondary small">
+                                            <strong>Admin Response Notes:</strong> {{ inquiry.admin_notes }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top flex-wrap gap-2">
+                                    <div class="d-flex gap-2 align-items-center">
+                                        <button class="btn btn-primary btn-sm rounded-pill px-3 fw-bold" onclick="openUserHouseInquiryModal({{ inquiry.id }}, '{{ inquiry.item_title|escapejs }}', '{{ inquiry.applicant_name|escapejs }}', '{{ inquiry.phone_number|escapejs }}', '{{ inquiry.email|escapejs }}', '{{ inquiry.booking_date|escapejs }}', '{{ inquiry.duration|escapejs }}', '{{ inquiry.capacity_needed|escapejs }}', '{{ inquiry.budget_min|floatformat:0 }}', '{{ inquiry.budget_max|floatformat:0 }}', '{{ inquiry.location_preference|escapejs }}', '{{ inquiry.special_requirements|escapejs }}', '{{ inquiry.representative_name|escapejs }}', '{{ inquiry.representative_phone|escapejs }}', '{{ inquiry.meeting_location|escapejs }}', '{{ inquiry.quoted_price|floatformat:0 }}', '{{ inquiry.admin_notes|escapejs }}', '{{ inquiry.status|escapejs }}')">
+                                            <i class="fas fa-eye me-1"></i> Full Details Popup
+                                        </button>
+                                        <small class="text-muted"><i class="fas fa-info-circle me-1"></i> Management team sync active.</small>
+                                    </div>
+                                    {% if inquiry.status != 'Cancelled' %}
+                                    <button class="btn btn-outline-danger btn-sm rounded-pill px-3" onclick="cancelHouseInquiry({{ inquiry.id }})">
+                                        Cancel Request
+                                    </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <div class="p-5 bg-white rounded-4 shadow-sm">
+                    <i class="fas fa-home text-muted fa-4x mb-3"></i>
+                    <h5 class="fw-bold text-dark">No House Inquiries Found</h5>
+                    <p class="text-muted mb-4">You have not submitted any residential house rental inquiries yet.</p>
+                    <a href="/properties/houses/" class="btn btn-primary rounded-pill px-4 fw-bold">
+                        Browse Residential Houses <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- FULL HOUSE INQUIRY DETAILS MODAL -->
+    <div class="modal fade" id="userHouseInquiryDetailsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg rounded-4">
+                <div class="modal-header bg-primary text-white rounded-top-4 px-4 py-3">
+                    <h5 class="modal-title fw-bold"><i class="fas fa-home me-2"></i>Residential House Inquiry Details</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="bg-light p-3 rounded-3 border mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <div>
+                            <span class="text-muted small">Inquiry Target Property:</span>
+                            <h5 class="fw-bold text-dark mb-0" id="modalHousePropertyTitle">Sunshine Luxury Villa</h5>
+                        </div>
+                        <span class="badge bg-primary fs-6 px-3 py-2 rounded-pill" id="modalHouseStatusBadge">Pending</span>
+                    </div>
+
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-primary border-bottom pb-2 mb-3"><i class="fas fa-user me-2"></i>Applicant Details</h6>
+                            <p class="mb-2"><strong>Full Name:</strong> <span id="modalHouseName">-</span></p>
+                            <p class="mb-2"><strong>Phone Number:</strong> <span id="modalHousePhone">-</span></p>
+                            <p class="mb-2"><strong>Email Address:</strong> <span id="modalHouseEmail">-</span></p>
+                            <p class="mb-2"><strong>Location Preference:</strong> <span id="modalHouseLocation">-</span></p>
+                        </div>
+
+                        <div class="col-md-6">
+                            <h6 class="fw-bold text-primary border-bottom pb-2 mb-3"><i class="fas fa-clipboard-list me-2"></i>Lease Specifications</h6>
+                            <p class="mb-2"><strong>Preferred Move-in Date:</strong> <span id="modalHouseMoveInDate">-</span></p>
+                            <p class="mb-2"><strong>Lease Term & Furnishing:</strong> <span id="modalHouseDuration">-</span></p>
+                            <p class="mb-2"><strong>Occupants Count:</strong> <span id="modalHouseOccupants">-</span></p>
+                            <p class="mb-2"><strong>Budget Min & Max:</strong> <span id="modalHouseBudget" class="text-success fw-bold">-</span></p>
+                        </div>
+
+                        <div class="col-12">
+                            <h6 class="fw-bold text-primary border-bottom pb-2 mb-2"><i class="fas fa-comment-dots me-2"></i>Special Requirements / Notes</h6>
+                            <p class="p-3 bg-light rounded border text-secondary mb-0" id="modalHouseRequirements">No special requirements mentioned.</p>
+                        </div>
+
+                        <!-- ADMIN RESPONSE SECTION IN MODAL -->
+                        <div class="col-12" id="modalHouseAdminResponseSection">
+                            <div class="p-3 rounded-3 bg-success bg-opacity-10 border border-success">
+                                <h6 class="fw-bold text-success mb-2"><i class="fas fa-user-tie me-2"></i>Management Response & Meeting Info</h6>
+                                <p class="mb-2"><strong>Quoted Rent:</strong> <span id="modalHouseQuotedPrice" class="text-success fw-bold">Not quoted yet</span></p>
+                                <p class="mb-2"><strong>Sales Representative:</strong> <span id="modalHouseSalesRep">-</span></p>
+                                <p class="mb-2"><strong>Meeting Location / Link:</strong> <span id="modalHouseMeetingLoc">-</span></p>
+                                <p class="mb-0"><strong>Admin Response Notes:</strong> <span id="modalHouseAdminNotes" class="text-secondary">-</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light rounded-bottom-4 px-4 py-3">
+                    <button type="button" class="btn btn-secondary fw-bold rounded-pill px-4" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    {% include 'core/footer.html' %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function openUserHouseInquiryModal(id, title, name, phone, email, moveInDate, duration, occupants, bMin, bMax, location, requirements, repName, repPhone, meetingLoc, quotedPrice, adminNotes, status) {
+            document.getElementById('modalHousePropertyTitle').innerText = title;
+            document.getElementById('modalHouseStatusBadge').innerText = status;
+
+            document.getElementById('modalHouseName').innerText = name || 'N/A';
+            document.getElementById('modalHousePhone').innerText = phone || 'N/A';
+            document.getElementById('modalHouseEmail').innerText = email || 'N/A';
+            document.getElementById('modalHouseLocation').innerText = location || 'Bhavnagar Central';
+
+            document.getElementById('modalHouseMoveInDate').innerText = moveInDate || 'Flexible';
+            document.getElementById('modalHouseDuration').innerText = duration || '12 Months Lease';
+            document.getElementById('modalHouseOccupants').innerText = occupants || '4 Occupants';
+            
+            const minNum = parseFloat(bMin) || 0;
+            const maxNum = parseFloat(bMax) || 0;
+            if (minNum > 0 || maxNum > 0) {
+                document.getElementById('modalHouseBudget').innerText = `₹${minNum.toLocaleString()} - ₹${maxNum.toLocaleString()} / month`;
+            } else {
+                document.getElementById('modalHouseBudget').innerText = 'Flexible Budget';
+            }
+
+            document.getElementById('modalHouseRequirements').innerText = requirements || 'None requested.';
+
+            // Admin response details
+            if (repName || meetingLoc || parseFloat(quotedPrice) > 0 || adminNotes) {
+                document.getElementById('modalHouseAdminResponseSection').classList.remove('d-none');
+                document.getElementById('modalHouseQuotedPrice').innerText = parseFloat(quotedPrice) > 0 ? `₹${Number(quotedPrice).toLocaleString()} / month` : 'Under Discussion';
+                document.getElementById('modalHouseSalesRep').innerText = repName ? `${repName} (${repPhone})` : 'Assigned';
+                
+                if (meetingLoc && (meetingLoc.includes('meet.google.com') || meetingLoc.includes('http'))) {
+                    document.getElementById('modalHouseMeetingLoc').innerHTML = `<a href="${meetingLoc}" target="_blank" class="btn btn-success btn-sm fw-bold rounded-pill"><i class="fas fa-video me-1"></i> Join Google Meet</a>`;
+                } else {
+                    document.getElementById('modalHouseMeetingLoc').innerText = meetingLoc || 'Office Meeting';
+                }
+
+                document.getElementById('modalHouseAdminNotes').innerText = adminNotes || 'None';
+            } else {
+                document.getElementById('modalHouseAdminResponseSection').classList.add('d-none');
+            }
+
+            const modal = new bootstrap.Modal(document.getElementById('userHouseInquiryDetailsModal'));
+            modal.show();
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function cancelHouseInquiry(inquiryId) {
+            if (!confirm('Are you sure you want to cancel this house inquiry request?')) return;
+            const csrftoken = getCookie('csrftoken');
+
+            fetch('/bookings/api/cancel/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({ inquiry_id: inquiryId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('House inquiry cancelled successfully.');
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('An error occurred cancelling inquiry.');
+            });
+        }
+    </script>
+</body>
+</html>

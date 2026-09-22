@@ -1,0 +1,1015 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rentify - Premium Cars, Bikes, Halls, Offices & Houses for Rent</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            --accent-gradient: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            --light-bg: #f4f6f9;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-bg);
+            color: #333;
+            min-height: 100vh;
+        }
+
+        /* Hero Banner */
+        .hero-section {
+            background: linear-gradient(rgba(17, 24, 39, 0.75), rgba(30, 60, 114, 0.85)), url("{% static 'images/image/backimg.png' %}") center/cover no-repeat;
+            padding: 90px 0 130px;
+            color: white;
+            text-align: center;
+            position: relative;
+        }
+
+        .hero-title {
+            font-size: 3.2rem;
+            font-weight: 900;
+            letter-spacing: -1px;
+            margin-bottom: 15px;
+            text-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        .typing-container {
+            font-size: 1.35rem;
+            color: #f39c12;
+            font-weight: 700;
+            min-height: 40px;
+        }
+
+        /* Live Search Card */
+        .search-engine-card {
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(16px);
+            border-radius: 24px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            margin-top: -60px;
+            position: relative;
+            z-index: 10;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+        }
+
+        .search-field label {
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #4b5563;
+            margin-bottom: 6px;
+        }
+
+        .form-control-custom, .form-select-custom {
+            border: 1.5px solid #d1d5db;
+            border-radius: 12px;
+            padding: 10px 14px;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .form-control-custom:focus, .form-select-custom:focus {
+            border-color: #1e3c72;
+            box-shadow: 0 0 0 3px rgba(30, 60, 114, 0.15);
+        }
+
+        .btn-search-now {
+            background: var(--primary-gradient);
+            color: white;
+            font-weight: 700;
+            padding: 12px 24px;
+            border-radius: 12px;
+            border: none;
+            width: 100%;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 18px rgba(30, 60, 114, 0.3);
+        }
+
+        .btn-search-now:hover {
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 24px rgba(30, 60, 114, 0.45);
+        }
+
+        /* Live Stats Bar */
+        .live-stats-bar {
+            background: white;
+            border-radius: 18px;
+            padding: 24px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+            margin-top: 30px;
+        }
+
+        .stat-item h3 {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #1e3c72;
+            margin-bottom: 2px;
+        }
+
+        .stat-item p {
+            color: #6c757d;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        /* Featured Option Cards */
+        .option-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+            transition: all 0.35s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #f1f5f9;
+        }
+
+        .option-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 16px 36px rgba(0,0,0,0.12);
+        }
+
+        .option-image {
+            height: 200px;
+            object-fit: cover;
+            width: 100%;
+            transition: transform 0.5s ease;
+        }
+
+        .option-card:hover .option-image {
+            transform: scale(1.06);
+        }
+
+        .badge-live-available {
+            background: #dcfce7;
+            color: #15803d;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .pulse-dot-green {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #15803d;
+        }
+
+        .btn-option-cta {
+            background: var(--primary-gradient);
+            color: white;
+            font-weight: 700;
+            border-radius: 12px;
+            padding: 10px;
+            text-align: center;
+            text-decoration: none;
+            display: block;
+            transition: all 0.3s ease;
+        }
+
+        .btn-option-cta:hover {
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(30, 60, 114, 0.3);
+        }
+
+        .home-showcase-item {
+            transition: opacity 0.35s ease, transform 0.35s ease;
+        }
+
+        .home-showcase-item[style*="display: block"],
+        .home-showcase-item.show-active {
+            opacity: 1 !important;
+            transform: none !important;
+            visibility: visible !important;
+        }
+
+        /* Terms & Location Card */
+        .info-tab-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+        }
+
+        /* High-End Luxury Fullscreen Preloader (100% Icon-Free, White BG) */
+        #preloader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #ffffff !important;
+            z-index: 999999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #preloader.fade-out {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .preloader-card {
+            background: #ffffff;
+            border: 1px solid #f1f5f9;
+            border-radius: 28px;
+            padding: 48px 42px;
+            text-align: center;
+            color: #111827;
+            width: 90%;
+            max-width: 420px;
+            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.08), 0 0 50px rgba(212, 175, 55, 0.06);
+            animation: cardPop 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes cardPop {
+            0% { transform: scale(0.94); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .preloader-logo-title {
+            font-family: 'Cinzel', serif;
+            font-size: 2.3rem;
+            font-weight: 900;
+            letter-spacing: 4px;
+            color: #111827;
+            line-height: 1.1;
+            margin-bottom: 6px;
+        }
+
+        .preloader-logo-title span.brand-gold {
+            color: #d4af37;
+        }
+
+        .preloader-subtitle {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 5px;
+            color: #d4af37;
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 28px;
+        }
+
+        .spinner-ring-container {
+            position: relative;
+            width: 104px;
+            height: 104px;
+            margin: 0 auto 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .outer-spin-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 3px solid #f3f4f6;
+            border-top: 3px solid #111827;
+            border-right: 3px solid #d4af37;
+            border-radius: 50%;
+            animation: ringSpin 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+        }
+
+        .inner-spin-ring {
+            position: absolute;
+            width: 76%;
+            height: 76%;
+            border: 3px solid #f9fafb;
+            border-bottom: 3px solid #d4af37;
+            border-left: 3px solid #111827;
+            border-radius: 50%;
+            animation: ringSpinRev 1s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+        }
+
+        .luxury-center-emblem {
+            font-family: 'Cinzel', serif;
+            font-size: 1.7rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #111827 0%, #d4af37 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            z-index: 2;
+            letter-spacing: -1px;
+        }
+
+        .loader-progress-track {
+            width: 100%;
+            height: 6px;
+            background: #f1f5f9;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 14px;
+        }
+
+        .loader-progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #111827 0%, #d4af37 50%, #111827 100%);
+            border-radius: 12px;
+            transition: width 0.15s ease-out;
+        }
+
+        .loader-status-text {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        #loaderStatusMsg {
+            text-transform: uppercase;
+            font-size: 0.74rem;
+            letter-spacing: 1.5px;
+            color: #374151;
+            font-weight: 700;
+        }
+
+        #loaderPercent {
+            color: #d4af37;
+            font-weight: 800;
+            font-size: 0.85rem;
+        }
+
+        @keyframes ringSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes ringSpinRev {
+            0% { transform: rotate(360deg); }
+            100% { transform: rotate(0deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- High-End Luxury Fullscreen Preloader (White BG) -->
+    <div id="preloader">
+        <div class="preloader-card">
+            <div class="preloader-logo-title">
+                RENT<span class="brand-gold">IFY</span>
+            </div>
+            <span class="preloader-subtitle">Luxury Fleet & Rentals</span>
+            <div class="spinner-ring-container">
+                <div class="outer-spin-ring"></div>
+                <div class="inner-spin-ring"></div>
+                <div class="luxury-center-emblem">R</div>
+            </div>
+            <div class="loader-progress-track">
+                <div class="loader-progress-bar-fill" id="loaderFill"></div>
+            </div>
+            <div class="loader-status-text">
+                <span id="loaderStatusMsg">Initializing Luxury Fleet...</span>
+                <span id="loaderPercent">0%</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Unified Top Navigation -->
+    {% include 'core/navbar.html' %}
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <h1 class="hero-title" data-aos="fade-down">RENTIFY PLATFORM</h1>
+            <div class="typing-container mb-3" data-aos="fade-up">
+                <span id="typedText">Your Trusted Partner For Renting Cars, Bikes, Halls, Offices & Houses!</span>
+            </div>
+            <p class="text-white-50 fs-5 max-w-700 mx-auto" data-aos="fade-up" data-aos-delay="100">
+                Seamless online booking, instant confirmation, transparent pricing, and 24/7 customer support across Gujarat.
+            </p>
+        </div>
+    </section>
+
+    <!-- Real-Time Interactive Search Widget Container -->
+    <div class="container">
+        <div class="search-engine-card" data-aos="zoom-in">
+            <form id="heroSearchForm" onsubmit="handleHeroSearch(event)">
+                <div class="row g-3 align-items-end">
+                    
+                    <!-- Rental Category Select -->
+                    <div class="col-lg-3 col-md-6 search-field">
+                        <label class="fw-bold text-secondary small text-uppercase">Rental Category</label>
+                        <select class="form-select form-select-custom" id="searchCategory" onchange="handleHeroCategoryChange(this.value)" required>
+                            <option value="car" selected>Car Rentals</option>
+                            <option value="bike">Bike Rentals</option>
+                            <option value="hall">Event & Marriage Halls</option>
+                            <option value="office">Commercial Office Spaces</option>
+                            <option value="house">Residential Houses & Villas</option>
+                        </select>
+                    </div>
+
+                    <!-- Pickup Location / City -->
+                    <div class="col-lg-3 col-md-6 search-field">
+                        <label class="fw-bold text-secondary small text-uppercase">Pickup Location</label>
+                        <select class="form-select form-select-custom" id="searchLocation">
+                            <option value="bhavnagar" selected>Bhavnagar Central Hub</option>
+                            <option value="ahmedabad">Ahmedabad Highway</option>
+                            <option value="mumbai">Mumbai Hub</option>
+                            <option value="delhi">Delhi Central</option>
+                        </select>
+                    </div>
+
+                    <!-- Start Date (User Selects - Previous dates disabled) -->
+                    <div class="col-lg-3 col-md-6 search-field">
+                        <label class="fw-bold text-secondary small text-uppercase">Pick-up Date</label>
+                        <input type="date" class="form-control form-control-custom" id="startDate" placeholder="Select Date" onchange="validateAndCalculateDates()">
+                    </div>
+
+                    <!-- Return Date (User Selects - Must be after Pick-up date) -->
+                    <div class="col-lg-3 col-md-6 search-field">
+                        <label class="fw-bold text-secondary small text-uppercase">Return Date</label>
+                        <input type="date" class="form-control form-control-custom" id="endDate" placeholder="Select Date" onchange="validateAndCalculateDates()">
+                    </div>
+
+                    <div class="col-12 mt-3">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <div id="dateSelectionFeedback" class="text-primary small fw-bold">
+                                Select pick-up date and return date above. Return date must be after pick-up date.
+                            </div>
+                            <button type="submit" class="btn-search-now px-5 py-2 fw-bold rounded-pill style-btn-narrow" style="max-width: 220px;">
+                                Find Rentals
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </form>
+        </div>
+
+        <!-- Live Real-time Stats Bar -->
+        <div class="live-stats-bar text-center my-4" data-aos="fade-up">
+            <div class="row g-3">
+                <div class="col-6 col-md-3 stat-item">
+                    <h3 class="counter-num" data-target="50">50+</h3>
+                    <p>Vehicles Fleet</p>
+                </div>
+                <div class="col-6 col-md-3 stat-item">
+                    <h3 class="counter-num" data-target="40">40+</h3>
+                    <p>Bikes & Scooters</p>
+                </div>
+                <div class="col-6 col-md-3 stat-item">
+                    <h3 class="counter-num" data-target="25">25+</h3>
+                    <p>Halls & Office Suites</p>
+                </div>
+                <div class="col-6 col-md-3 stat-item">
+                    <h3 class="counter-num" data-target="5000">5,000+</h3>
+                    <p>Satisfied Customers</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- WOW Rental Categories Showcase Section -->
+    <div class="container my-5">
+        <div class="text-center mb-5" data-aos="fade-up">
+            <span class="badge bg-primary-subtle text-primary fw-bold px-3 py-2 rounded-pill mb-2">Real-Time Rental Fleet</span>
+            <h2 class="fw-extrabold text-dark display-5 mb-2">Explore Premium Categories</h2>
+            <p class="text-muted fs-6">Select a category below to filter catalog options instantly.</p>
+            
+            <!-- Category Filter Selector Bar (Icons Removed, Sleek Pill Design) -->
+            <div class="d-flex justify-content-center flex-wrap gap-2 mt-4 mb-4">
+                <button class="btn btn-primary home-cat-filter-btn active rounded-pill px-4 py-2 fw-bold" onclick="filterHomeShowcase('all', this)">
+                    All Catalog
+                </button>
+                <button class="btn btn-outline-primary home-cat-filter-btn rounded-pill px-4 py-2 fw-bold" onclick="filterHomeShowcase('car', this)">
+                    Cars ({{ total_cars_count }})
+                </button>
+                <button class="btn btn-outline-primary home-cat-filter-btn rounded-pill px-4 py-2 fw-bold" onclick="filterHomeShowcase('bike', this)">
+                    Bikes ({{ total_bikes_count }})
+                </button>
+                <button class="btn btn-outline-primary home-cat-filter-btn rounded-pill px-4 py-2 fw-bold" onclick="filterHomeShowcase('hall', this)">
+                    Event Halls
+                </button>
+                <button class="btn btn-outline-primary home-cat-filter-btn rounded-pill px-4 py-2 fw-bold" onclick="filterHomeShowcase('office', this)">
+                    Offices
+                </button>
+                <button class="btn btn-outline-primary home-cat-filter-btn rounded-pill px-4 py-2 fw-bold" onclick="filterHomeShowcase('house', this)">
+                    Houses & Villas
+                </button>
+            </div>
+        </div>
+
+        <div class="row g-4" id="homeShowcaseGrid">
+            <!-- Dynamic Featured Cars -->
+            {% for car in featured_cars %}
+                <div class="col-lg-4 col-md-6 home-showcase-item" data-category="car" data-aos="fade-up">
+                    <div class="option-card">
+                        <div style="overflow: hidden; position: relative;">
+                            <img src="{{ car.image }}" class="option-image" alt="{{ car.name }}" onerror="this.src='{% static 'images/image/carimgs/thar1.jpg' %}'">
+                            <span class="badge bg-dark text-warning position-absolute top-0 end-0 m-3 px-3 py-2 rounded-pill fw-bold">₹{{ car.price_per_day }}/day</span>
+                            <span class="badge bg-primary position-absolute top-0 start-0 m-3 px-3 py-2 rounded-pill"><i class="fas fa-car me-1"></i> {{ car.category }}</span>
+                        </div>
+                        <div class="card-body p-4 d-flex flex-column justify-content-between">
+                            <div>
+                                <h5 class="fw-bold text-dark mb-1">{{ car.name }}</h5>
+                                <p class="text-secondary small mb-3">
+                                    <i class="fas fa-user-friends me-1 text-primary"></i> {{ car.seats }} Seats &bull; 
+                                    <i class="fas fa-cogs me-1 text-info"></i> {{ car.transmission }} &bull; 
+                                    <i class="fas fa-check-circle me-1 text-success"></i> {{ car.status }}
+                                </p>
+                            </div>
+                            <a href="/vehicles/car-details/?id={{ car.id }}" class="btn-option-cta">
+                                Book Car Now <i class="fas fa-arrow-right ms-2"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+
+            <!-- Dynamic Featured Bikes -->
+            {% for bike in featured_bikes %}
+                <div class="col-lg-4 col-md-6 home-showcase-item" data-category="bike" data-aos="fade-up">
+                    <div class="option-card">
+                        <div style="overflow: hidden; position: relative;">
+                            <img src="{{ bike.image }}" class="option-image" alt="{{ bike.name }}" onerror="this.src='{% static 'images/image/carimg/kia.jpg' %}'">
+                            <span class="badge bg-dark text-success position-absolute top-0 end-0 m-3 px-3 py-2 rounded-pill fw-bold">₹{{ bike.price_per_day }}/day</span>
+                            <span class="badge bg-success position-absolute top-0 start-0 m-3 px-3 py-2 rounded-pill"><i class="fas fa-motorcycle me-1"></i> {{ bike.category }}</span>
+                        </div>
+                        <div class="card-body p-4 d-flex flex-column justify-content-between">
+                            <div>
+                                <h5 class="fw-bold text-dark mb-1">{{ bike.name }}</h5>
+                                <p class="text-secondary small mb-3">
+                                    <i class="fas fa-tachometer-alt me-1 text-primary"></i> {{ bike.engine_cc }} &bull; 
+                                    <i class="fas fa-gas-pump me-1 text-info"></i> {{ bike.average_mileage }} &bull; 
+                                    <i class="fas fa-check-circle me-1 text-success"></i> {{ bike.status }}
+                                </p>
+                            </div>
+                            <a href="/vehicles/bike-details/?id={{ bike.id }}" class="btn-option-cta">
+                                Book Bike Now <i class="fas fa-arrow-right ms-2"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+
+            <!-- Dynamic Featured Event Halls -->
+            {% for hall in featured_halls %}
+                <div class="col-lg-4 col-md-6 home-showcase-item" data-category="hall" data-aos="fade-up">
+                    <div class="option-card">
+                        <div style="overflow: hidden; position: relative;">
+                            <img src="{% static 'images/image/c1.jpg' %}" class="option-image" alt="{{ hall.name }}">
+                            <span class="badge bg-dark text-info position-absolute top-0 end-0 m-3 px-3 py-2 rounded-pill fw-bold">₹{{ hall.price_per_day }}/day</span>
+                            <span class="badge bg-info text-dark position-absolute top-0 start-0 m-3 px-3 py-2 rounded-pill"><i class="fas fa-hotel me-1"></i> {{ hall.category }}</span>
+                        </div>
+                        <div class="card-body p-4 d-flex flex-column justify-content-between">
+                            <div>
+                                <h5 class="fw-bold text-dark mb-1">{{ hall.name }}</h5>
+                                <p class="text-secondary small mb-3">
+                                    <i class="fas fa-users me-1 text-primary"></i> {{ hall.capacity }} Guests &bull; 
+                                    <i class="fas fa-snowflake me-1 text-info"></i> {{ hall.ac_type }}
+                                </p>
+                            </div>
+                            <a href="/properties/halls/" class="btn-option-cta">
+                                Inquire Hall <i class="fas fa-arrow-right ms-2"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+
+            <!-- Dynamic Featured Commercial Offices -->
+            {% for office in featured_offices %}
+                <div class="col-lg-6 col-md-6 home-showcase-item" data-category="office" data-aos="fade-up">
+                    <div class="option-card">
+                        <div class="card-body p-4 d-flex flex-column justify-content-between">
+                            <div>
+                                <span class="badge bg-primary text-white mb-2"><i class="fas fa-briefcase me-1"></i> {{ office.category }}</span>
+                                <h5 class="fw-bold text-dark mb-2">{{ office.name }}</h5>
+                                <p class="text-secondary small mb-3">
+                                    <i class="fas fa-desktop me-1 text-primary"></i> {{ office.workstations }} Workstations &bull; 
+                                    <i class="fas fa-ruler-combined me-1 text-info"></i> {{ office.area_sqft }} &bull; 
+                                    ₹{{ office.monthly_rent }}/month
+                                </p>
+                            </div>
+                            <a href="/properties/offices/" class="btn-option-cta">
+                                Inquire Office Space <i class="fas fa-arrow-right ms-2"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+
+            <!-- Dynamic Featured Residential Houses -->
+            {% for house in featured_houses %}
+                <div class="col-lg-6 col-md-6 home-showcase-item" data-category="house" data-aos="fade-up">
+                    <div class="option-card">
+                        <div class="card-body p-4 d-flex flex-column justify-content-between">
+                            <div>
+                                <span class="badge bg-danger text-white mb-2"><i class="fas fa-home me-1"></i> {{ house.category }}</span>
+                                <h5 class="fw-bold text-dark mb-2">{{ house.name }}</h5>
+                                <p class="text-secondary small mb-3">
+                                    <i class="fas fa-bed me-1 text-primary"></i> {{ house.bedrooms }} Beds &bull; 
+                                    <i class="fas fa-bath me-1 text-info"></i> {{ house.bathrooms }} Baths &bull; 
+                                    ₹{{ house.monthly_rent }}/month
+                                </p>
+                            </div>
+                            <a href="/properties/houses/" class="btn-option-cta">
+                                Inquire Residential House <i class="fas fa-arrow-right ms-2"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    </div>
+
+    <!-- Rental Locations & Terms Section -->
+    <div class="container mb-5">
+        <div class="info-tab-card">
+            <div class="d-flex flex-column flex-sm-row justify-content-center gap-2 mb-4">
+                <button class="btn btn-primary btn-lg rounded-pill px-4 py-2 fw-bold" id="btnTerms" onclick="toggleInfoTab('terms')">
+                    Terms & Conditions
+                </button>
+                <button class="btn btn-outline-primary btn-lg rounded-pill px-4 py-2 fw-bold" id="btnLocation" onclick="toggleInfoTab('location')">
+                    Rental Locations & Map
+                </button>
+            </div>
+
+            <div id="infoContentContainer">
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="p-4 bg-light rounded-4 h-100">
+                            <span class="badge bg-success-subtle text-success fw-bold px-3 py-1 rounded-pill mb-2">Policy</span>
+                            <h6 class="fw-bold text-dark mb-3">Booking & Payment</h6>
+                            <ul class="list-unstyled text-secondary small m-0">
+                                <li class="mb-2">&bull; Valid Government ID proof required</li>
+                                <li class="mb-2">&bull; Advance deposit for booking confirmation</li>
+                                <li>&bull; Instant GST invoice receipt provided</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-4 bg-light rounded-4 h-100">
+                            <span class="badge bg-primary-subtle text-primary fw-bold px-3 py-1 rounded-pill mb-2">Safety</span>
+                            <h6 class="fw-bold text-dark mb-3">Usage & Guidelines</h6>
+                            <ul class="list-unstyled text-secondary small m-0">
+                                <li class="mb-2">&bull; Return items in clean condition</li>
+                                <li class="mb-2">&bull; 24/7 roadside assistance support</li>
+                                <li>&bull; Helmet included for bike rentals</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-4 bg-light rounded-4 h-100">
+                            <span class="badge bg-warning-subtle text-warning-emphasis fw-bold px-3 py-1 rounded-pill mb-2">Flexible</span>
+                            <h6 class="fw-bold text-dark mb-3">Extensions & Return</h6>
+                            <ul class="list-unstyled text-secondary small m-0">
+                                <li class="mb-2">&bull; Grace period of 1 hour for returns</li>
+                                <li class="mb-2">&bull; Easy online extension available</li>
+                                <li>&bull; Zero hidden cancellation fees</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    {% include 'core/footer.html' %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({ duration: 800, once: true });
+
+        // Initialize date picker rules & home showcase filter on DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+            const startDateElem = document.getElementById('startDate');
+            const endDateElem = document.getElementById('endDate');
+
+            // Set minimum date to today (past dates disabled)
+            if (startDateElem) {
+                startDateElem.min = todayStr;
+                startDateElem.value = "";
+            }
+            if (endDateElem) {
+                const nextDay = new Date(today);
+                nextDay.setDate(today.getDate() + 1);
+                endDateElem.min = nextDay.toISOString().split('T')[0];
+                endDateElem.value = "";
+            }
+
+            toggleInfoTab('terms');
+            filterHomeShowcase('all');
+        });
+
+
+        // Real-Time Date Selection & Validation (Previous dates blocked, Return date > Pickup date)
+        function validateAndCalculateDates() {
+            const startDateElem = document.getElementById('startDate');
+            const endDateElem = document.getElementById('endDate');
+            const feedbackElem = document.getElementById('dateSelectionFeedback');
+
+            const startDateVal = startDateElem.value;
+            let endDateVal = endDateElem.value;
+
+            if (startDateVal) {
+                const startObj = new Date(startDateVal);
+                const minReturnObj = new Date(startObj);
+                minReturnObj.setDate(startObj.getDate() + 1);
+                const minReturnStr = minReturnObj.toISOString().split('T')[0];
+
+                // Return date must be strictly after start date (min = start + 1 day)
+                endDateElem.min = minReturnStr;
+
+                // Auto-correct if return date is missing or same/earlier than start date
+                if (endDateVal && endDateVal <= startDateVal) {
+                    endDateElem.value = minReturnStr;
+                    endDateVal = minReturnStr;
+                    feedbackElem.innerHTML = `<span class="text-warning fw-bold">Return date cannot be the same or earlier than pickup date. Updated to ${minReturnStr}.</span>`;
+                }
+            }
+
+            if (startDateVal && endDateVal) {
+                const start = new Date(startDateVal);
+                const end = new Date(endDateVal);
+
+                if (end > start) {
+                    const timeDiff = end.getTime() - start.getTime();
+                    const days = Math.ceil(timeDiff / (1000 * 3600 * 24));
+                    feedbackElem.innerHTML = `<span class="text-success fw-bold">Selected Duration: ${days} Day${days > 1 ? 's' : ''} (${startDateVal} to ${endDateVal})</span>`;
+                } else {
+                    const nextDay = new Date(start);
+                    nextDay.setDate(start.getDate() + 1);
+                    const nextDayStr = nextDay.toISOString().split('T')[0];
+                    endDateElem.value = nextDayStr;
+                    feedbackElem.innerHTML = `<span class="text-danger fw-bold">Return date must be after pick-up date. Set to ${nextDayStr}.</span>`;
+                }
+            } else if (startDateVal) {
+                const startObj = new Date(startDateVal);
+                startObj.setDate(startObj.getDate() + 1);
+                const minStr = startObj.toISOString().split('T')[0];
+                feedbackElem.innerHTML = `<span class="text-warning fw-bold">Please select Return Date (must be on or after ${minStr}).</span>`;
+            } else {
+                feedbackElem.innerHTML = `<span class="text-muted fw-bold">Select pick-up date and return date above. Return date must be after pick-up date.</span>`;
+            }
+        }
+
+        // Live Real-Time Search Handler (Keyword + Category Filter)
+        function handleRealtimeSearch() {
+            const query = (document.getElementById('keywordSearch')?.value || '').toLowerCase().trim();
+            const items = document.querySelectorAll('.home-showcase-item');
+
+            items.forEach(item => {
+                const textContent = item.textContent.toLowerCase();
+                if (!query || textContent.includes(query)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        // Search Redirect Handler with Location and Date Query Parameters
+        function handleHeroSearch(event) {
+            event.preventDefault();
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            if (startDate && endDate && endDate < startDate) {
+                alert('Return date cannot be earlier than start date. Please choose a valid return date.');
+                document.getElementById('endDate').value = startDate;
+                return;
+            }
+
+            const categoryVal = (document.getElementById('searchCategory').value || 'car').toLowerCase().trim();
+            const location = document.getElementById('searchLocation').value;
+            const keyword = document.getElementById('keywordSearch')?.value;
+
+            let targetUrl = '/vehicles/cars/';
+            if (categoryVal === 'bike') targetUrl = '/vehicles/bikes/';
+            else if (categoryVal === 'hall') targetUrl = '/properties/halls/';
+            else if (categoryVal === 'office') targetUrl = '/properties/offices/';
+            else if (categoryVal === 'house') targetUrl = '/properties/houses/';
+            else if (categoryVal.startsWith('/')) targetUrl = categoryVal;
+
+            const params = new URLSearchParams();
+            if (keyword) params.append('q', keyword);
+            if (location) params.append('location', location);
+            if (startDate) params.append('start_date', startDate);
+            if (endDate) params.append('end_date', endDate);
+
+            const queryString = params.toString();
+            if (queryString) {
+                targetUrl += (targetUrl.includes('?') ? '&' : '?') + queryString;
+            }
+
+            window.location.href = targetUrl;
+        }
+
+
+
+
+        // Real-Time Hero Category Selection Handler
+        function handleHeroCategoryChange(categoryKey) {
+            filterHomeShowcase(categoryKey);
+        }
+
+        // Home Page Showcase Real-time Filter
+        function filterHomeShowcase(category, btnElement) {
+            const selectElem = document.getElementById('searchCategory');
+            if (selectElem && category !== 'all' && selectElem.value !== category) {
+                selectElem.value = category;
+            }
+
+            const buttons = document.querySelectorAll('.home-cat-filter-btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('btn-primary', 'active');
+                btn.classList.add('btn-outline-primary');
+            });
+
+            if (btnElement) {
+                btnElement.classList.remove('btn-outline-primary');
+                btnElement.classList.add('btn-primary', 'active');
+            } else {
+                buttons.forEach(btn => {
+                    const onclickAttr = btn.getAttribute('onclick') || '';
+                    if (onclickAttr.includes(`'${category}'`)) {
+                        btn.classList.remove('btn-outline-primary');
+                        btn.classList.add('btn-primary', 'active');
+                    }
+                });
+            }
+
+            const targetCategory = (category || '').toLowerCase().trim();
+            const items = document.querySelectorAll('.home-showcase-item');
+
+            items.forEach(item => {
+                const itemCategory = (item.getAttribute('data-category') || item.dataset.category || '').toLowerCase().trim();
+                
+                if (targetCategory === 'all' || itemCategory === targetCategory) {
+                    item.style.setProperty('display', 'block', 'important');
+                    item.classList.add('show-active', 'aos-animate');
+                    item.style.setProperty('opacity', '1', 'important');
+                    item.style.setProperty('transform', 'none', 'important');
+                    item.style.setProperty('visibility', 'visible', 'important');
+                } else {
+                    item.style.setProperty('display', 'none', 'important');
+                    item.classList.remove('show-active');
+                }
+            });
+
+            if (typeof AOS !== 'undefined') {
+                setTimeout(() => AOS.refresh(), 50);
+            }
+        }
+
+
+
+
+        // Toggle Info Tab (Terms vs Location - Icon-Free Clean Layout)
+        function toggleInfoTab(tab) {
+            const container = document.getElementById('infoContentContainer');
+            const btnTerms = document.getElementById('btnTerms');
+            const btnLocation = document.getElementById('btnLocation');
+
+            if (!container) return;
+
+            if (tab === 'terms') {
+                if (btnTerms) btnTerms.className = 'btn btn-primary btn-lg rounded-pill px-4 py-2 fw-bold';
+                if (btnLocation) btnLocation.className = 'btn btn-outline-primary btn-lg rounded-pill px-4 py-2 fw-bold';
+
+                container.innerHTML = `
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <div class="p-4 bg-light rounded-4 h-100">
+                                <span class="badge bg-success-subtle text-success fw-bold px-3 py-1 rounded-pill mb-2">Policy</span>
+                                <h6 class="fw-bold text-dark mb-3">Booking & Payment</h6>
+                                <ul class="list-unstyled text-secondary small m-0">
+                                    <li class="mb-2">&bull; Valid Government ID proof required</li>
+                                    <li class="mb-2">&bull; Advance deposit for booking confirmation</li>
+                                    <li>&bull; Instant GST invoice receipt provided</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-4 bg-light rounded-4 h-100">
+                                <span class="badge bg-primary-subtle text-primary fw-bold px-3 py-1 rounded-pill mb-2">Safety</span>
+                                <h6 class="fw-bold text-dark mb-3">Usage & Guidelines</h6>
+                                <ul class="list-unstyled text-secondary small m-0">
+                                    <li class="mb-2">&bull; Return items in clean condition</li>
+                                    <li class="mb-2">&bull; 24/7 roadside assistance support</li>
+                                    <li>&bull; Helmet included for bike rentals</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-4 bg-light rounded-4 h-100">
+                                <span class="badge bg-warning-subtle text-warning-emphasis fw-bold px-3 py-1 rounded-pill mb-2">Flexible</span>
+                                <h6 class="fw-bold text-dark mb-3">Extensions & Return</h6>
+                                <ul class="list-unstyled text-secondary small m-0">
+                                    <li class="mb-2">&bull; Grace period of 1 hour for returns</li>
+                                    <li class="mb-2">&bull; Easy online extension available</li>
+                                    <li>&bull; Zero hidden cancellation fees</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                if (btnTerms) btnTerms.className = 'btn btn-outline-primary btn-lg rounded-pill px-4 py-2 fw-bold';
+                if (btnLocation) btnLocation.className = 'btn btn-primary btn-lg rounded-pill px-4 py-2 fw-bold';
+
+                container.innerHTML = `
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="p-4 bg-light rounded-4 h-100">
+                                <span class="badge bg-danger-subtle text-danger fw-bold px-3 py-1 rounded-pill mb-2">Central Hub</span>
+                                <h5 class="fw-bold text-dark mb-2">Bhavnagar Main Branch</h5>
+                                <p class="text-secondary small mb-1">Address: Shastrinagar, Axardeep Complex, Bhavnagar, Gujarat</p>
+                                <p class="text-secondary small mb-1">Contact: +91 79905 21230</p>
+                                <p class="text-secondary small mb-0">Timing: Open Daily 8:00 AM - 10:00 PM</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-4 bg-light rounded-4 h-100">
+                                <span class="badge bg-primary-subtle text-primary fw-bold px-3 py-1 rounded-pill mb-2">City Hub</span>
+                                <h5 class="fw-bold text-dark mb-2">Ahmedabad Highway Hub</h5>
+                                <p class="text-secondary small mb-1">Address: Navrangpura, Near Commerce College, Ahmedabad, Gujarat</p>
+                                <p class="text-secondary small mb-1">Contact: +91 79905 21230</p>
+                                <p class="text-secondary small mb-0">Timing: Open Daily 8:00 AM - 10:00 PM</p>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="rounded-4 overflow-hidden shadow-sm border">
+                                <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3705.393251467602!2d72.12245117029076!3d21.76503611807219!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x395f51b1e1cb7197%3A0x28aee1380afc43e5!2sRentify%20Car%20Rent!5e0!3m2!1sen!2sin!4v1736488509958!5m2!1sen!2sin" 
+                                    width="100%" height="260" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+
+        // Luxury Icon-Free Preloader Animation Script
+        (function() {
+            let progress = 0;
+            const loaderFill = document.getElementById('loaderFill');
+            const loaderPercent = document.getElementById('loaderPercent');
+            const loaderStatusMsg = document.getElementById('loaderStatusMsg');
+            const preloader = document.getElementById('preloader');
+            
+            const messages = [
+                "Initializing Luxury Fleet...",
+                "Loading Premium Vehicles & Bikes...",
+                "Fetching Exclusive Event Spaces...",
+                "Preparing Executive Offices & Residences...",
+                "Welcome to Rentify Luxury"
+            ];
+
+            const progressTimer = setInterval(() => {
+                progress += Math.floor(Math.random() * 12) + 8;
+                if (progress > 100) progress = 100;
+                
+                if (loaderFill) loaderFill.style.width = progress + '%';
+                if (loaderPercent) loaderPercent.textContent = progress + '%';
+                
+                const msgIdx = Math.min(Math.floor((progress / 100) * messages.length), messages.length - 1);
+                if (loaderStatusMsg) loaderStatusMsg.textContent = messages[msgIdx];
+
+                if (progress >= 100) {
+                    clearInterval(progressTimer);
+                    setTimeout(() => {
+                        if (preloader) {
+                            preloader.classList.add('fade-out');
+                            setTimeout(() => preloader.remove(), 600);
+                        }
+                    }, 400);
+                }
+            }, 80);
+        })();
+    </script>
+</body>
+</html>
